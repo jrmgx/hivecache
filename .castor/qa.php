@@ -4,6 +4,7 @@ namespace qa;
 
 // use Castor\Attribute\AsRawTokens;
 use Castor\Attribute\AsOption;
+use Castor\Attribute\AsRawTokens;
 use Castor\Attribute\AsTask;
 
 use function Castor\io;
@@ -17,9 +18,9 @@ function all(): int
     $cs = cs();
     $phpstan = phpstan();
     $twigCs = twigCs();
-    // $phpunit = phpunit();
+    $phpunit = phpunit();
 
-    return max($cs, $phpstan, $twigCs/* , $phpunit */);
+    return max($cs, $phpstan, $twigCs, $phpunit);
 }
 
 #[AsTask(description: 'Installs tooling')]
@@ -42,16 +43,16 @@ function update(): void
     docker_compose_run('composer update -o', workDir: '/var/www/tools/twig-cs-fixer');
 }
 
-// /**
-//  * @param string[] $rawTokens
-//  */
-// #[AsTask(description: 'Runs PHPUnit', aliases: ['phpunit'])]
-// function phpunit(#[AsRawTokens] array $rawTokens = []): int
-// {
-//     io()->section('Running PHPUnit...');
-//
-//     return docker_exit_code('bin/phpunit ' . implode(' ', $rawTokens));
-// }
+/**
+ * @param string[] $rawTokens
+ */
+#[AsTask(description: 'Runs PHPUnit', aliases: ['phpunit'])]
+function phpunit(#[AsRawTokens] array $rawTokens = []): int
+{
+    io()->section('Running PHPUnit...');
+
+    return docker_exit_code('bin/phpunit ' . implode(' ', $rawTokens));
+}
 
 #[AsTask(description: 'Runs PHPStan', aliases: ['phpstan'])]
 function phpstan(

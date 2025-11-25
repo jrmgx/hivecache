@@ -1,0 +1,13 @@
+vich_uploader:
+    db_driver: orm
+    storage: flysystem
+    metadata:
+        type: attribute
+    mappings:
+        file_object:
+            uri_prefix: /files
+            upload_destination: default.storage
+            # Will rename uploaded files using a uniqueid as a suffix.
+            namer:
+                service: Vich\UploaderBundle\Naming\HashNamer
+                options: { algorithm: 'sha256', length: 50 }

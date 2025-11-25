@@ -153,18 +153,6 @@ function stop(
     docker_compose($command, profiles: $profiles);
 }
 
-#[AsTask(description: 'Opens a shell (bash) into a builder container', aliases: ['builder'])]
-function builder(): void
-{
-    $c = context()
-        ->withTimeout(null)
-        ->withTty()
-        ->withEnvironment($_ENV + $_SERVER)
-        ->withAllowFailure()
-    ;
-    docker_compose_run('bash', c: $c);
-}
-
 /**
  * @param list<string> $profiles
  */
@@ -534,8 +522,7 @@ function push(bool $dryRun = false): void
             targets = [%s]
         }
 
-        EOHCL
-        , implode(', ', array_map(fn ($target) => \sprintf('"%s"', $target['target']), $targets)));
+        EOHCL, implode(', ', array_map(fn ($target) => \sprintf('"%s"', $target['target']), $targets)));
 
     foreach ($targets as $target) {
         $content .= \sprintf(<<<'EOHCL'
@@ -550,8 +537,7 @@ function push(bool $dryRun = false): void
                 }
             }
 
-            EOHCL
-            , $target['target'], $target['context'], $target['dockerfile'], $target['reference'], $target['type'], $target['reference'], $target['target'], variable('php_version'));
+            EOHCL, $target['target'], $target['context'], $target['dockerfile'], $target['reference'], $target['type'], $target['reference'], $target['target'], variable('php_version'));
     }
 
     if ($dryRun) {

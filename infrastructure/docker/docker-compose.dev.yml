@@ -12,3 +12,7 @@ services:
             - default
         profiles:
             - default
+
+    postgres:
+        ports:
+            - "5432:5432"

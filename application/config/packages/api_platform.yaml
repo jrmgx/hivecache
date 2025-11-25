@@ -1,0 +1,16 @@
+api_platform:
+    title: Bookmarkhive API
+    version: 0.0.1
+    defaults:
+        stateless: true
+        cache_headers:
+            vary: ['Content-Type', 'Authorization', 'Origin']
+    formats:
+        jsonld: ['application/ld+json']
+        multipart: ['multipart/form-data']
+    swagger:
+        api_keys:
+            JWT:
+                name: Authorization
+                type: header
+    show_webby: false
