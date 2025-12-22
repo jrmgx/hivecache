@@ -35,7 +35,12 @@ class Bookmark
     #[Groups(['bookmark:profile', 'bookmark:create', 'bookmark:owner'])]
     #[Assert\NotBlank(groups: ['bookmark:create'])]
     #[ORM\Column(type: Types::TEXT)]
-    public string $url;
+    public string $url {
+        set {
+            $this->url = $value;
+            $this->domain = self::calculateDomain($value);
+        }
+    }
 
     #[Groups(['bookmark:profile', 'bookmark:create', 'bookmark:owner'])]
     #[ORM\ManyToOne(targetEntity: FileObject::class)]
@@ -50,6 +55,10 @@ class Bookmark
     #[Groups(['bookmark:create', 'bookmark:owner'])]
     #[ORM\Column]
     public bool $isPublic = false;
+
+    #[Groups(['bookmark:profile', 'bookmark:owner'])]
+    #[ORM\Column]
+    public string $domain;
 
     /** @var Collection<int, Tag>|array<int, Tag> */
     #[Groups(['bookmark:owner', 'bookmark:profile', 'bookmark:create'])]
@@ -73,5 +82,16 @@ class Bookmark
     {
         $this->id = Uuid::v7()->toString();
         $this->tags = new ArrayCollection();
+    }
+
+    private static function calculateDomain(string $url): string
+    {
+        $host = parse_url($url, \PHP_URL_HOST);
+
+        if (!$host) {
+            return '';
+        }
+
+        return (string) preg_replace('`^www\.`', '', $host);
     }
 }

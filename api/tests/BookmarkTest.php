@@ -625,6 +625,49 @@ class BookmarkTest extends BaseApiTestCase
         $this->assertEquals('Bookmark To Delete', $json['title'], 'Bookmark should still exist after failed deletion attempt');
     }
 
+    #[DataProvider('domainExtractionProvider')]
+    public function testDomainExtractionFromUrl(string $url, string $expectedDomain): void
+    {
+        [$user, $token] = $this->createAuthenticatedUser('test@example.com', 'testuser', 'test');
+
+        $this->request('POST', '/api/users/me/bookmarks', [
+            'headers' => ['Content-Type' => 'application/json'],
+            'auth_bearer' => $token,
+            'json' => [
+                'title' => 'Test Bookmark',
+                'url' => $url,
+            ],
+        ]);
+        $this->assertResponseIsSuccessful();
+
+        $json = $this->dump($this->getResponseArray());
+
+        $this->assertEquals($expectedDomain, $json['domain'], "Domain should be extracted correctly from URL: {$url}");
+
+        // Verify domain persists when retrieving the bookmark
+        $this->request('GET', $json['@iri'], [
+            'auth_bearer' => $token,
+        ]);
+        $this->assertResponseIsSuccessful();
+
+        $retrievedBookmark = $this->dump($this->getResponseArray());
+        $this->assertEquals($expectedDomain, $retrievedBookmark['domain'], 'Domain should persist when retrieving the bookmark');
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public static function domainExtractionProvider(): array
+    {
+        return [
+            'https without www' => ['https://example.com/ok/file.html', 'example.com'],
+            'http with www' => ['http://www.example.net/ok/file.html', 'example.net'],
+            'https with www and subdomain' => ['https://www.subdomain.example.org/path/to/page', 'subdomain.example.org'],
+            'http without www' => ['http://test.com/index.php', 'test.com'],
+            'https with port' => ['https://example.com:8080/path', 'example.com'],
+        ];
+    }
+
     private function assertOtherUserCannotAccess(string $method, string $url, array $options = []): void
     {
         [, $otherToken] = $this->createAuthenticatedUser('other@example.com', 'otheruser', 'test');
@@ -643,6 +686,8 @@ class BookmarkTest extends BaseApiTestCase
         $this->assertArrayHasKey('createdAt', $json);
         $this->assertArrayHasKey('title', $json);
         $this->assertArrayHasKey('url', $json);
+        $this->assertArrayHasKey('domain', $json);
+        $this->assertIsString($json['domain']);
         $this->assertArrayHasKey('isPublic', $json);
         $this->assertIsBool($json['isPublic']);
         $this->assertArrayHasKey('owner', $json);
@@ -650,7 +695,7 @@ class BookmarkTest extends BaseApiTestCase
         $this->assertIsArray($json['tags']);
 
         $bookmarkFields = array_keys($json);
-        $expectedBookmarkFields = ['id', 'createdAt', 'title', 'url', 'owner', 'isPublic', 'tags', '@iri'];
+        $expectedBookmarkFields = ['id', 'createdAt', 'title', 'url', 'domain', 'owner', 'isPublic', 'tags', '@iri'];
 
         // Archive and mainImage are optional, add them to expected fields if present
         if (isset($json['archive'])) {
@@ -681,13 +726,15 @@ class BookmarkTest extends BaseApiTestCase
             $this->assertIsString($bookmark['createdAt']);
             $this->assertIsString($bookmark['title']);
             $this->assertIsString($bookmark['url']);
+            $this->assertArrayHasKey('domain', $bookmark);
+            $this->assertIsString($bookmark['domain']);
             $this->assertIsBool($bookmark['isPublic']);
             $this->assertArrayHasKey('owner', $bookmark);
             $this->assertArrayHasKey('tags', $bookmark);
             $this->assertIsArray($bookmark['tags']);
 
             $bookmarkFields = array_keys($bookmark);
-            $expectedBookmarkFields = ['id', 'createdAt', 'title', 'url', 'owner', 'isPublic', 'tags', '@iri'];
+            $expectedBookmarkFields = ['id', 'createdAt', 'title', 'url', 'domain', 'owner', 'isPublic', 'tags', '@iri'];
 
             // Archive and mainImage are optional, add them to expected fields if present
             if (isset($bookmark['archive'])) {
@@ -716,11 +763,13 @@ class BookmarkTest extends BaseApiTestCase
     {
         $this->assertArrayHasKey('id', $json);
         $this->assertIsString($json['id']);
+        $this->assertArrayHasKey('domain', $json);
+        $this->assertIsString($json['domain']);
         $this->assertArrayHasKey('tags', $json);
         $this->assertIsArray($json['tags']);
 
         $bookmarkFields = array_keys($json);
-        $expectedBookmarkFields = ['id', 'createdAt', 'title', 'url', 'owner', 'tags', '@iri'];
+        $expectedBookmarkFields = ['id', 'createdAt', 'title', 'url', 'domain', 'owner', 'tags', '@iri'];
 
         // Archive and mainImage are optional, add them to expected fields if present
         if (isset($json['archive'])) {
@@ -754,11 +803,13 @@ class BookmarkTest extends BaseApiTestCase
             $this->assertIsString($bookmark['createdAt']);
             $this->assertIsString($bookmark['title']);
             $this->assertIsString($bookmark['url']);
+            $this->assertArrayHasKey('domain', $bookmark);
+            $this->assertIsString($bookmark['domain']);
             $this->assertArrayHasKey('tags', $bookmark);
             $this->assertIsArray($bookmark['tags']);
 
             $bookmarkFields = array_keys($bookmark);
-            $expectedBookmarkFields = ['id', 'createdAt', 'title', 'url', 'owner', 'tags', '@iri'];
+            $expectedBookmarkFields = ['id', 'createdAt', 'title', 'url', 'domain', 'owner', 'tags', '@iri'];
 
             // Archive and mainImage are optional, add them to expected fields if present
             if (isset($bookmark['archive'])) {

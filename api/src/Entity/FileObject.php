@@ -10,7 +10,7 @@ use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Uid\UuidV7;
 
 #[ORM\Entity]
-#[Context([DateTimeNormalizer::FORMAT_KEY => \DateTime::ATOM])]
+#[Context([DateTimeNormalizer::FORMAT_KEY => \DateTimeInterface::ATOM])]
 class FileObject
 {
     #[ORM\Id, ORM\Column(type: 'uuid')]

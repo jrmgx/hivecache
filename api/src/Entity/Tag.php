@@ -57,7 +57,7 @@ class Tag
         $this->id = Uuid::v7()->toString();
     }
 
-    public static function slugger(string $name): string
+    private static function slugger(string $name): string
     {
         $slugger = new AsciiSlugger('en')->withEmoji();
 
