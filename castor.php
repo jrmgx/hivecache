@@ -111,7 +111,7 @@ function fixtures(): void
 #[AsTask(namespace: 'dev', description: 'Start all messenger consumers', aliases: ['consume'])]
 function consume_messages(#[AsOption] int $limit = 100): void
 {
-    docker_compose_run("bin/console messenger:consume async messengerTask -vvv --memory-limit=512M --time-limit=3600 --limit=$limit");
+    docker_compose_run("bin/console messenger:consume async -vvv --memory-limit=512M --time-limit=3600 --limit=$limit");
 }
 
 /**
