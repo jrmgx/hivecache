@@ -4,6 +4,7 @@
 
 use Castor\Attribute\AsRawTokens;
 use Castor\Attribute\AsTask;
+use Castor\Attribute\AsOption;
 
 use function Castor\context;
 use function Castor\guard_min_version;
@@ -105,6 +106,12 @@ function fixtures(): void
     io()->title('Loads fixtures');
 
     docker_compose_run('bin/console foundry:load-stories -n');
+}
+
+#[AsTask(namespace: 'dev', description: 'Start all messenger consumers', aliases: ['consume'])]
+function consume_messages(#[AsOption] int $limit = 100): void
+{
+    docker_compose_run("bin/console messenger:consume async messengerTask -vvv --memory-limit=512M --time-limit=3600 --limit=$limit");
 }
 
 /**
