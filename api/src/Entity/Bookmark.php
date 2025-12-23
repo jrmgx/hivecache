@@ -18,9 +18,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: BookmarkRepository::class)]
 class Bookmark
 {
-    #[Groups(['bookmark:owner', 'bookmark:profile'])]
+    #[Groups(['bookmark:owner', 'bookmark:profile', /*temp*/ 'bookmark:create'])]
     #[ORM\Id, ORM\Column(type: 'uuid')]
-    public private(set) string $id;
+    public /*private(set)*/ string $id;
 
     #[Groups(['bookmark:owner', 'bookmark:profile'])]
     public \DateTimeImmutable $createdAt {
@@ -84,6 +84,9 @@ class Bookmark
         $this->tags = new ArrayCollection();
     }
 
+    /**
+     * Opinionated: remove `www` and `m` (for mobile most of the time) from domain to normalize a bit.
+     */
     private static function calculateDomain(string $url): string
     {
         $host = parse_url($url, \PHP_URL_HOST);
@@ -92,6 +95,6 @@ class Bookmark
             return '';
         }
 
-        return (string) preg_replace('`^www\.`', '', $host);
+        return (string) preg_replace('`^(www|m)\.`', '', $host);
     }
 }

@@ -332,7 +332,7 @@ class BookmarkTest extends BaseApiTestCase
                 'title' => 'Updated Title',
                 'url' => 'https://updated.com', // We can not update url
                 'tags' => [
-                    "/api/users/me/tags/{$tag2->slug}",
+                    "/api/users/me/tags/{$tag2->slug}", // TODO this is wrong, /api should not be part of the IRI IMHO
                     "/api/users/me/tags/{$tag3->slug}",
                 ],
             ],
@@ -628,7 +628,7 @@ class BookmarkTest extends BaseApiTestCase
     #[DataProvider('domainExtractionProvider')]
     public function testDomainExtractionFromUrl(string $url, string $expectedDomain): void
     {
-        [$user, $token] = $this->createAuthenticatedUser('test@example.com', 'testuser', 'test');
+        [, $token] = $this->createAuthenticatedUser('test@example.com', 'testuser', 'test');
 
         $this->request('POST', '/api/users/me/bookmarks', [
             'headers' => ['Content-Type' => 'application/json'],
@@ -665,6 +665,7 @@ class BookmarkTest extends BaseApiTestCase
             'https with www and subdomain' => ['https://www.subdomain.example.org/path/to/page', 'subdomain.example.org'],
             'http without www' => ['http://test.com/index.php', 'test.com'],
             'https with port' => ['https://example.com:8080/path', 'example.com'],
+            'mobile' => ['https://m.example.com/path/to/file', 'example.com'],
         ];
     }
 
