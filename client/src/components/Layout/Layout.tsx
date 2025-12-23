@@ -52,6 +52,16 @@ export const Layout = () => {
     };
 
     loadTags();
+
+    // Listen for tag update events to reload tags in sidebar
+    const handleTagsUpdated = () => {
+      loadTags();
+    };
+
+    window.addEventListener('tagsUpdated', handleTagsUpdated);
+    return () => {
+      window.removeEventListener('tagsUpdated', handleTagsUpdated);
+    };
   }, []);
 
   const handleTagToggle = (slug: string) => {

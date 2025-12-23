@@ -82,6 +82,10 @@ body {
   background: var(--sidebar-color) !important;
 }
 
+[data-bs-theme=dark] .sidebar .fw-bold {
+  color: #ffffff !important;
+}
+
 @media (min-width: 768px) {
   .sidebar {
     width: var(--sidebar-width);
@@ -276,6 +280,61 @@ iframe.peertube-player {
   .tags-grid {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   }
+}
+
+/* Tom-select dark mode styles */
+[data-bs-theme=dark] .ts-wrapper .ts-dropdown,
+[data-bs-theme=dark] .ts-wrapper .ts-dropdown-content {
+  background-color: #212529 !important;
+  border-color: #495057 !important;
+}
+
+[data-bs-theme=dark] .ts-wrapper .ts-dropdown .option,
+[data-bs-theme=dark] .ts-wrapper .ts-dropdown .optgroup-header,
+[data-bs-theme=dark] .ts-wrapper .ts-dropdown .option.active {
+  background-color: #212529 !important;
+  color: #ffffff !important;
+}
+
+[data-bs-theme=dark] .ts-wrapper .ts-dropdown .option:hover,
+[data-bs-theme=dark] .ts-wrapper .ts-dropdown .option.active {
+  background-color: #495057 !important;
+  color: #ffffff !important;
+}
+
+[data-bs-theme=dark] .ts-wrapper .ts-dropdown .option[data-selectable] {
+  color: #ffffff !important;
+}
+
+[data-bs-theme=dark] .ts-wrapper .ts-control {
+  background-color: #212529 !important;
+  border-color: #495057 !important;
+  color: #ffffff !important;
+}
+
+[data-bs-theme=dark] .ts-wrapper .ts-control input {
+  color: #ffffff !important;
+}
+
+[data-bs-theme=dark] .ts-wrapper.multi .ts-control > div {
+  background-color: #495057 !important;
+  color: #ffffff !important;
+  border-color: #6c757d !important;
+}
+
+[data-bs-theme=dark] .ts-wrapper.multi .ts-control > div.active {
+  background-color: #6c757d !important;
+  border-color: #666 !important;
+}
+
+[data-bs-theme=dark] .ts-wrapper.multi .ts-control > div .remove {
+  border-left-color: #666 !important;
+  color: #ffffff !important;
+}
+
+[data-bs-theme=dark] .ts-wrapper.multi .ts-control > div .remove:hover {
+  background-color: #6c757d !important;
+  color: #ffffff !important;
 }
 
 /* Responsive adjustments */

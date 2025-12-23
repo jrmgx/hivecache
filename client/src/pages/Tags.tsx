@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Tag } from '../components/Tag/Tag';
 import { Icon } from '../components/Icon/Icon';
+import { EditTag } from '../components/EditTag/EditTag';
 import { getTags } from '../services/api';
 import { toggleTag, updateTagParams } from '../utils/tags';
 import type { Tag as TagType } from '../types';
@@ -15,6 +16,7 @@ export const Tags = () => {
   const [isLoading, setIsLoading] = useState(true);
   const gridRef = useRef<HTMLDivElement>(null);
   const [columnCount, setColumnCount] = useState(0);
+  const [editingTag, setEditingTag] = useState<TagType | null>(null);
 
   const tagQueryString = searchParams.get('tags') || '';
   const selectedTagSlugs = tagQueryString ? tagQueryString.split(',').filter(Boolean) : [];
@@ -59,8 +61,21 @@ export const Tags = () => {
   };
 
   const handleTagEdit = (tag: TagType) => {
-    console.log(tag);
-    // TODO
+    setEditingTag(tag);
+  };
+
+  const handleTagSave = async () => {
+    // Refresh tags list after save
+    try {
+      const tagsData = await getTags();
+      setTags(tagsData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to refresh tags');
+    }
+  };
+
+  const handleTagModalClose = () => {
+    setEditingTag(null);
   };
 
   return (
@@ -109,6 +124,12 @@ export const Tags = () => {
       )}
 
       <div className="mt-1">&nbsp;</div>
+
+      <EditTag
+        tag={editingTag}
+        onSave={handleTagSave}
+        onClose={handleTagModalClose}
+      />
     </>
   );
 };

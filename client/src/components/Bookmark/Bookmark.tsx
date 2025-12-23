@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Icon } from '../Icon/Icon';
 import { PlaceholderImage } from '../PlaceholderImage/PlaceholderImage';
+import { EditBookmarkTags } from '../EditBookmarkTags/EditBookmarkTags';
 import type { Bookmark as BookmarkType } from '../../types';
 import { LAYOUT_EMBEDDED } from '../../types';
 import { findEmbed } from '../../utils/embed';
@@ -28,6 +29,7 @@ export const Bookmark = ({
   const embedResult = isEmbedded ? findEmbed(bookmark.url) : null;
   const [embedLoaded, setEmbedLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [showEditTagsModal, setShowEditTagsModal] = useState(false);
   const imageUrl = getImageUrl(bookmark.mainImage?.contentUrl);
 
   const handleTagClick = (slug: string) => {
@@ -54,6 +56,21 @@ export const Bookmark = ({
 
   const handleImageError = () => {
     setImageError(true);
+  };
+
+  const handleEditTags = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setShowEditTagsModal(true);
+  };
+
+  const handleTagsSave = () => {
+    setShowEditTagsModal(false);
+    // Optionally refresh bookmark data here if needed
+    // The parent component might handle this via a refresh callback
+  };
+
+  const handleTagsClose = () => {
+    setShowEditTagsModal(false);
   };
 
   const sortedTags = [...bookmark.tags].sort((a, b) => {
@@ -163,7 +180,12 @@ export const Bookmark = ({
                 </button>
               );
             })}
-            <button className="btn btn-outline-primary btn-xs mb-1" type="button">
+            <button
+              className="btn btn-outline-primary btn-xs mb-1"
+              type="button"
+              onClick={handleEditTags}
+              aria-label="Edit tags"
+            >
               #
             </button>
           </div>
@@ -188,6 +210,11 @@ export const Bookmark = ({
           </div>
         </div>
       </div>
+      <EditBookmarkTags
+        bookmark={showEditTagsModal ? bookmark : null}
+        onSave={handleTagsSave}
+        onClose={handleTagsClose}
+      />
     </div>
   );
 };

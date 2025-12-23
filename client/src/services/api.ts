@@ -227,6 +227,29 @@ export const getBookmark = async (id: string): Promise<Bookmark | null> => {
   };
 };
 
+/**
+ * Helper function to convert tag slug to IRI
+ */
+const tagSlugToIri = (slug: string): string => {
+  return `/api/users/me/tags/${slug}`;
+};
+
+export const updateBookmarkTags = async (id: string, tagSlugs: string[]): Promise<Bookmark> => {
+  const tagIris = tagSlugs.map(tagSlugToIri);
+  const response = await fetch(`${BASE_URL}/api/users/me/bookmarks/${id}`, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ tags: tagIris }),
+  });
+
+  const bookmark = await handleResponse<ApiBookmark>(response);
+  // Transform tags within the bookmark
+  return {
+    ...bookmark,
+    tags: bookmark.tags ? bookmark.tags.map(transformTagFromApi) : [],
+  };
+};
+
 export const getTags = async (): Promise<Tag[]> => {
   // Return cached result if available
   if (tagsCache !== null) {

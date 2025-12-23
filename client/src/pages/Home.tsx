@@ -34,31 +34,43 @@ export const Home = () => {
   const isLayoutImage = layout === LAYOUT_IMAGE;
 
   // Load initial data
-  useEffect(() => {
-    const loadData = async () => {
-      setIsLoading(true);
-      setError(null);
+  const loadData = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    setBookmarks([]);
+    setNextPage(null);
+    try {
+      const [bookmarksResponse, tagsData] = await Promise.all([
+        getBookmarks(tagQueryString),
+        getTags(),
+      ]);
+      setBookmarks(bookmarksResponse.collection);
+      setNextPage(bookmarksResponse.nextPage);
+      setTags(tagsData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load data');
       setBookmarks([]);
-      setNextPage(null);
-      try {
-        const [bookmarksResponse, tagsData] = await Promise.all([
-          getBookmarks(tagQueryString),
-          getTags(),
-        ]);
-        setBookmarks(bookmarksResponse.collection);
-        setNextPage(bookmarksResponse.nextPage);
-        setTags(tagsData);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load data');
-        setBookmarks([]);
-        setTags([]);
-      } finally {
-        setIsLoading(false);
-      }
+      setTags([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [tagQueryString]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  // Listen for bookmarks updated event to refresh the list
+  useEffect(() => {
+    const handleBookmarksUpdated = () => {
+      loadData();
     };
 
-    loadData();
-  }, [tagQueryString]);
+    window.addEventListener('bookmarksUpdated', handleBookmarksUpdated);
+    return () => {
+      window.removeEventListener('bookmarksUpdated', handleBookmarksUpdated);
+    };
+  }, [loadData]);
 
   const loadMoreBookmarks = useCallback(async () => {
     if (!nextPage || isLoadingMore) return;
