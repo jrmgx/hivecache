@@ -9,6 +9,7 @@ RUN apt-get update \
         curl \
         ca-certificates \
         gnupg \
+        git \
     && curl -sSLo /tmp/debsuryorg-archive-keyring.deb https://packages.sury.org/debsuryorg-archive-keyring.deb \
     && dpkg -i /tmp/debsuryorg-archive-keyring.deb \
     && echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php bookworm main" > /etc/apt/sources.list.d/sury.list \
@@ -84,14 +85,17 @@ CMD ["runsvdir", "-P", "/etc/service"]
 FROM api AS api-build
 
 COPY infrastructure/docker/services/php/api/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Copy project source
-COPY api .
+COPY api api
 
 # Build
-RUN composer install --no-dev --optimize-autoloader
+RUN cd api && composer install --no-dev --optimize-autoloader
 
 ENTRYPOINT ["entrypoint.sh"]
+
+CMD ["runsvdir", "-P", "/etc/service"]
 
 FROM php-base AS worker
 
