@@ -1,20 +1,5 @@
 # This docker compose file is not production ready
 # ⚠️ Don't use it in production
-x-templates:
-    worker_base: &worker_base
-        build:
-            dockerfile: infrastructure/docker/services/php/Dockerfile
-            context: ./
-            target: worker
-        user: "${USER_ID}:${USER_ID}"
-        depends_on:
-            postgres:
-                condition: service_healthy
-        volumes:
-            - "./:/var/www:cached"
-        profiles:
-            - worker
-
 volumes:
     postgres-data: {}
 
@@ -82,27 +67,6 @@ services:
             - "traefik.http.routers.${PROJECT_NAME}-api.service=${PROJECT_NAME}-api"
             - "traefik.http.services.${PROJECT_NAME}-api.loadbalancer.server.port=80"
 
-    client:
-        build:
-            dockerfile: infrastructure/docker/services/nginx-client/Dockerfile
-            context: ./
-        volumes:
-            - "./client/dist:/var/www/client/dist:cached"
-        profiles:
-            - default
-        labels:
-            - "traefik.enable=true"
-            - "project-name=${PROJECT_NAME}"
-            - "traefik.http.routers.${PROJECT_NAME}-client.rule=Host(${PROJECT_DOMAINS}) && !PathPrefix(`/api`) && !PathPrefix(`/storage`) && !PathPrefix(`/_profiler`)"
-            - "traefik.http.routers.${PROJECT_NAME}-client.priority=5"
-            - "traefik.http.routers.${PROJECT_NAME}-client.tls=true"
-            - "traefik.http.routers.${PROJECT_NAME}-client.service=${PROJECT_NAME}-client"
-            - "traefik.http.services.${PROJECT_NAME}-client.loadbalancer.server.port=81"
-
-    # worker_messenger:
-    #     <<: *worker_base
-    #     command: php -d memory_limit=1G /var/www/application/bin/console messenger:consume async --memory-limit=128M
-
     builder:
         build:
             dockerfile: infrastructure/docker/services/php/Dockerfile
@@ -120,10 +84,6 @@ services:
         volumes:
             - "./:/var/www:cached"
             - "./.home:/home/app:cached"
-            # Needed when $XDG_ env vars have overridden, to persist the yarn
-            # cache between builder and watcher, adapt according to the location
-            # of $XDG_DATA_HOME
-            # - "builder-yarn-data:/data/yarn"
         depends_on:
             - postgres
         profiles:
