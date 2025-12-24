@@ -303,7 +303,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     stopInitialSavingAnimation();
                     submitButton.textContent = 'Creating tags...';
                     try {
-                        tagIRIs = await ensureTagsExist(selectedTagNames, userTags, apiHost);
+                        tagIRIs = await ensureTagsExist(selectedTagNames, userTags);
                         // Update tom-select options to include newly created tags
                         updateTomSelectOptions();
                     } catch (error) {
@@ -334,7 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const imageBlob = await imageResponse.blob();
 
                         // Upload the image file
-                        const fileObject = await uploadFileObject(imageBlob, apiHost);
+                        const fileObject = await uploadFileObject(imageBlob);
                         mainImageId = fileObject['@iri'];
 
                         console.log('Image uploaded successfully:', mainImageId);
@@ -386,7 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 try {
                     stopSavingAnimation = startClockAnimation(submitButton, 'Saving bookmark...');
-                    await createBookmark(payload, apiHost);
+                    await createBookmark(payload);
 
                     // Stop the "Saving bookmark..." animation before showing success
                     if (stopSavingAnimation) {

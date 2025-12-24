@@ -1,4 +1,3 @@
-import { getAPIHost } from './api';
 import { compressAndUploadHTML } from './lib/compression';
 import { MessageRequest, MessageResponse } from './types';
 import { getBrowserRuntime } from './lib/browser';
@@ -23,12 +22,7 @@ getBrowserRuntime().onMessage.addListener((
 });
 
 async function handleCompressHTML(html: string): Promise<string> {
-    const apiHost = await getAPIHost();
-    if (!apiHost) {
-        throw new Error('API host not configured. Please configure it in the options page.');
-    }
-
-    const fileObject = await compressAndUploadHTML(html, apiHost);
+    const fileObject = await compressAndUploadHTML(html);
     return fileObject['@iri'];
 }
 

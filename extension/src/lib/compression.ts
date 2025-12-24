@@ -3,7 +3,7 @@
  */
 
 import { uploadFileObject } from '../api';
-import { FileObjectResponse } from '../types';
+import type { FileObject } from '@shared';
 
 /**
  * Compresses HTML using gzip compression
@@ -52,11 +52,10 @@ async function compressHTML(html: string): Promise<Uint8Array> {
 /**
  * Compresses HTML and uploads it to the API
  * @param html The HTML string to compress and upload
- * @param apiHost The API host URL
  * @returns The file object response containing @iri
  * @TODO move to logic controller
  */
-export async function compressAndUploadHTML(html: string, apiHost: string): Promise<FileObjectResponse> {
+export async function compressAndUploadHTML(html: string): Promise<FileObject> {
     console.log(`Archive Background: HTML size: ${html.length} characters`);
 
     try {
@@ -64,7 +63,7 @@ export async function compressAndUploadHTML(html: string, apiHost: string): Prom
 
         // Send compressed data to API endpoint
         const blob = new Blob([compressed as BlobPart], { type: 'application/gzip' });
-        const result = await uploadFileObject(blob, apiHost);
+        const result = await uploadFileObject(blob);
         console.log("Archive Background: Successfully uploaded to API:", result);
         return result;
     } catch (error) {
