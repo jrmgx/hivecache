@@ -1,4 +1,4 @@
-export const getImageUrl = (url: string | null | undefined): string | undefined => {
+export const resolveContentUrl = (url: string | null | undefined): string | undefined => {
   if (!url) {
     return undefined;
   }

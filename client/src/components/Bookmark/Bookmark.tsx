@@ -6,7 +6,7 @@ import type { Bookmark as BookmarkType } from '../../types';
 import { LAYOUT_EMBEDDED } from '../../types';
 import { findEmbed } from '../../utils/embed';
 import { shareBookmark } from '../../utils/share';
-import { getImageUrl } from '../../utils/image';
+import { resolveContentUrl } from '../../utils/image';
 import { formatDate } from '../../utils/date';
 
 interface BookmarkProps {
@@ -15,6 +15,7 @@ interface BookmarkProps {
   selectedTagSlugs: string[];
   onTagToggle?: (slug: string) => void;
   onShow?: (id: string) => void;
+  onTagsSave?: () => void;
 }
 
 export const Bookmark = ({
@@ -22,7 +23,8 @@ export const Bookmark = ({
   layout,
   selectedTagSlugs,
   onTagToggle,
-  onShow
+  onShow,
+  onTagsSave
 }: BookmarkProps) => {
 
   const isEmbedded = layout === LAYOUT_EMBEDDED;
@@ -30,7 +32,7 @@ export const Bookmark = ({
   const [embedLoaded, setEmbedLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [showEditTagsModal, setShowEditTagsModal] = useState(false);
-  const imageUrl = getImageUrl(bookmark.mainImage?.contentUrl);
+  const imageUrl = resolveContentUrl(bookmark.mainImage?.contentUrl);
 
   const handleTagClick = (slug: string) => {
     if (onTagToggle) {
@@ -65,8 +67,9 @@ export const Bookmark = ({
 
   const handleTagsSave = () => {
     setShowEditTagsModal(false);
-    // Optionally refresh bookmark data here if needed
-    // The parent component might handle this via a refresh callback
+    if (onTagsSave) {
+      onTagsSave();
+    }
   };
 
   const handleTagsClose = () => {

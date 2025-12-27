@@ -1,14 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Icon } from '../components/Icon/Icon';
-import { PlaceholderImage } from '../components/PlaceholderImage/PlaceholderImage';
-import { EditBookmarkTags } from '../components/EditBookmarkTags/EditBookmarkTags';
+import { Bookmark } from '../components/Bookmark/Bookmark';
 import { ErrorAlert } from '../components/ErrorAlert/ErrorAlert';
-import { getBookmark, ApiError } from '../services/api';
-import { shareBookmark } from '../utils/share';
-import { getImageUrl } from '../utils/image';
+import { getBookmark, getBookmarkHistory, ApiError } from '../services/api';
+import { resolveContentUrl } from '../utils/image';
 import { formatDate } from '../utils/date';
 import type { Bookmark as BookmarkType } from '../types';
+import { LAYOUT_DEFAULT } from '../types';
 
 export const ShowBookmark = () => {
   const { id } = useParams<{ id: string }>();
@@ -17,10 +16,11 @@ export const ShowBookmark = () => {
   const [error, setError] = useState<string | null>(null);
   const [errorStatus, setErrorStatus] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [imageError, setImageError] = useState(false);
-  const [showEditTagsModal, setShowEditTagsModal] = useState(false);
   const [archiveUrl, setArchiveUrl] = useState<string | null>(null);
   const [isLoadingArchive, setIsLoadingArchive] = useState(false);
+  const [bookmarkHistory, setBookmarkHistory] = useState<BookmarkType[]>([]);
+  const [selectedBookmarkId, setSelectedBookmarkId] = useState<string | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -58,8 +58,8 @@ export const ShowBookmark = () => {
 
   // Load and decompress archive file
   useEffect(() => {
-    const loadArchive = async () => {
-      if (!bookmark?.archive?.contentUrl) {
+    const loadArchive = async (targetBookmark: BookmarkType | null) => {
+      if (!targetBookmark?.archive?.contentUrl) {
         setArchiveUrl(null);
         return;
       }
@@ -67,7 +67,7 @@ export const ShowBookmark = () => {
       setIsLoadingArchive(true);
 
       try {
-        const archiveFileUrl = getImageUrl(bookmark.archive.contentUrl);
+        const archiveFileUrl = resolveContentUrl(targetBookmark.archive.contentUrl);
         if (!archiveFileUrl) {
           setArchiveUrl(null);
           return;
@@ -107,7 +107,14 @@ export const ShowBookmark = () => {
       }
     };
 
-    loadArchive();
+    // Determine which bookmark to load archive for
+    const targetBookmark = selectedBookmarkId
+      ? bookmarkHistory.find(b => b.id === selectedBookmarkId) || bookmark
+      : bookmark;
+
+    if (targetBookmark) {
+      loadArchive(targetBookmark);
+    }
 
     // Cleanup: revoke blob URL when component unmounts or bookmark changes
     return () => {
@@ -118,7 +125,27 @@ export const ShowBookmark = () => {
         return null;
       });
     };
-  }, [bookmark?.archive?.contentUrl]);
+  }, [bookmark, bookmarkHistory, selectedBookmarkId]);
+
+  // Load bookmark history
+  useEffect(() => {
+    const loadHistory = async () => {
+      if (!id) {
+        setBookmarkHistory([]);
+        return;
+      }
+
+      try {
+        const historyResponse = await getBookmarkHistory(id);
+        setBookmarkHistory(historyResponse.collection || []);
+      } catch (err) {
+        console.error('Failed to load bookmark history:', err);
+        setBookmarkHistory([]);
+      }
+    };
+
+    loadHistory();
+  }, [id]);
 
   if (isLoading) {
     return (
@@ -144,31 +171,11 @@ export const ShowBookmark = () => {
     );
   }
 
-  const imageUrl = getImageUrl(bookmark.mainImage?.contentUrl);
-  const sortedTags = [...bookmark.tags].sort((a, b) => {
-    return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
-  });
-
-  const handleImageError = () => {
-    setImageError(true);
-  };
-
-  const handleTagClick = (slug: string) => {
+  const handleTagToggle = (slug: string) => {
     navigate(`/?tags=${slug}`);
   };
 
-  const handleShare = (e: React.MouseEvent) => {
-    e.preventDefault();
-    shareBookmark(bookmark);
-  };
-
-  const handleEditTags = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setShowEditTagsModal(true);
-  };
-
   const handleTagsSave = () => {
-    setShowEditTagsModal(false);
     // Reload bookmark to get updated tags
     if (id) {
       getBookmark(id).then((bookmarkData) => {
@@ -179,96 +186,74 @@ export const ShowBookmark = () => {
     }
   };
 
-  const handleTagsClose = () => {
-    setShowEditTagsModal(false);
+  const handleShow = () => {
+    // Already on the show page, so do nothing
   };
 
-  // Determine background image style for normal bookmarks
-  const normalBookmarkStyle = imageUrl && !imageError
-    ? { backgroundImage: `url(${imageUrl})` }
-    : undefined;
+  const handleHistoryButtonClick = (bookmarkId: string | null) => {
+    setSelectedBookmarkId(bookmarkId);
+  };
+
+  const handleIframeLoad = () => {
+    const frame = iframeRef.current;
+    if (frame && frame.contentWindow) {
+      try {
+        // Set the height of the iframe as the height of the iframe content
+        const scrollHeight = frame.contentWindow.document.body.scrollHeight;
+        if (scrollHeight > 0) {
+          frame.style.height = scrollHeight + 'px';
+        }
+      } catch (error) {
+        console.warn('Could not access iframe content:', error);
+      }
+    }
+  };
 
   return (
     <>
       <ErrorAlert error={error} statusCode={errorStatus} />
 
       <div className="row gx-3">
-        <div className="col-12 my-2 col-sm-6 col-md-4 col-xl-3 col-xxl-2">
-          <div id={`bookmark-${bookmark.id}`} className="card h-100">
-            <div className="card-img-top bookmark-img flex-shrink-0" style={normalBookmarkStyle}>
-              {imageUrl && !imageError && (
-                <img
-                  src={imageUrl}
-                  alt=""
-                  onError={handleImageError}
-                  style={{ display: 'none' }}
-                  aria-hidden="true"
-                />
-              )}
-              {(!imageUrl || imageError) && (
-                <PlaceholderImage
-                  type={imageError ? 'error-image' : 'no-image'}
-                  style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-                />
-              )}
-              <a target="_blank" className="d-block h-100 w-100" href={bookmark.url} rel="noopener noreferrer" style={{ position: 'relative', zIndex: 1 }}></a>
-            </div>
+        <Bookmark
+          bookmark={bookmark}
+          layout={LAYOUT_DEFAULT}
+          selectedTagSlugs={[]}
+          onTagToggle={handleTagToggle}
+          onShow={handleShow}
+          onTagsSave={handleTagsSave}
+        />
+      </div>
 
-            <div className="card-body position-relative">
-              <div className="card-title">
-                <a
-                  target="_blank"
-                  className="text-decoration-none bookmark-title"
-                  href={bookmark.url}
-                  rel="noopener noreferrer"
-                  title={bookmark.title}
+      {bookmarkHistory.length > 0 && (
+        <div className='row my-2'>
+          <div className="col-12">
+            <div className="overflow-x-auto">
+              <div className="btn-group flex-nowrap" role="group" aria-label="Basic outlined example" style={{ minWidth: 'max-content' }}>
+                <button
+                  type="button"
+                  className={`btn btn-outline-primary ${selectedBookmarkId === null ? 'active' : ''}`}
+                  onClick={() => handleHistoryButtonClick(null)}
                 >
-                  <small className="badge me-2 rounded-pill text-bg-light border fw-light domain-pill">
-                    {bookmark.domain}
-                  </small>
-                  {bookmark.title}
-                </a>
-              </div>
-              <div className="pt-1">
-                {sortedTags.map((tag) => (
+                  {formatDate(bookmark.createdAt)}
+                </button>
+                {bookmarkHistory.map((historyBookmark) => (
                   <button
-                    key={tag.slug}
+                    key={historyBookmark.id}
                     type="button"
-                    className="btn btn-outline-secondary btn-xs me-1 mb-1"
-                    onClick={() => handleTagClick(tag.slug)}
+                    className={`btn btn-outline-primary ${selectedBookmarkId === historyBookmark.id ? 'active' : ''}`}
+                    onClick={() => handleHistoryButtonClick(historyBookmark.id)}
                   >
-                    {tag.icon && `${tag.icon} `}
-                    {tag.name}
+                    {formatDate(historyBookmark.createdAt)}
                   </button>
                 ))}
-                <button
-                  className="btn btn-outline-primary btn-xs mb-1"
-                  type="button"
-                  onClick={handleEditTags}
-                  aria-label="Edit tags"
-                >
-                  #
-                </button>
-              </div>
-            </div>
-            <div className="card-footer text-body-secondary d-flex align-items-center py-1 pe-0">
-              <div className="fs-small flex-grow-1">{formatDate(bookmark.createdAt)}</div>
-              <div>
-                <button
-                  className="btn btn-outline-secondary border-0"
-                  onClick={handleShare}
-                  aria-label="Share bookmark"
-                >
-                  <Icon name="share-fat" />
-                </button>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {bookmark.archive && (
-        <div className="row mt-3">
+      {(bookmark.archive || bookmarkHistory.some(b => b.archive)) && (
+        <div className="row my-3">
           <div className="col-12">
             {isLoadingArchive ? (
               <div className="text-center py-5">
@@ -277,16 +262,20 @@ export const ShowBookmark = () => {
                 </div>
               </div>
             ) : archiveUrl ? (
-              <iframe
-                src={archiveUrl}
-                style={{
-                  width: '100%',
-                  minHeight: '600px',
-                  height: '80vh',
-                  border: 'none',
-                }}
-                title="Archived Content"
-              />
+              <div className="card overflow-hidden">
+                <iframe
+                  ref={iframeRef}
+                  src={archiveUrl}
+                  onLoad={handleIframeLoad}
+                  style={{
+                    width: '100%',
+                    minHeight: '600px',
+                    border: 'none',
+                    display: 'block',
+                  }}
+                  title="Archived Content"
+                />
+              </div>
             ) : (
               <div className="alert alert-warning" role="alert">
                 Failed to load archived content.
@@ -295,12 +284,6 @@ export const ShowBookmark = () => {
           </div>
         </div>
       )}
-
-      <EditBookmarkTags
-        bookmark={showEditTagsModal ? bookmark : null}
-        onSave={handleTagsSave}
-        onClose={handleTagsClose}
-      />
     </>
   );
 };

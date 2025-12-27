@@ -1,12 +1,12 @@
 import type { Bookmark } from '../../types';
-import { getImageUrl } from '../../utils/image';
+import { resolveContentUrl } from '../../utils/image';
 
 interface BookmarkImageProps {
   bookmark: Bookmark;
 }
 
 export const BookmarkImage = ({ bookmark }: BookmarkImageProps) => {
-  const imageUrl = getImageUrl(bookmark.mainImage?.contentUrl);
+  const imageUrl = resolveContentUrl(bookmark.mainImage?.contentUrl);
 
   if (!imageUrl) {
     return null;

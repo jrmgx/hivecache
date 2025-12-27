@@ -82,6 +82,15 @@ body {
   background: var(--sidebar-color) !important;
 }
 
+.offcanvas-header {
+  background: var(--bs-primary) !important;
+  border-bottom-color: var(--bs-border-color) !important;
+}
+
+.offcanvas-header .offcanvas-title {
+  color: #ffffff !important;
+}
+
 [data-bs-theme=dark] .sidebar .fw-bold {
   color: #ffffff !important;
 }

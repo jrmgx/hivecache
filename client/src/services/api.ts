@@ -59,6 +59,13 @@ export const getBookmark = async (id: string): Promise<Bookmark | null> => {
 };
 
 /**
+ * Get bookmark history for a specific bookmark
+ */
+export const getBookmarkHistory = async (id: string): Promise<BookmarksResponse> => {
+  return apiClient.getBookmarkHistory(id);
+};
+
+/**
  * Update bookmark tags
  */
 export const updateBookmarkTags = async (id: string, tagSlugs: string[]): Promise<Bookmark> => {

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { ErrorAlert } from '../ErrorAlert/ErrorAlert';
-import { updateTag, ApiError } from '../../services/api';
+import { updateTag, deleteTag, ApiError } from '../../services/api';
 import type { Tag as TagType } from '../../types';
 import { LAYOUT_DEFAULT, LAYOUT_EMBEDDED, LAYOUT_IMAGE } from '../../types';
 
@@ -21,6 +21,9 @@ export const EditTag = ({ tag, onSave, onClose }: EditTagProps) => {
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveErrorStatus, setSaveErrorStatus] = useState<number | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleteErrorStatus, setDeleteErrorStatus] = useState<number | null>(null);
 
   const showModal = useCallback(() => {
     if (modalRef.current && window.bootstrap) {
@@ -47,6 +50,8 @@ export const EditTag = ({ tag, onSave, onClose }: EditTagProps) => {
     });
     setSaveError(null);
     setSaveErrorStatus(null);
+    setDeleteError(null);
+    setDeleteErrorStatus(null);
     onClose();
   }, [onClose]);
 
@@ -111,6 +116,38 @@ export const EditTag = ({ tag, onSave, onClose }: EditTagProps) => {
     }
   };
 
+  const handleDelete = async () => {
+    if (!tag) return;
+
+    const confirmed = window.confirm(
+      `Are you sure you want to delete the tag "${tag.name}"? This action cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    setIsDeleting(true);
+    setDeleteError(null);
+    setDeleteErrorStatus(null);
+    setSaveError(null);
+    setSaveErrorStatus(null);
+
+    try {
+      await deleteTag(tag.slug);
+      // Dispatch custom event to notify other components (like Layout sidebar) to reload tags
+      window.dispatchEvent(new CustomEvent('tagsUpdated'));
+      window.dispatchEvent(new CustomEvent('bookmarksUpdated'));
+      onSave();
+      hideModal();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to delete tag';
+      const status = err instanceof ApiError ? err.status : null;
+      setDeleteError(message);
+      setDeleteErrorStatus(status);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div
       ref={modalRef}
@@ -135,7 +172,7 @@ export const EditTag = ({ tag, onSave, onClose }: EditTagProps) => {
           </div>
           <form onSubmit={handleFormSubmit}>
             <div className="modal-body">
-              <ErrorAlert error={saveError} statusCode={saveErrorStatus} />
+              <ErrorAlert error={saveError || deleteError} statusCode={saveErrorStatus || deleteErrorStatus} />
 
               <div className="mb-3">
                 <label htmlFor="tagName" className="form-label">
@@ -149,7 +186,7 @@ export const EditTag = ({ tag, onSave, onClose }: EditTagProps) => {
                     value={formData.icon}
                     onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
                     placeholder="icon"
-                    disabled={isSaving}
+                    disabled={isSaving || isDeleting}
                     style={{ width: '3.5rem', minWidth: '3.5rem', maxWidth: '3.5rem', flexShrink: 0 }}
                   />
                   <input
@@ -159,7 +196,7 @@ export const EditTag = ({ tag, onSave, onClose }: EditTagProps) => {
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
-                    disabled={isSaving}
+                    disabled={isSaving || isDeleting}
                   />
                 </div>
               </div>
@@ -172,7 +209,7 @@ export const EditTag = ({ tag, onSave, onClose }: EditTagProps) => {
                     id="tagPinned"
                     checked={formData.pinned}
                     onChange={(e) => setFormData({ ...formData, pinned: e.target.checked })}
-                    disabled={isSaving}
+                    disabled={isSaving || isDeleting}
                   />
                   <label className="form-check-label" htmlFor="tagPinned">
                     Favorite
@@ -189,7 +226,7 @@ export const EditTag = ({ tag, onSave, onClose }: EditTagProps) => {
                   id="tagLayout"
                   value={formData.layout}
                   onChange={(e) => setFormData({ ...formData, layout: e.target.value })}
-                  disabled={isSaving}
+                  disabled={isSaving || isDeleting}
                 >
                   <option value={LAYOUT_DEFAULT}>Default</option>
                   <option value={LAYOUT_EMBEDDED}>Embedded</option>
@@ -203,26 +240,43 @@ export const EditTag = ({ tag, onSave, onClose }: EditTagProps) => {
             <div className="modal-footer">
               <button
                 type="button"
-                className="btn btn-secondary"
-                onClick={hideModal}
-                disabled={isSaving}
+                className="btn btn-danger"
+                onClick={handleDelete}
+                disabled={isSaving || isDeleting}
               >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="btn btn-primary"
-                disabled={isSaving}
-              >
-                {isSaving ? (
+                {isDeleting ? (
                   <>
                     <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                    Saving...
+                    Deleting...
                   </>
                 ) : (
-                  'Save Changes'
+                  'Delete Tag'
                 )}
               </button>
+              <div className="ms-auto">
+                <button
+                  type="button"
+                  className="btn btn-secondary me-2"
+                  onClick={hideModal}
+                  disabled={isSaving || isDeleting}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={isSaving || isDeleting}
+                >
+                  {isSaving ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                      Saving...
+                    </>
+                  ) : (
+                    'Save Changes'
+                  )}
+                </button>
+              </div>
             </div>
           </form>
         </div>
