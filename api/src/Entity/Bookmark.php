@@ -79,11 +79,6 @@ class Bookmark
     #[ORM\JoinColumn(nullable: true)]
     public ?FileObject $archive = null;
 
-    #[Groups(['bookmark:owner', 'bookmark:profile'])]
-    #[ORM\ManyToOne(targetEntity: FileObject::class)]
-    #[ORM\JoinColumn(nullable: true)]
-    public ?FileObject $pdf = null;
-
     public function __construct()
     {
         $this->id = Uuid::v7()->toString();

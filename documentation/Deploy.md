@@ -8,8 +8,7 @@ This deploy method is docker based.
 
 First, in your infrastructure deploy:
 - postgres:16
-- gotenberg/gotenberg
-and make them accessible into the internal network
+and make it accessible into the internal network
 
 Second, build the api production image:
 - define all the needed environment variables (see .env to have a list)

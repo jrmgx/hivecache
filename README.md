@@ -19,7 +19,7 @@ all in a decentralized manner for greater resilience.
 ## Documentation
 
 - User documentation
-- API
+- [API](./documentation/API.md)
 - [Web Extension](./documentation/WebExtension.md)
 - [Client](./documentation/Client.md)
 - Limitations

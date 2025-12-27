@@ -6,7 +6,6 @@ use App\Config\RouteAction;
 use App\Config\RouteType;
 use App\Entity\Bookmark;
 use App\Entity\User;
-use App\Message\BookmarkArchiveToPdfMessage;
 use App\Security\Voter\BookmarkVoter;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\ORMInvalidArgumentException;
@@ -66,11 +65,6 @@ final class MeBookmarkController extends BookmarkController
             throw new UnprocessableEntityHttpException(previous: $e);
         }
 
-        if ($bookmark->archive) {
-            // Transform archive to pdf
-            $this->messageBus->dispatch(new BookmarkArchiveToPdfMessage($bookmark->id));
-        }
-
         return $this->jsonResponseBuilder->single($bookmark, ['bookmark:owner', 'tag:owner']);
     }
 
@@ -119,11 +113,6 @@ final class MeBookmarkController extends BookmarkController
             $this->entityManager->flush();
         } catch (ORMInvalidArgumentException|ORMException $e) {
             throw new UnprocessableEntityHttpException(previous: $e);
-        }
-
-        if ($bookmarkPayload->archive) {
-            // Transform archive to pdf
-            $this->messageBus->dispatch(new BookmarkArchiveToPdfMessage($bookmark->id));
         }
 
         return $this->jsonResponseBuilder->single($bookmark, ['bookmark:owner']);

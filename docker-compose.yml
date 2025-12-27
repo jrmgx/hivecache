@@ -18,12 +18,6 @@ services:
         profiles:
             - default
 
-    gotenberg:
-        image: gotenberg/gotenberg:8.12
-        restart: "no"
-        environment:
-            LOG_LEVEL: DEBUG
-
     postgres:
         image: postgres:16
         environment:
