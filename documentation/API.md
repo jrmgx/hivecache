@@ -7,4 +7,4 @@ At first, this project had PDF archiving, but it has been removed, this is why:
  - PDF is not an open format
  - The infrastructure to build PDF was too heavy related to the fact that this project should be as light as possible so it can run everywhere at no cost
 
-Still most of the code is available in git history around commit: 
+Still most of the code is available in git history around commit: df78fc3d0b327e76bc1058b5e7ec77c6020f0e44
