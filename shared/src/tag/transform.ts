@@ -40,15 +40,9 @@ export function transformTagFromApi(apiTag: ApiTag): Tag {
 export function transformTagToApi(tag: Tag): TagCreate | TagUpdate {
   const meta: ApiTagMeta = {};
 
-  if (tag.pinned) {
-    meta[`${META_PREFIX}pinned`] = tag.pinned;
-  }
-  if (tag.layout && tag.layout !== LAYOUT_DEFAULT) {
-    meta[`${META_PREFIX}layout`] = tag.layout;
-  }
-  if (tag.icon) {
-    meta[`${META_PREFIX}icon`] = tag.icon;
-  }
+  meta[`${META_PREFIX}pinned`] = tag.pinned;
+  meta[`${META_PREFIX}layout`] = tag.layout;
+  meta[`${META_PREFIX}icon`] = tag.icon;
 
   return {
     name: tag.name,

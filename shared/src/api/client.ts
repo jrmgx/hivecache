@@ -31,6 +31,7 @@ export interface ApiClient {
   // Bookmarks
   getBookmarks(tags?: string, after?: string): Promise<BookmarksResponse>;
   getBookmark(id: string): Promise<Bookmark | null>;
+  getBookmarkHistory(id: string): Promise<BookmarksResponse>;
   createBookmark(payload: BookmarkCreate): Promise<BookmarkOwner>;
   updateBookmarkTags(id: string, tagSlugs: string[]): Promise<Bookmark>;
 
@@ -213,6 +214,40 @@ export function createApiClient(config: ApiConfig): ApiClient {
       return {
         ...bookmark,
         tags: bookmark.tags ? bookmark.tags.map(transformTagFromApi) : [],
+      };
+    },
+
+    /**
+     * Gets bookmark history for a specific bookmark
+     */
+    async getBookmarkHistory(id: string): Promise<BookmarksResponse> {
+      const response = await fetch(`${baseUrl}/api/users/me/bookmarks/${id}/history`, {
+        method: 'GET',
+        headers: await getAuthHeaders(),
+      });
+
+      const data = await handleResponse<{
+        collection: BookmarkOwner[];
+        nextPage: string | null;
+        prevPage: string | null;
+        total: number | null;
+      }>(response);
+
+      if (!data.collection) {
+        throw new ApiError('Bookmarks collection not found.', 500);
+      }
+
+      // Transform tags within each bookmark
+      const bookmarks: Bookmark[] = data.collection.map((bookmark) => ({
+        ...bookmark,
+        tags: bookmark.tags ? bookmark.tags.map(transformTagFromApi) : [],
+      }));
+
+      return {
+        collection: bookmarks,
+        nextPage: data.nextPage,
+        prevPage: data.prevPage,
+        total: data.total,
       };
     },
 
