@@ -162,6 +162,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * Required until Symfony 8.0, where eraseCredentials() will be removed from the interface.
      * No-op since plainPassword is cleared manually in the password processor.
      */
+    #[\Deprecated]
     public function eraseCredentials(): void
     {
         // Intentionally left blank

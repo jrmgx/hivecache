@@ -1,19 +1,27 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{% block title %}BookmarkHive!{% endblock %}</title>
-        <link rel="icon" type="image/svg+xml" href="{{ asset('icon.svg') }}">
+        <title>{% block title %}BookmarkHive{% endblock %}</title>
+        <link rel="icon" type="image/svg+xml" href="/icon.svg">
         {% block stylesheets %}
-            {{ encore_entry_link_tags('app') }}
         {% endblock %}
-
         {% block javascripts %}
-            {{ encore_entry_script_tags('app') }}
         {% endblock %}
     </head>
     <body>
-        {% block body %}{% endblock %}
+        {% block body %}
+            <h1>Welcome to BookmarkHive!</h1>
+            <h2>A decentralized social bookmarking service based on the Activity Pub protocol.</h2>
+            <p>
+                Each bookmark is also a snapshot of the page at a specific point in time,
+                similar to how the Internet Archive works.
+            </p>
+            <p>
+                The goal is twofold: to save bookmarks and archive the given page,
+                all in a decentralized manner for greater resilience.
+            </p>
+        {% endblock %}
     </body>
 </html>

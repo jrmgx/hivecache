@@ -3,5 +3,7 @@ flysystem:
     storages:
         default.storage:
             adapter: 'local'
+            visibility: public
+            directory_visibility: public
             options:
                 directory: '%storage_default_directory%'

@@ -20,6 +20,7 @@ class FileObjectTest extends BaseApiTestCase
             ],
         ]);
 
+        $this->client->enableProfiler();
         $this->request('POST', '/api/users/me/files', [
             'headers' => ['Content-Type' => 'multipart/form-data'],
             'auth_bearer' => $token,
