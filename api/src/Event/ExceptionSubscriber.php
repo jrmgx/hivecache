@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\EventSubscriber;
+namespace App\Event;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;

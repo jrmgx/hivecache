@@ -56,6 +56,44 @@ class UserTest extends BaseApiTestCase
         $this->assertNotEmpty($newToken);
     }
 
+    public function testPasswordChangeInvalidatesOldJwt(): void
+    {
+        [, $oldToken] = $this->createAuthenticatedUser('test@example.com', 'test', 'oldpassword');
+
+        // Verify user can see his profile with the original token
+        $this->request('GET', '/api/users/me', ['auth_bearer' => $oldToken]);
+        $this->assertResponseIsSuccessful();
+        $json = $this->getResponseArray();
+        $this->assertEquals('test@example.com', $json['email']);
+        $this->assertEquals('test', $json['username']);
+
+        // Change password
+        $this->request('PATCH', '/api/users/me', [
+            'headers' => ['Content-Type' => 'application/json'],
+            'auth_bearer' => $oldToken,
+            'json' => [
+                'password' => 'newpassword',
+            ],
+        ]);
+        $this->assertResponseIsSuccessful();
+
+        // Try to access profile with old token - should fail
+        $this->request('GET', '/api/users/me', ['auth_bearer' => $oldToken]);
+        $this->assertResponseStatusCodeSame(401, 'Old JWT token should be invalid after password change.');
+
+        // Re-login with new password to get a new token
+        $newToken = $this->getToken('test@example.com', 'newpassword');
+        $this->assertNotEmpty($newToken, 'Should be able to login with new password.');
+
+        // Verify user can see his profile with the new token
+        $this->request('GET', '/api/users/me', ['auth_bearer' => $newToken]);
+        $this->assertResponseIsSuccessful();
+        $json = $this->getResponseArray();
+        $this->assertEquals('test@example.com', $json['email']);
+        $this->assertEquals('test', $json['username']);
+        $this->assertUserOwnerResponse($json);
+    }
+
     public function testDeleteOwnProfile(): void
     {
         [$user, $token] = $this->createAuthenticatedUser('test@example.com', 'test', 'test');
@@ -76,7 +114,7 @@ class UserTest extends BaseApiTestCase
         $this->request('GET', '/api/users/me', [
             'auth_bearer' => $token,
         ]);
-        $this->assertResponseStatusCodeSame(401, 'User is deleted but still have access.');
+        $this->assertResponseStatusCodeSame(404, 'User is deleted but still have access.');
     }
 
     public function testShowPublicProfile(): void

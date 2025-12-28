@@ -56,6 +56,7 @@ final class MeController extends AbstractController
                 $this->passwordHasher->hashPassword($user, $userPayload->getPlainPassword())
             );
             $userPayload->setPlainPassword(null);
+            $user->rotateSecurity();
         }
 
         $violations = $this->validator->validate($user, groups: ['user:update']);

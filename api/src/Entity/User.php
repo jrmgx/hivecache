@@ -16,32 +16,6 @@ use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
-// #[ApiResource(
-//    uriTemplate: '/users/me',
-//    operations: [
-//        new Delete(
-//            description: 'Delete own profile',
-//            processor: UserMeRemoveProcessor::class
-//        ),
-//    ],
-//    normalizationContext: ['groups' => ['user:owner']],
-//    collectDenormalizationErrors: true,
-// )]
-// #[ApiResource(
-//    uriTemplate: '/profile/{username}',
-//    uriVariables: [
-//        'username' => new Link(fromClass: User::class),
-//    ],
-//    operations: [
-//        new Get(
-//            description: 'Show public profile',
-//            provider: UserByUsernameProvider::class,
-//            security: 'object.isPublic',
-//            normalizationContext: ['groups' => ['user:profile']],
-//        ),
-//    ],
-//    collectDenormalizationErrors: true,
-// )]
 #[Context([DateTimeNormalizer::FORMAT_KEY => \DateTimeInterface::ATOM])]
 #[UniqueEntity('email', groups: ['user:create', 'user:update'])]
 #[UniqueEntity('username', groups: ['user:create', 'user:update'])]
@@ -73,6 +47,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['user:create', 'user:owner'])]
     #[ORM\Column(type: Types::JSON, options: ['default' => '{}'])]
     public array $meta = [];
+
+    /**
+     * This field is used to validate the JWT so changing it allows to invalidate the JWT.
+     * It is useful when the user changes its password or for other security means.
+     */
+    #[ORM\Column(options: ['default' => 'initial'])]
+    public private(set) string $securityInvalidation = 'initial';
 
     #[Ignore]
     #[ORM\Column]
@@ -154,6 +135,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return $this->email;
+    }
+
+    public function rotateSecurity(): self
+    {
+        $this->securityInvalidation = hash('sha256', uniqid(more_entropy: true));
+
+        return $this;
     }
 
     /**
