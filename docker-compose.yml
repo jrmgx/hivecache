@@ -52,10 +52,7 @@ services:
         labels:
             - "traefik.enable=true"
             - "project-name=${PROJECT_NAME}"
-            # Middleware to strip /api prefix
-            - "traefik.http.middlewares.${PROJECT_NAME}-strip-api-prefix.stripPrefix.prefixes=/api"
-            # Route /api and /storage to api app
-            - "traefik.http.routers.${PROJECT_NAME}-api.rule=Host(${PROJECT_DOMAINS}) && (PathPrefix(`/api`) || PathPrefix(`/storage`) || PathPrefix(`/_profiler`))"
+            - "traefik.http.routers.${PROJECT_NAME}-api.rule=Host(${PROJECT_DOMAINS})"
             - "traefik.http.routers.${PROJECT_NAME}-api.priority=10"
             - "traefik.http.routers.${PROJECT_NAME}-api.tls=true"
             - "traefik.http.routers.${PROJECT_NAME}-api.service=${PROJECT_NAME}-api"
