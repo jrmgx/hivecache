@@ -21,12 +21,6 @@ use function Castor\open;
 use function Castor\run;
 use function Castor\variable;
 
-#[AsTask(description: 'Opens the project in your browser', namespace: '', aliases: ['open'])]
-function open_project(): void
-{
-    open('https://' . variable('root_domain'));
-}
-
 #[AsTask(description: 'Builds the infrastructure', aliases: ['build'])]
 function build(
     #[AsOption(description: 'The service to build (default: all services)', autocomplete: 'docker\get_service_names')]
