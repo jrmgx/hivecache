@@ -26,18 +26,15 @@ function watch(): void
 }
 
 #[AsTask(description: 'Build the production artifact')]
-function build(#[AsArgument] $defaultInstance, #[AsArgument] $toDirectory): void
+function build(#[AsArgument] $toDirectory = '../client'): void
 {
     io()->title('Build the production artifact');
 
-    $envFile = './client/.env.production';
     $styleGuideFile = './client/src/pages/Styleguide.tsx';
 
     rename($styleGuideFile, $styleGuideFile.'_skip');
     file_put_contents($styleGuideFile, 'export const Styleguide = () => null;');
-    file_put_contents($envFile, "VITE_API_BASE_URL=$defaultInstance\n");
     run('yarn run tsc -b && yarn run vite build', context: context()->withWorkingDirectory('./client'));
-    unlink($envFile);
     rename($styleGuideFile.'_skip', $styleGuideFile);
 
     $toDirectory = rtrim($toDirectory, '/');
