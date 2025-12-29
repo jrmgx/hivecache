@@ -108,8 +108,9 @@ export function createApiClient(config: ApiConfig): ApiClient {
    * Helper to convert tag slug to IRI
    */
   function tagSlugToIri(slug: string): string {
-    return `/api/users/me/tags/${slug}`;
+    return `${baseUrl}/users/me/tags/${slug}`;
   }
+
 
   return {
     /**
@@ -119,7 +120,7 @@ export function createApiClient(config: ApiConfig): ApiClient {
     async login(email: string, password: string): Promise<string> {
       const authRequest: AuthRequest = { email, password };
 
-      const response = await fetch(`${baseUrl}/api/auth`, {
+      const response = await fetch(`${baseUrl}/auth`, {
         method: 'POST',
         headers: {
           'accept': 'application/json',
@@ -141,7 +142,7 @@ export function createApiClient(config: ApiConfig): ApiClient {
      * Registers a new user account
      */
     async register(userData: UserCreate): Promise<UserOwner> {
-      const response = await fetch(`${baseUrl}/api/account`, {
+      const response = await fetch(`${baseUrl}/account`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -156,7 +157,7 @@ export function createApiClient(config: ApiConfig): ApiClient {
      * Gets paginated bookmarks with optional tag filter
      */
     async getBookmarks(tags?: string, after?: string): Promise<BookmarksResponse> {
-      let url = `${baseUrl}/api/users/me/bookmarks`;
+      let url = `${baseUrl}/users/me/bookmarks`;
       const params = new URLSearchParams();
 
       if (tags && tags.length > 0) {
@@ -204,7 +205,7 @@ export function createApiClient(config: ApiConfig): ApiClient {
      * Gets a single bookmark by ID
      */
     async getBookmark(id: string): Promise<Bookmark | null> {
-      const response = await fetch(`${baseUrl}/api/users/me/bookmarks/${id}`, {
+      const response = await fetch(`${baseUrl}/users/me/bookmarks/${id}`, {
         method: 'GET',
         headers: await getAuthHeaders(),
       });
@@ -221,7 +222,7 @@ export function createApiClient(config: ApiConfig): ApiClient {
      * Gets bookmark history for a specific bookmark
      */
     async getBookmarkHistory(id: string): Promise<BookmarksResponse> {
-      const response = await fetch(`${baseUrl}/api/users/me/bookmarks/${id}/history`, {
+      const response = await fetch(`${baseUrl}/users/me/bookmarks/${id}/history`, {
         method: 'GET',
         headers: await getAuthHeaders(),
       });
@@ -255,7 +256,7 @@ export function createApiClient(config: ApiConfig): ApiClient {
      * Creates a new bookmark
      */
     async createBookmark(payload: BookmarkCreate): Promise<BookmarkOwner> {
-      const response = await fetch(`${baseUrl}/api/users/me/bookmarks`, {
+      const response = await fetch(`${baseUrl}/users/me/bookmarks`, {
         method: 'POST',
         headers: await getAuthHeaders(),
         body: JSON.stringify(payload),
@@ -269,7 +270,7 @@ export function createApiClient(config: ApiConfig): ApiClient {
      */
     async updateBookmarkTags(id: string, tagSlugs: string[]): Promise<Bookmark> {
       const tagIris = tagSlugs.map(tagSlugToIri);
-      const response = await fetch(`${baseUrl}/api/users/me/bookmarks/${id}`, {
+      const response = await fetch(`${baseUrl}/users/me/bookmarks/${id}`, {
         method: 'PATCH',
         headers: await getAuthHeaders(),
         body: JSON.stringify({ tags: tagIris }),
@@ -301,7 +302,7 @@ export function createApiClient(config: ApiConfig): ApiClient {
       // Make the API request
       const fetchTags = async (): Promise<Tag[]> => {
         try {
-          const response = await fetch(`${baseUrl}/api/users/me/tags`, {
+          const response = await fetch(`${baseUrl}/users/me/tags`, {
             method: 'GET',
             headers: await getAuthHeaders(),
           });
@@ -335,7 +336,7 @@ export function createApiClient(config: ApiConfig): ApiClient {
      * Gets a single tag by slug
      */
     async getTag(slug: string): Promise<Tag | null> {
-      const response = await fetch(`${baseUrl}/api/users/me/tags/${slug}`, {
+      const response = await fetch(`${baseUrl}/users/me/tags/${slug}`, {
         method: 'GET',
         headers: await getAuthHeaders(),
       });
@@ -348,7 +349,7 @@ export function createApiClient(config: ApiConfig): ApiClient {
      * Creates a new tag
      */
     async createTag(name: string): Promise<Tag> {
-      const response = await fetch(`${baseUrl}/api/users/me/tags`, {
+      const response = await fetch(`${baseUrl}/users/me/tags`, {
         method: 'POST',
         headers: await getAuthHeaders(),
         body: JSON.stringify({ name }),
@@ -366,7 +367,7 @@ export function createApiClient(config: ApiConfig): ApiClient {
      */
     async updateTag(slug: string, tag: Tag): Promise<Tag> {
       const apiTagData = transformTagToApi(tag);
-      const response = await fetch(`${baseUrl}/api/users/me/tags/${slug}`, {
+      const response = await fetch(`${baseUrl}/users/me/tags/${slug}`, {
         method: 'PATCH',
         headers: await getAuthHeaders(),
         body: JSON.stringify(apiTagData),
@@ -383,7 +384,7 @@ export function createApiClient(config: ApiConfig): ApiClient {
      * Deletes a tag
      */
     async deleteTag(slug: string): Promise<void> {
-      const response = await fetch(`${baseUrl}/api/users/me/tags/${slug}`, {
+      const response = await fetch(`${baseUrl}/users/me/tags/${slug}`, {
         method: 'DELETE',
         headers: await getAuthHeaders(),
       });
@@ -413,8 +414,8 @@ export function createApiClient(config: ApiConfig): ApiClient {
         const existingTag = existingTags.find((tag) => tag.name.toLowerCase() === tagName.toLowerCase());
 
         if (existingTag) {
-          // Use existing tag IRI from @iri property or construct it
-          const tagIRI = existingTag['@iri'] || `${baseUrl}/api/users/me/tags/${existingTag.slug}`;
+          // Use existing tag IRI from @iri property (API returns full URLs) or construct it
+          const tagIRI = existingTag['@iri'] || `${baseUrl}/users/me/tags/${existingTag.slug}`;
           tagIRIs.push(tagIRI);
         } else {
           // Create new tag
@@ -422,8 +423,8 @@ export function createApiClient(config: ApiConfig): ApiClient {
             const newTag = await this.createTag(tagName);
             // Add to existingTags for future reference
             existingTags.push(newTag);
-            // Use @iri property or construct it
-            const tagIRI = newTag['@iri'] || `${baseUrl}/api/users/me/tags/${newTag.slug}`;
+            // Use @iri property (API returns full URLs) or construct it
+            const tagIRI = newTag['@iri'] || `${baseUrl}/users/me/tags/${newTag.slug}`;
             tagIRIs.push(tagIRI);
             console.log(`Created new tag: ${tagName} (slug: ${newTag.slug})`);
           } catch (error) {
@@ -449,7 +450,7 @@ export function createApiClient(config: ApiConfig): ApiClient {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch(`${baseUrl}/api/users/me/files`, {
+      const response = await fetch(`${baseUrl}/users/me/files`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -468,4 +469,3 @@ export function createApiClient(config: ApiConfig): ApiClient {
     invalidateTagsCache,
   };
 }
-

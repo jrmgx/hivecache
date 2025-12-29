@@ -26,7 +26,7 @@ export function resolveURL(url: string, base: string): string {
 export function getCursorFromUrl(url: string | null): string | undefined {
   if (!url) return undefined;
   try {
-    // Handle relative URLs (e.g., /api/users/me/bookmarks?after=...)
+    // Handle relative URLs (e.g., /users/me/bookmarks?after=...)
     // Prefer environment variable, fallback to window.location.origin
     const envBaseUrl = (import.meta as any)?.env?.VITE_API_BASE_URL;
     const baseUrl = envBaseUrl || window.location.origin;
@@ -39,4 +39,3 @@ export function getCursorFromUrl(url: string | null): string | undefined {
     return undefined;
   }
 }
-
