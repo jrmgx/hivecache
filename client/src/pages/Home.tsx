@@ -124,7 +124,8 @@ export const Home = () => {
   };
 
   const handleShow = (id: string) => {
-    navigate(`/bookmarks/${id}`);
+    const params = updateTagParams(selectedTagSlugs, new URLSearchParams());
+    navigate(`/bookmarks/${id}${params.toString() ? `?${params.toString()}` : ''}`);
   };
 
   return (
@@ -171,7 +172,7 @@ export const Home = () => {
             <strong>No bookmark matching!</strong>
           </div>
           <div className="col-12 text-center">
-            <div className="d-flex my-2 flex-wrap justify-content-center" style={{ paddingLeft: '3rem' }}>
+            <div className="d-flex my-2 flex-wrap justify-content-center gap-2 mx-auto" style={{ maxWidth: 'fit-content' }}>
               {tags
                 .filter((tag) => selectedTagSlugs.includes(tag.slug))
                 .map((tag) => (
@@ -180,6 +181,7 @@ export const Home = () => {
                     tag={tag}
                     selectedTagSlugs={selectedTagSlugs}
                     onToggle={handleTagToggle}
+                    className="flex-grow-0"
                   />
                 ))}
             </div>

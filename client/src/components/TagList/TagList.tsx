@@ -26,12 +26,33 @@ export const TagList = ({
   const computedPinnedTags = pinnedTags ?? tags.filter((tag) => tag.pinned);
   const sortedPinnedTags = sortTags(computedPinnedTags);
 
+  // Get selected tags that are not in the favorites list
+  const pinnedTagSlugs = new Set(computedPinnedTags.map((tag) => tag.slug));
+  const selectedTagsNotInFavorites = tags.filter(
+    (tag) => selectedTagSlugs.includes(tag.slug) && !pinnedTagSlugs.has(tag.slug)
+  );
+  const sortedSelectedTags = sortTags(selectedTagsNotInFavorites);
+
   return (
     <>
       {sortedPinnedTags.length > 0 && (
         <div>
           <div className="mb-2 fw-bold">Favorite</div>
           {sortedPinnedTags.map((tag) => (
+            <Tag
+              key={tag.slug}
+              tag={tag}
+              selectedTagSlugs={selectedTagSlugs}
+              onToggle={onTagToggle}
+              className='mb-2'
+            />
+          ))}
+        </div>
+      )}
+      {sortedSelectedTags.length > 0 && (
+        <div>
+          <div className="mb-2 fw-bold">Selected</div>
+          {sortedSelectedTags.map((tag) => (
             <Tag
               key={tag.slug}
               tag={tag}

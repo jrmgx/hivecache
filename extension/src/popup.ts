@@ -59,9 +59,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Auto-fill the form
                     if (titleInput) titleInput.value = pageData.title || '';
                     if (urlInput) urlInput.value = pageData.url || '';
-                    // Prefill with og:image if present, otherwise use favicon
-                    const mainImage = pageData.image || pageData.favicon || '';
-                    if (imageUrlInput) imageUrlInput.value = mainImage;
+                    // Prefill with image (which may contain og:image or favicon as fallback)
+                    if (imageUrlInput) imageUrlInput.value = pageData.image || '';
                 } else {
                     console.error('Failed to extract page data:', response);
                 }

@@ -8,6 +8,9 @@
   "scripts": {
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "base-x": "^5.0.1"
+  },
   "devDependencies": {
     "typescript": "^5.3.0"
   }

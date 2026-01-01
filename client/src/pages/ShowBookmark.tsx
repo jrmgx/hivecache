@@ -1,16 +1,18 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Icon } from '../components/Icon/Icon';
 import { Bookmark } from '../components/Bookmark/Bookmark';
 import { ErrorAlert } from '../components/ErrorAlert/ErrorAlert';
 import { getBookmark, getBookmarkHistory, ApiError } from '../services/api';
 import { formatDate } from '../utils/date';
+import { toggleTag, updateTagParams } from '../utils/tags';
 import type { Bookmark as BookmarkType } from '../types';
 import { LAYOUT_DEFAULT } from '../types';
 
 export const ShowBookmark = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [bookmark, setBookmark] = useState<BookmarkType | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [errorStatus, setErrorStatus] = useState<number | null>(null);
@@ -20,6 +22,8 @@ export const ShowBookmark = () => {
   const [bookmarkHistory, setBookmarkHistory] = useState<BookmarkType[]>([]);
   const [selectedBookmarkId, setSelectedBookmarkId] = useState<string | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  const isEditMode = searchParams.get('edit') === 'true';
 
   useEffect(() => {
     const loadData = async () => {
@@ -157,11 +161,19 @@ export const ShowBookmark = () => {
   }
 
   if (error || !bookmark) {
+    const tagQueryString = searchParams.get('tags') || '';
+    const selectedTagSlugs = tagQueryString ? tagQueryString.split(',').filter(Boolean) : [];
+
+    const handleGoBack = () => {
+      const params = updateTagParams(selectedTagSlugs, new URLSearchParams());
+      navigate(`/?${params.toString()}`);
+    };
+
     return (
       <>
         <ErrorAlert error={error} statusCode={errorStatus} />
         <div className="text-center pt-5">
-          <button className="btn btn-outline-secondary" onClick={() => navigate(-1)}>
+          <button className="btn btn-outline-secondary" onClick={handleGoBack}>
             <Icon name="arrow-left" className="me-2" />
             Go back
           </button>
@@ -170,8 +182,13 @@ export const ShowBookmark = () => {
     );
   }
 
+  const tagQueryString = searchParams.get('tags') || '';
+  const selectedTagSlugs = tagQueryString ? tagQueryString.split(',').filter(Boolean) : [];
+
   const handleTagToggle = (slug: string) => {
-    navigate(`/?tags=${slug}`);
+    const newSelectedSlugs = toggleTag(slug, selectedTagSlugs);
+    const newParams = updateTagParams(newSelectedSlugs, new URLSearchParams());
+    navigate(`/?${newParams.toString()}`);
   };
 
   const handleTagsSave = () => {
@@ -200,12 +217,27 @@ export const ShowBookmark = () => {
         // Set the height of the iframe as the height of the iframe content
         const scrollHeight = frame.contentWindow.document.body.scrollHeight;
         if (scrollHeight > 0) {
-          frame.style.height = scrollHeight + 'px';
+          frame.style.height = (scrollHeight + 100) + 'px';
         }
       } catch (error) {
         console.warn('Could not access iframe content:', error);
       }
     }
+  };
+
+  const handleEditSave = (updatedBookmark: BookmarkType) => {
+    setBookmark(updatedBookmark);
+    // Remove edit query parameter
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('edit');
+    setSearchParams(newParams);
+  };
+
+  const handleEditClose = () => {
+    // Remove edit query parameter
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('edit');
+    setSearchParams(newParams);
   };
 
   return (
@@ -216,10 +248,14 @@ export const ShowBookmark = () => {
         <Bookmark
           bookmark={bookmark}
           layout={LAYOUT_DEFAULT}
-          selectedTagSlugs={[]}
+          selectedTagSlugs={selectedTagSlugs}
           onTagToggle={handleTagToggle}
           onShow={handleShow}
           onTagsSave={handleTagsSave}
+          showEditModal={isEditMode}
+          onEditSave={handleEditSave}
+          onEditClose={handleEditClose}
+          hideShowButton={true}
         />
       </div>
 

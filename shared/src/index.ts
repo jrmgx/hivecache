@@ -13,6 +13,7 @@ export * from './tag/transform';
 
 // Utilities
 export * from './utils/url';
+export * from './utils/embed';
 
 // Storage adapters
 export * from './storage/adapter';

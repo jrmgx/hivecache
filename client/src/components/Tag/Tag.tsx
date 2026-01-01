@@ -27,12 +27,15 @@ export const Tag = ({
     ? `${baseClasses} ${className}`.trim()
     : baseClasses;
 
+  const shouldGrow = !className || !className.includes('flex-grow-0');
+  const buttonClasses = `btn btn-outline-secondary border-0 text-start ${shouldGrow ? 'flex-grow-1' : ''} ${isSelected ? 'active' : ''}`;
+
   return (
     <>
       <div className={containerClasses}>
         <button
           type="button"
-          className={`btn btn-outline-secondary border-0 text-start flex-grow-1 ${isSelected ? 'active' : ''}`}
+          className={buttonClasses}
           onClick={handleClick}
         >
           {tag.icon && `${tag.icon} `}

@@ -250,7 +250,7 @@ export const EditTag = ({ tag, onSave, onClose }: EditTagProps) => {
                     Deleting...
                   </>
                 ) : (
-                  'Delete Tag'
+                  'Delete'
                 )}
               </button>
               <div className="ms-auto">
@@ -273,7 +273,7 @@ export const EditTag = ({ tag, onSave, onClose }: EditTagProps) => {
                       Saving...
                     </>
                   ) : (
-                    'Save Changes'
+                    'Save'
                   )}
                 </button>
               </div>

@@ -9,6 +9,7 @@ import type {
   UserCreate,
   UserOwner,
   BookmarkCreate,
+  BookmarkUpdate,
   BookmarkOwner,
   Bookmark,
   BookmarksResponse,
@@ -33,7 +34,9 @@ export interface ApiClient {
   getBookmark(id: string): Promise<Bookmark | null>;
   getBookmarkHistory(id: string): Promise<BookmarksResponse>;
   createBookmark(payload: BookmarkCreate): Promise<BookmarkOwner>;
+  updateBookmark(id: string, payload: BookmarkUpdate): Promise<Bookmark>;
   updateBookmarkTags(id: string, tagSlugs: string[]): Promise<Bookmark>;
+  deleteBookmark(id: string): Promise<void>;
 
   // Tags
   getTags(): Promise<Tag[]>;
@@ -220,6 +223,7 @@ export function createApiClient(config: ApiConfig): ApiClient {
 
     /**
      * Gets bookmark history for a specific bookmark
+     * Note: History endpoint does not return pagination fields
      */
     async getBookmarkHistory(id: string): Promise<BookmarksResponse> {
       const response = await fetch(`${baseUrl}/users/me/bookmarks/${id}/history`, {
@@ -229,9 +233,6 @@ export function createApiClient(config: ApiConfig): ApiClient {
 
       const data = await handleResponse<{
         collection: BookmarkOwner[];
-        nextPage: string | null;
-        prevPage: string | null;
-        total: number | null;
       }>(response);
 
       if (!data.collection) {
@@ -246,9 +247,9 @@ export function createApiClient(config: ApiConfig): ApiClient {
 
       return {
         collection: bookmarks,
-        nextPage: data.nextPage,
-        prevPage: data.prevPage,
-        total: data.total,
+        nextPage: null,
+        prevPage: null,
+        total: null,
       };
     },
 
@@ -266,14 +267,13 @@ export function createApiClient(config: ApiConfig): ApiClient {
     },
 
     /**
-     * Updates bookmark tags
+     * Updates a bookmark
      */
-    async updateBookmarkTags(id: string, tagSlugs: string[]): Promise<Bookmark> {
-      const tagIris = tagSlugs.map(tagSlugToIri);
+    async updateBookmark(id: string, payload: BookmarkUpdate): Promise<Bookmark> {
       const response = await fetch(`${baseUrl}/users/me/bookmarks/${id}`, {
         method: 'PATCH',
         headers: await getAuthHeaders(),
-        body: JSON.stringify({ tags: tagIris }),
+        body: JSON.stringify(payload),
       });
 
       const bookmark = await handleResponse<BookmarkOwner>(response);
@@ -282,6 +282,34 @@ export function createApiClient(config: ApiConfig): ApiClient {
         ...bookmark,
         tags: bookmark.tags ? bookmark.tags.map(transformTagFromApi) : [],
       };
+    },
+
+    /**
+     * Updates bookmark tags
+     */
+    async updateBookmarkTags(id: string, tagSlugs: string[]): Promise<Bookmark> {
+      const tagIris = tagSlugs.map(tagSlugToIri);
+      return this.updateBookmark(id, { tags: tagIris });
+    },
+
+    /**
+     * Deletes a bookmark
+     */
+    async deleteBookmark(id: string): Promise<void> {
+      const response = await fetch(`${baseUrl}/users/me/bookmarks/${id}`, {
+        method: 'DELETE',
+        headers: await getAuthHeaders(),
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          await storage.clearToken();
+          invalidateTagsCache();
+          throw new ApiError('Authentication failed. Please login again.', 401);
+        }
+        const errorText = await response.text();
+        throw new ApiError(errorText || `HTTP error! status: ${response.status}`, response.status);
+      }
     },
 
     /**
@@ -312,6 +340,14 @@ export function createApiClient(config: ApiConfig): ApiClient {
             throw new ApiError('Tags collection not found.', 500);
           }
           const tags = data.collection.map(transformTagFromApi);
+
+          // Sort tags in natural order (case-insensitive)
+          tags.sort((a, b) =>
+            a.name.localeCompare(b.name, undefined, {
+              numeric: true,
+              sensitivity: 'base'
+            })
+          );
 
           if (enableCache) {
             tagsCache = tags;

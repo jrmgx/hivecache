@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Icon } from '../Icon/Icon';
 import { PlaceholderImage } from '../PlaceholderImage/PlaceholderImage';
 import { EditBookmarkTags } from '../EditBookmarkTags/EditBookmarkTags';
+import { EditBookmark } from '../EditBookmark/EditBookmark';
 import type { Bookmark as BookmarkType } from '../../types';
 import { LAYOUT_EMBEDDED } from '../../types';
-import { findEmbed } from '../../utils/embed';
+import { findEmbed, findThumbnail } from '@shared';
 import { shareBookmark } from '../../utils/share';
 import { formatDate } from '../../utils/date';
 
@@ -15,6 +16,10 @@ interface BookmarkProps {
   onTagToggle?: (slug: string) => void;
   onShow?: (id: string) => void;
   onTagsSave?: () => void;
+  showEditModal?: boolean;
+  onEditSave?: (updatedBookmark: BookmarkType) => void;
+  onEditClose?: () => void;
+  hideShowButton?: boolean;
 }
 
 export const Bookmark = ({
@@ -23,7 +28,11 @@ export const Bookmark = ({
   selectedTagSlugs,
   onTagToggle,
   onShow,
-  onTagsSave
+  onTagsSave,
+  showEditModal,
+  onEditSave,
+  onEditClose,
+  hideShowButton
 }: BookmarkProps) => {
 
   const isEmbedded = layout === LAYOUT_EMBEDDED;
@@ -31,7 +40,8 @@ export const Bookmark = ({
   const [embedLoaded, setEmbedLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [showEditTagsModal, setShowEditTagsModal] = useState(false);
-  const imageUrl = bookmark.mainImage?.contentUrl;
+  const [isSmallImage, setIsSmallImage] = useState(false);
+  const imageUrl = bookmark.mainImage?.contentUrl || findThumbnail(bookmark.url);
 
   const handleTagClick = (slug: string) => {
     if (onTagToggle) {
@@ -59,6 +69,17 @@ export const Bookmark = ({
     setImageError(true);
   };
 
+  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    if (img.naturalWidth <= 64 || img.naturalHeight <= 64) {
+      setIsSmallImage(true);
+    }
+  };
+
+  useEffect(() => {
+    setIsSmallImage(false);
+  }, [imageUrl]);
+
   const handleEditTags = (e: React.MouseEvent) => {
     e.preventDefault();
     setShowEditTagsModal(true);
@@ -81,7 +102,10 @@ export const Bookmark = ({
 
   // Determine background image style for normal bookmarks
   const normalBookmarkStyle = !isEmbedded && imageUrl && !imageError
-    ? { backgroundImage: `url(${imageUrl})` }
+    ? {
+        backgroundImage: `url(${imageUrl})`,
+        backgroundSize: isSmallImage ? 'auto' : 'cover',
+      }
     : undefined;
 
   return (
@@ -138,6 +162,7 @@ export const Bookmark = ({
                 src={imageUrl}
                 alt=""
                 onError={handleImageError}
+                onLoad={handleImageLoad}
                 style={{ display: 'none' }}
                 aria-hidden="true"
               />
@@ -195,13 +220,15 @@ export const Bookmark = ({
         <div className="card-footer text-body-secondary d-flex align-items-center py-1 pe-0">
           <div className="fs-small flex-grow-1">{formatDate(bookmark.createdAt)}</div>
           <div>
-            <button
-              className="btn btn-outline-secondary border-0"
-              onClick={handleShow}
-              aria-label="Show bookmark"
-            >
-              <Icon name="eye" />
-            </button>
+            {!hideShowButton && (
+              <button
+                className="btn btn-outline-secondary border-0"
+                onClick={handleShow}
+                aria-label="Show bookmark"
+              >
+                <Icon name="eye" />
+              </button>
+            )}
             <button
               className="btn btn-outline-secondary border-0"
               onClick={handleShare}
@@ -217,6 +244,13 @@ export const Bookmark = ({
         onSave={handleTagsSave}
         onClose={handleTagsClose}
       />
+      {showEditModal && onEditSave && onEditClose && (
+        <EditBookmark
+          bookmark={bookmark}
+          onSave={onEditSave}
+          onClose={onEditClose}
+        />
+      )}
     </div>
   );
 };

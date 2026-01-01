@@ -95,11 +95,27 @@ export const getBookmarkHistory = async (id: string): Promise<BookmarksResponse>
 };
 
 /**
+ * Update a bookmark
+ */
+export const updateBookmark = async (id: string, payload: { title?: string; isPublic?: boolean; tags?: string[]; mainImage?: string | null; archive?: string | null }): Promise<Bookmark> => {
+  const client = await getOrCreateApiClient();
+  return client.updateBookmark(id, payload);
+};
+
+/**
  * Update bookmark tags
  */
 export const updateBookmarkTags = async (id: string, tagSlugs: string[]): Promise<Bookmark> => {
   const client = await getOrCreateApiClient();
   return client.updateBookmarkTags(id, tagSlugs);
+};
+
+/**
+ * Delete a bookmark
+ */
+export const deleteBookmark = async (id: string): Promise<void> => {
+  const client = await getOrCreateApiClient();
+  return client.deleteBookmark(id);
 };
 
 /**

@@ -79,11 +79,10 @@ export interface TagUpdate {
 
 /**
  * TagCollection - API response for tag collections
+ * Note: Tag collections do not include pagination fields
  */
 export interface TagCollection {
   collection: ApiTag[];
-  prevPage: boolean;
-  nextPage: boolean;
   total: number;
 }
 

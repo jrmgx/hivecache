@@ -9,7 +9,6 @@ export type {
   Tag,
   TagCollection,
   FileObject,
-  FileObjectResponse,
   BookmarkCreate as BookmarkPayload,
   AuthRequest,
   AuthResponse,
@@ -49,8 +48,7 @@ export interface PageData {
   title: string;
   url: string;
   description: string | null;
-  image: string | null;
-  favicon: string | null;
+  image: string | null; // Contains og:image if available, otherwise favicon as fallback, or null if neither exists
 }
 
 // Internal Processing Interfaces

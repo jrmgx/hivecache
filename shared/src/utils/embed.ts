@@ -71,6 +71,17 @@ function convertPeerTubeUrl(url: string): string | null {
   return null;
 }
 
+export function findThumbnail(url: string): string | null {
+  if (/youtube\./i.test(url) || /youtu\.be/i.test(url)) {
+    const videoId = extractYouTubeId(url);
+    if (videoId) {
+      return `https://i.ytimg.com/vi_webp/${videoId}/sddefault.webp`;
+    }
+  }
+
+  return null;
+}
+
 export function findEmbed(url: string): EmbedResult | null {
   if (!url) return null;
 
@@ -78,10 +89,11 @@ export function findEmbed(url: string): EmbedResult | null {
   if (/youtube\./i.test(url) || /youtu\.be/i.test(url)) {
     const videoId = extractYouTubeId(url);
     if (videoId) {
+      let thumbnailUrl = findThumbnail(url)!;
       return {
         type: 'youtube',
         embedUrl: `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1`,
-        thumbnailUrl: `https://i2.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+        thumbnailUrl,
       };
     }
   }

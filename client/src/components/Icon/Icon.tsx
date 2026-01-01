@@ -1,5 +1,5 @@
 interface IconProps {
-  name: 'pencil' | 'share-fat' | 'play' | 'eye' | 'arrow-left';
+  name: 'pencil' | 'share-fat' | 'play' | 'eye' | 'arrow-left' | 'trash';
   className?: string;
   width?: number | string;
   height?: number | string;
@@ -78,6 +78,26 @@ export const Icon = ({ name, className, width = 16, height = 16, style }: IconPr
         style={style}
       >
         <path d="M224 128a8 8 0 0 1-8 8H59.31l58.35 58.34a8 8 0 0 1-11.32 11.32l-72-72a8 8 0 0 1 0-11.32l72-72a8 8 0 0 1 11.32 11.32L59.31 120H216a8 8 0 0 1 8 8Z" />
+      </svg>
+    );
+  }
+
+  if (name === 'trash') {
+    return (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width={width}
+        height={height}
+        viewBox="0 0 24 24"
+        className={className}
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        style={style}
+      >
+        <path d="M4 7h16m-10 4v6m4-6v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3" />
       </svg>
     );
   }

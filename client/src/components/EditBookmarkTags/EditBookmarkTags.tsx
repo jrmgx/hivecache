@@ -18,9 +18,9 @@ export const EditBookmarkTags = ({ bookmark, onSave, onClose }: EditBookmarkTags
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveErrorStatus, setSaveErrorStatus] = useState<number | null>(null);
-  const [availableTags, setAvailableTags] = useState<TagType[]>([]);
   const [isLoadingTags, setIsLoadingTags] = useState(false);
   const availableTagsRef = useRef<TagType[]>([]);
+  const initializedBookmarkIdRef = useRef<string | null>(null);
 
   const showModal = useCallback(() => {
     if (modalRef.current && window.bootstrap) {
@@ -46,134 +46,137 @@ export const EditBookmarkTags = ({ bookmark, onSave, onClose }: EditBookmarkTags
       tomSelectInstanceRef.current.destroy();
       tomSelectInstanceRef.current = null;
     }
+    initializedBookmarkIdRef.current = null;
     onClose();
   }, [onClose]);
 
-  // Load available tags
+  // Load available tags and initialize tom-select
   useEffect(() => {
-    const loadTags = async () => {
+    if (!bookmark) {
+      return;
+    }
+
+    const loadTagsAndInit = async () => {
       setIsLoadingTags(true);
       try {
         const tags = await getTags();
-        setAvailableTags(tags);
         availableTagsRef.current = tags;
+
+        // Now initialize tom-select after tags are loaded
+        if (!selectRef.current) {
+          return;
+        }
+
+        // Only recreate if bookmark changed, not if tags were added
+        const bookmarkChanged = initializedBookmarkIdRef.current !== bookmark.id;
+        if (!bookmarkChanged && tomSelectInstanceRef.current) {
+          // Instance already exists for this bookmark, skip recreation
+          setIsLoadingTags(false);
+          return;
+        }
+
+        // Destroy existing instance if any
+        if (tomSelectInstanceRef.current) {
+          tomSelectInstanceRef.current.destroy();
+          tomSelectInstanceRef.current = null;
+        }
+
+        // Set initial selected values (tag slugs)
+        const selectedSlugs = bookmark.tags.map((tag: TagType) => tag.slug);
+        selectRef.current.innerHTML = '';
+        selectedSlugs.forEach((slug: string) => {
+          const option = document.createElement('option');
+          option.value = slug;
+          option.selected = true;
+          const tag = bookmark.tags.find((t: TagType) => t.slug === slug);
+          option.textContent = tag ? `${tag.icon ? `${tag.icon} ` : ''}${tag.name}` : slug;
+          selectRef.current?.appendChild(option);
+        });
+
+        // Initialize tom-select
+        const tomSelect = new TomSelect(selectRef.current, {
+          plugins: ['remove_button'],
+          onItemAdd: () => {
+            // Close dropdown after selecting an item (but keep multiple selection enabled)
+            setTimeout(() => {
+              tomSelect.blur();
+            }, 0);
+          },
+          create: (async (input: string, callback: (item?: { value: string; text: string }) => void) => {
+            const tagName = input.trim();
+            if (!tagName) {
+              callback(undefined);
+              return;
+            }
+
+            // Check if tag already exists (use ref to get current tags)
+            const normalizedInput = tagName.toLowerCase();
+            const existingTag = availableTagsRef.current.find(tag => tag.name.toLowerCase() === normalizedInput);
+            if (existingTag) {
+              callback({
+                value: existingTag.slug,
+                text: `${existingTag.icon ? `${existingTag.icon} ` : ''}${existingTag.name}`,
+              });
+              return;
+            }
+
+            try {
+              // Create the tag via API
+              const newTag = await createTag(tagName);
+              // Add to available tags ref
+              availableTagsRef.current = [...availableTagsRef.current, newTag];
+              // Create the option object
+              const newOption = {
+                value: newTag.slug,
+                text: `${newTag.icon ? `${newTag.icon} ` : ''}${newTag.name}`,
+              };
+              // Add option to tom-select first (use the tomSelect instance from closure)
+              tomSelect.addOption(newOption, true);
+              // Call callback with the option - tom-select will automatically add it to selected values
+              callback(newOption);
+            } catch (err: unknown) {
+              console.error('Failed to create tag:', err);
+              callback(undefined);
+            }
+          }) as any,
+          maxItems: null,
+          valueField: 'value',
+          labelField: 'text',
+          searchField: ['text'],
+          options: tags.map(tag => ({
+            value: tag.slug,
+            text: `${tag.icon ? `${tag.icon} ` : ''}${tag.name}`,
+          })),
+          render: {
+            option: (data: any, escape: (str: string) => string) => {
+              return `<div>${escape(data.text)}</div>`;
+            },
+            item: (data: any, escape: (str: string) => string) => {
+              return `<div>${escape(data.text)}</div>`;
+            },
+          },
+        });
+
+        tomSelectInstanceRef.current = tomSelect;
+        initializedBookmarkIdRef.current = bookmark.id;
       } catch (err: unknown) {
         console.error('Failed to load tags:', err);
-        setAvailableTags([]);
         availableTagsRef.current = [];
       } finally {
         setIsLoadingTags(false);
       }
     };
 
-    if (bookmark) {
-      loadTags();
-    }
-  }, [bookmark]);
-
-  // Initialize tom-select when bookmark and tags are available
-  useEffect(() => {
-    if (!bookmark || !selectRef.current || isLoadingTags) {
-      return;
-    }
-
-    // Destroy existing instance if any
-    if (tomSelectInstanceRef.current) {
-      tomSelectInstanceRef.current.destroy();
-      tomSelectInstanceRef.current = null;
-    }
-
-    // Set initial selected values (tag slugs)
-    const selectedSlugs = bookmark.tags.map((tag: TagType) => tag.slug);
-    selectRef.current.innerHTML = '';
-    selectedSlugs.forEach((slug: string) => {
-      const option = document.createElement('option');
-      option.value = slug;
-      option.selected = true;
-      const tag = bookmark.tags.find((t: TagType) => t.slug === slug);
-      option.textContent = tag ? `${tag.icon ? `${tag.icon} ` : ''}${tag.name}` : slug;
-      selectRef.current?.appendChild(option);
-    });
-
-    // Initialize tom-select
-    const tomSelect = new TomSelect(selectRef.current, {
-      plugins: ['remove_button'],
-      onItemAdd: () => {
-        // Close dropdown after selecting an item (but keep multiple selection enabled)
-        setTimeout(() => {
-          tomSelect.blur();
-        }, 0);
-      },
-      create: (async (input: string, callback: (item?: { value: string; text: string }) => void) => {
-        const tagName = input.trim();
-        if (!tagName) {
-          callback(undefined);
-          return;
-        }
-
-        // Check if tag already exists (use ref to get current tags)
-        const normalizedInput = tagName.toLowerCase();
-        const existingTag = availableTagsRef.current.find(tag => tag.name.toLowerCase() === normalizedInput);
-        if (existingTag) {
-          callback({
-            value: existingTag.slug,
-            text: `${existingTag.icon ? `${existingTag.icon} ` : ''}${existingTag.name}`,
-          });
-          return;
-        }
-
-        try {
-          // Create the tag via API
-          const newTag = await createTag(tagName);
-          // Add to available tags list and ref
-          setAvailableTags(prev => {
-            const updated = [...prev, newTag];
-            availableTagsRef.current = updated;
-            return updated;
-          });
-          // Create the option object
-          const newOption = {
-            value: newTag.slug,
-            text: `${newTag.icon ? `${newTag.icon} ` : ''}${newTag.name}`,
-          };
-          // Add option to tom-select
-          if (tomSelectInstanceRef.current) {
-            tomSelectInstanceRef.current.addOption(newOption);
-          }
-          // Return the new option
-          callback(newOption);
-        } catch (err: unknown) {
-          console.error('Failed to create tag:', err);
-          callback(undefined);
-        }
-      }) as any,
-      maxItems: null,
-      valueField: 'value',
-      labelField: 'text',
-      searchField: ['text'],
-      options: availableTags.map(tag => ({
-        value: tag.slug,
-        text: `${tag.icon ? `${tag.icon} ` : ''}${tag.name}`,
-      })),
-      render: {
-        option: (data: any, escape: (str: string) => string) => {
-          return `<div>${escape(data.text)}</div>`;
-        },
-        item: (data: any, escape: (str: string) => string) => {
-          return `<div>${escape(data.text)}</div>`;
-        },
-      },
-    });
-
-    tomSelectInstanceRef.current = tomSelect;
+    loadTagsAndInit();
 
     return () => {
       if (tomSelectInstanceRef.current) {
         tomSelectInstanceRef.current.destroy();
         tomSelectInstanceRef.current = null;
       }
+      initializedBookmarkIdRef.current = null;
     };
-  }, [bookmark, availableTags, isLoadingTags]);
+  }, [bookmark?.id]);
 
   // Show modal when bookmark changes
   useEffect(() => {
@@ -294,7 +297,7 @@ export const EditBookmarkTags = ({ bookmark, onSave, onClose }: EditBookmarkTags
                     Saving...
                   </>
                 ) : (
-                  'Save Changes'
+                  'Save'
                 )}
               </button>
             </div>

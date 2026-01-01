@@ -4,7 +4,6 @@
     "module": "ESNext",
     "lib": ["ES2017", "DOM"],
     "outDir": "./",
-    "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -20,6 +19,7 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
+      "@shared": ["../shared/src"],
       "@shared/*": ["../shared/src/*"]
     }
   },

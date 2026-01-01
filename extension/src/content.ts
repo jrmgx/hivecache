@@ -6,8 +6,6 @@ import { removeAllScripts, removeNoscriptAndIframes, disableAllLinks, cleanupHea
 import { extractPageMetadata } from './lib/metadata';
 import { getBrowserAPI, getBrowserRuntime } from './lib/browser';
 
-console.log('Content script injected!');
-
 const browserAPI = getBrowserAPI();
 const runtime = getBrowserRuntime();
 
@@ -89,9 +87,14 @@ if (runtime && typeof runtime.onMessage === 'object' && !messageListenerRegister
     messageListenerRegistered = true;
     runtime.onMessage.addListener((message: { action?: string }, _sender, sendResponse) => {
         if (message.action === 'executeCode') {
-            const pageData = extractPageMetadata();
-            console.log('Page metadata:', pageData);
-            sendResponse({ success: true, data: pageData });
+            extractPageMetadata().then((pageData) => {
+                console.log('Page metadata:', pageData);
+                sendResponse({ success: true, data: pageData });
+            }).catch((error) => {
+                console.error('Error extracting page metadata:', error);
+                sendResponse({ success: false, error: error.message });
+            });
+            return true; // Keep the message channel open for async response
         } else if (message.action === 'archivePage') {
             archivePage().then((fileObjectId) => {
                 sendResponse({ success: true, fileObjectId: fileObjectId || undefined });
