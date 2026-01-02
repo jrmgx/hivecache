@@ -17,7 +17,7 @@ use Symfony\Component\Routing\Attribute\Route;
         description: 'Decentralized social bookmarking service based on the Activity Pub protocol.'
     ),
     servers: [
-        new OA\Server(url: '/', description: 'API Server'),
+        new OA\Server(url: 'https://bookmarkhive.test', description: 'API Server'),
     ],
     x: [
         'tagGroups' => [
@@ -52,7 +52,16 @@ use Symfony\Component\Routing\Attribute\Route;
     type: 'object',
     required: ['error'],
     properties: [
-        new OA\Property(property: 'error', type: 'string', description: 'Error message'),
+        new OA\Property(
+            property: 'error',
+            type: 'object',
+            description: 'Error object',
+            properties: [
+                new OA\Property(property: 'code', type: 'integer', description: 'HTTP status code'),
+                new OA\Property(property: 'message', type: 'string', description: 'Error message'),
+            ],
+            required: ['code', 'message']
+        ),
     ]
 )]
 #[OA\Schema(

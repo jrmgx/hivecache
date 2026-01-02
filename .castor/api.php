@@ -119,11 +119,14 @@ function builder(#[AsRawTokens] array $params = ['bash']): void
         $params = ['bash'];
     }
 
-    $c = context()
-        // ->toInteractive()
-        ->withEnvironment($_ENV + $_SERVER);
+    $c = context();
+    if ($params[0] === '--no-it') {
+        array_shift($params);
+    } else {
+        $c = $c->toInteractive();
+    }
 
-    docker_compose_run(implode(' ', $params), c: $c);
+    docker_compose_run(implode(' ', $params), c: $c->withEnvironment($_ENV + $_SERVER));
 }
 
 /**

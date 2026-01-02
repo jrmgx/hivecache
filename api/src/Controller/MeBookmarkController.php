@@ -108,7 +108,7 @@ final class MeBookmarkController extends BookmarkController
             $tagQueryString,
             $searchQueryString,
             $afterQueryString,
-            ['bookmark:owner', 'tag:owner'],
+            ['bookmark:show:private', 'tag:show:private'],
             RouteType::MeBookmarks,
             onlyPublic: false
         );
@@ -181,12 +181,12 @@ final class MeBookmarkController extends BookmarkController
                     examples: [
                         new OA\Examples(
                             example: 'invalid_tag_iri',
-                            value: ['error' => 'Invalid tag IRI provided'],
+                            value: ['error' => ['code' => 422, 'message' => 'Invalid tag IRI provided']],
                             summary: 'Invalid tag reference'
                         ),
                         new OA\Examples(
                             example: 'tags_as_objects',
-                            value: ['error' => 'Tags must be IRIs, not objects'],
+                            value: ['error' => ['code' => 422, 'message' => 'Tags must be IRIs, not objects']],
                             summary: 'Tags provided as JSON objects instead of IRIs'
                         ),
                     ]
@@ -204,11 +204,15 @@ final class MeBookmarkController extends BookmarkController
         Bookmark $bookmark,
     ): JsonResponse {
         // Find previous version and outdate it
+        /** @var ?Bookmark $existingBookmark */
         $existingBookmark = $this->bookmarkRepository->findLastOneByOwnerAndUrl($user, $bookmark->url)
             ->getQuery()->getOneOrNullResult()
         ;
         if ($existingBookmark) {
             $existingBookmark->outdated = true;
+            if ($existingBookmark->isPublic) {
+                $bookmark->isPublic = true;
+            }
         }
 
         $bookmark->owner = $user;
@@ -220,7 +224,7 @@ final class MeBookmarkController extends BookmarkController
             throw new UnprocessableEntityHttpException(previous: $e);
         }
 
-        return $this->jsonResponseBuilder->single($bookmark, ['bookmark:owner', 'tag:owner']);
+        return $this->jsonResponseBuilder->single($bookmark, ['bookmark:show:private', 'tag:show:private']);
     }
 
     #[OA\Get(
@@ -260,7 +264,7 @@ final class MeBookmarkController extends BookmarkController
     public function get(
         Bookmark $bookmark,
     ): JsonResponse {
-        return $this->jsonResponseBuilder->single($bookmark, ['bookmark:owner', 'tag:owner']);
+        return $this->jsonResponseBuilder->single($bookmark, ['bookmark:show:private', 'tag:show:private']);
     }
 
     #[OA\Get(
@@ -313,7 +317,7 @@ final class MeBookmarkController extends BookmarkController
             ->getQuery()->getResult()
         ;
 
-        return $this->jsonResponseBuilder->collection($bookmarks, ['bookmark:owner', 'tag:owner']);
+        return $this->jsonResponseBuilder->collection($bookmarks, ['bookmark:show:private', 'tag:show:private']);
     }
 
     #[OA\Patch(
@@ -368,7 +372,17 @@ final class MeBookmarkController extends BookmarkController
             ),
             new OA\Response(
                 response: 422,
-                description: 'Validation error - invalid data'
+                description: 'Validation error - invalid data',
+                content: new OA\JsonContent(
+                    ref: '#/components/schemas/ErrorResponse',
+                    examples: [
+                        new OA\Examples(
+                            example: 'invalid_data',
+                            value: ['error' => ['code' => 422, 'message' => 'Unprocessable Content']],
+                            summary: 'Validation error'
+                        ),
+                    ]
+                )
             ),
         ]
     )]
@@ -377,7 +391,7 @@ final class MeBookmarkController extends BookmarkController
     public function patch(
         Bookmark $bookmark,
         #[MapRequestPayload(
-            serializationContext: ['groups' => ['bookmark:owner']],
+            serializationContext: ['groups' => ['bookmark:update']],
             validationGroups: ['Default'],
         )]
         Bookmark $bookmarkPayload,
@@ -392,13 +406,6 @@ final class MeBookmarkController extends BookmarkController
         if (isset($bookmarkPayload->tags)) {
             $bookmark->tags = $bookmarkPayload->tags;
         }
-        // TODO not sure we want to allow editing those, only at creation?
-        if (isset($bookmarkPayload->mainImage)) {
-            $bookmark->mainImage = $bookmarkPayload->mainImage;
-        }
-        if (isset($bookmarkPayload->archive)) {
-            $bookmark->archive = $bookmarkPayload->archive;
-        }
 
         try {
             $this->entityManager->flush();
@@ -406,7 +413,7 @@ final class MeBookmarkController extends BookmarkController
             throw new UnprocessableEntityHttpException(previous: $e);
         }
 
-        return $this->jsonResponseBuilder->single($bookmark, ['bookmark:owner', 'tag:owner']);
+        return $this->jsonResponseBuilder->single($bookmark, ['bookmark:show:private', 'tag:show:private']);
     }
 
     #[OA\Delete(
@@ -414,7 +421,7 @@ final class MeBookmarkController extends BookmarkController
         tags: ['Bookmarks'],
         operationId: 'deleteBookmark',
         summary: 'Delete a bookmark',
-        description: 'Permanently deletes a bookmark owned by the authenticated user.',
+        description: 'Permanently deletes a bookmark (and all its versions/history) owned by the authenticated user.',
         security: [['bearerAuth' => []]],
         parameters: [
             new OA\PathParameter(
@@ -441,10 +448,10 @@ final class MeBookmarkController extends BookmarkController
     #[Route(path: '/{id}', name: RouteAction::Delete->value, methods: ['DELETE'])]
     #[IsGranted(attribute: BookmarkVoter::OWNER, subject: 'bookmark', statusCode: Response::HTTP_NOT_FOUND)]
     public function delete(
+        #[CurrentUser] User $user,
         Bookmark $bookmark,
     ): JsonResponse {
-        $this->entityManager->remove($bookmark);
-        $this->entityManager->flush();
+        $this->bookmarkRepository->deleteByOwnerAndUrl($user, $bookmark->url);
 
         return new JsonResponse(status: Response::HTTP_NO_CONTENT);
     }

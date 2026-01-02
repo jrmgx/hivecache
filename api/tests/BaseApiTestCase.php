@@ -84,10 +84,10 @@ abstract class BaseApiTestCase extends WebTestCase
 
         if (isset($options['headers'])) {
             foreach ($options['headers'] as $key => $value) {
-                if ('content-type' === strtolower($key)) {
+                if ('content-type' === mb_strtolower($key)) {
                     $server['CONTENT_TYPE'] = $value;
                 } else {
-                    $server['HTTP_' . strtoupper(str_replace('-', '_', $key))] = $value;
+                    $server['HTTP_' . mb_strtoupper(str_replace('-', '_', $key))] = $value;
                 }
             }
         }

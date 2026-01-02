@@ -79,7 +79,7 @@ final class ProfileBookmarkController extends BookmarkController
             $tagQueryString,
             $searchQueryString,
             $afterQueryString,
-            ['bookmark:profile', 'tag:profile'],
+            ['bookmark:show:public', 'tag:show:public'],
             RouteType::ProfileBookmarks,
             ['username' => $user->username],
             onlyPublic: true
@@ -128,6 +128,6 @@ final class ProfileBookmarkController extends BookmarkController
             ?? throw new NotFoundHttpException()
         ;
 
-        return $this->jsonResponseBuilder->single($bookmark, ['bookmark:profile', 'tag:profile']);
+        return $this->jsonResponseBuilder->single($bookmark, ['bookmark:show:public', 'tag:show:public']);
     }
 }

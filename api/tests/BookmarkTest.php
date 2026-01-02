@@ -138,7 +138,7 @@ class BookmarkTest extends BaseApiTestCase
 
     public function testCreateBookmarkWithTagAsJsonObjectFails(): void
     {
-        [$user, $token] = $this->createAuthenticatedUser('testuser', 'test');
+        [, $token] = $this->createAuthenticatedUser('testuser', 'test');
 
         $this->request('POST', '/users/me/bookmarks', [
             'headers' => ['Content-Type' => 'application/json'],
@@ -420,6 +420,53 @@ class BookmarkTest extends BaseApiTestCase
         $this->assertResponseStatusCodeSame(404);
     }
 
+    public function testDeleteBookmarkDeletesAllVersions(): void
+    {
+        [, $token] = $this->createAuthenticatedUser('testuser', 'test');
+
+        $url = 'https://example.com/test-bookmark';
+        $this->request('POST', '/users/me/bookmarks', [
+            'headers' => ['Content-Type' => 'application/json'],
+            'auth_bearer' => $token,
+            'json' => [
+                'title' => 'Version 1',
+                'url' => $url,
+            ],
+        ]);
+        $this->assertResponseIsSuccessful();
+        $bookmark1 = $this->getResponseArray();
+        $bookmark1Id = $bookmark1['id'];
+
+        // Create second bookmark (Version 2) - this will mark Version 1 as outdated
+        $this->request('POST', '/users/me/bookmarks', [
+            'headers' => ['Content-Type' => 'application/json'],
+            'auth_bearer' => $token,
+            'json' => [
+                'title' => 'Version 2',
+                'url' => $url,
+            ],
+        ]);
+        $this->assertResponseIsSuccessful();
+        $bookmark2 = $this->getResponseArray();
+        $bookmark2Id = $bookmark2['id'];
+
+        // Verify both bookmarks exist
+        $this->request('GET', "/users/me/bookmarks/{$bookmark1Id}", ['auth_bearer' => $token]);
+        $this->assertResponseIsSuccessful();
+        $this->request('GET', "/users/me/bookmarks/{$bookmark2Id}", ['auth_bearer' => $token]);
+        $this->assertResponseIsSuccessful();
+
+        // Delete the later bookmark (Version 2)
+        $this->request('DELETE', "/users/me/bookmarks/{$bookmark2Id}", ['auth_bearer' => $token]);
+        $this->assertResponseStatusCodeSame(204);
+
+        // Verify both bookmarks are deleted
+        $this->request('GET', "/users/me/bookmarks/{$bookmark1Id}", ['auth_bearer' => $token]);
+        $this->assertResponseStatusCodeSame(404, 'First bookmark should be deleted');
+        $this->request('GET', "/users/me/bookmarks/{$bookmark2Id}", ['auth_bearer' => $token]);
+        $this->assertResponseStatusCodeSame(404, 'Second bookmark should be deleted');
+    }
+
     public function testListPublicBookmarksOfUser(): void
     {
         $user = UserFactory::createOne([
@@ -535,6 +582,64 @@ class BookmarkTest extends BaseApiTestCase
         $json = $this->dump($this->getResponseArray());
 
         $this->assertCount(0, $json['collection']);
+    }
+
+    public function testCreatePublicBookmarkThenPrivateWithSameUrlMakesBothPublic(): void
+    {
+        [, $token] = $this->createAuthenticatedUser('testuser', 'test');
+
+        $url = 'https://example.com/test-bookmark';
+
+        // Create bookmark0 with private visibility
+        $this->request('POST', '/users/me/bookmarks', [
+            'headers' => ['Content-Type' => 'application/json'],
+            'auth_bearer' => $token,
+            'json' => [
+                'title' => 'Private Bookmark 0',
+                'url' => $url,
+                'isPublic' => false,
+            ],
+        ]);
+        $this->assertResponseIsSuccessful();
+        $bookmark0 = $this->getResponseArray();
+        $bookmark0Id = $bookmark0['id'];
+        $this->assertFalse($bookmark0['isPublic'], 'Bookmark0 should be private');
+
+        // Create bookmark1 with public visibility
+        $this->request('POST', '/users/me/bookmarks', [
+            'headers' => ['Content-Type' => 'application/json'],
+            'auth_bearer' => $token,
+            'json' => [
+                'title' => 'Public Bookmark',
+                'url' => $url,
+                'isPublic' => true,
+            ],
+        ]);
+        $this->assertResponseIsSuccessful();
+        $bookmark1 = $this->getResponseArray();
+        $this->assertTrue($bookmark1['isPublic'], 'First bookmark should be public');
+
+        // Create bookmark2 with same URL but private visibility
+        $this->request('POST', '/users/me/bookmarks', [
+            'headers' => ['Content-Type' => 'application/json'],
+            'auth_bearer' => $token,
+            'json' => [
+                'title' => 'Private Bookmark',
+                'url' => $url,
+                'isPublic' => false,
+            ],
+        ]);
+        $this->assertResponseIsSuccessful();
+        $bookmark2 = $this->getResponseArray();
+
+        // Verify second bookmark is public (should be forced to public because second one was public)
+        $this->assertTrue($bookmark2['isPublic'], 'Second bookmark should be public even though private was requested');
+
+        // Verify bookmark0 stays private
+        $this->request('GET', "/users/me/bookmarks/{$bookmark0Id}", ['auth_bearer' => $token]);
+        $this->assertResponseIsSuccessful();
+        $retrievedBookmark0 = $this->getResponseArray();
+        $this->assertFalse($retrievedBookmark0['isPublic'], 'Bookmark0 should remain private');
     }
 
     public function testCursorBasedPagination(): void
@@ -801,7 +906,7 @@ class BookmarkTest extends BaseApiTestCase
     }
 
     /**
-     * Asserts that a bookmark response contains exactly the fields for bookmark:owner group.
+     * Asserts that a bookmark response contains exactly the fields for bookmark:show:private group.
      */
     private function assertBookmarkOwnerResponse(array $json): void
     {
@@ -845,7 +950,7 @@ class BookmarkTest extends BaseApiTestCase
     }
 
     /**
-     * Asserts that each bookmark in a collection contains exactly the fields for bookmark:owner group.
+     * Asserts that each bookmark in a collection contains exactly the fields for bookmark:show:private group.
      */
     private function assertBookmarkOwnerCollection(array $bookmarks): void
     {
@@ -890,7 +995,7 @@ class BookmarkTest extends BaseApiTestCase
     }
 
     /**
-     * Asserts that a bookmark response contains exactly the fields for bookmark:profile group.
+     * Asserts that a bookmark response contains exactly the fields for bookmark:show:public group.
      */
     private function assertBookmarkProfileResponse(array $json): void
     {
@@ -932,7 +1037,7 @@ class BookmarkTest extends BaseApiTestCase
     }
 
     /**
-     * Asserts that each bookmark in a collection contains exactly the fields for bookmark:profile group.
+     * Asserts that each bookmark in a collection contains exactly the fields for bookmark:show:public group.
      */
     private function assertBookmarkProfileCollection(array $bookmarks): void
     {

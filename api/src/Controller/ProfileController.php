@@ -65,6 +65,6 @@ final class ProfileController extends AbstractController
     public function get(
         #[MapEntity(mapping: ['username' => 'username'])] User $user,
     ): JsonResponse {
-        return $this->jsonResponseBuilder->single($user, ['user:profile']);
+        return $this->jsonResponseBuilder->single($user, ['user:show:public']);
     }
 }

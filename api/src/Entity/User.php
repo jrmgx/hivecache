@@ -26,18 +26,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id, ORM\Column(type: 'uuid')]
     public private(set) string $id;
 
-    #[Groups(['user:profile', 'user:create', 'user:owner', 'bookmark:profile', 'bookmark:owner'])]
-    #[Assert\NotBlank(groups: ['user:create'])]
+    #[Groups(['user:show:public', 'user:create', 'user:show:private', 'bookmark:show:public', 'bookmark:show:private', 'user:update'])]
+    #[Assert\NotBlank(groups: ['user:create', 'user:update'])]
     #[Assert\Length(min: 3, max: 32)]
     #[ORM\Column(length: 32, unique: true)]
-    public string $username;
+    public string $username {
+        set {
+            $this->username = mb_strtolower($value);
+        }
+    }
 
-    #[Groups(['user:create', 'user:owner'])]
+    #[Groups(['user:create', 'user:show:private', 'user:update'])]
     #[ORM\Column]
     public bool $isPublic = false;
 
     /** @var array<string, string> */
-    #[Groups(['user:create', 'user:owner'])]
+    #[Groups(['user:create', 'user:show:private', 'user:update'])]
     #[ORM\Column(type: Types::JSON, options: ['default' => '{}'])]
     public array $meta = [];
 
@@ -53,7 +57,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private string $password;
 
     #[SerializedName('password')]
-    #[Groups(['user:create', 'user:owner'])]
+    #[Groups(['user:create', 'user:show:private', 'user:update'])]
     #[Assert\NotBlank(groups: ['user:create'])]
     #[Assert\Length(min: 8)]
     private ?string $plainPassword = null;

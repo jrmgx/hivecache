@@ -38,7 +38,7 @@ class UrlHelper
             $normalizedUrl .= '?' . $newQuery;
         }
 
-        return trim($normalizedUrl, '/');
+        return mb_trim($normalizedUrl, '/');
     }
 
     /**

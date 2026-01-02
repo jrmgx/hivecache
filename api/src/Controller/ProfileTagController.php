@@ -53,7 +53,7 @@ final class ProfileTagController extends TagController
     public function collection(
         #[MapEntity(mapping: ['username' => 'username'])] User $user,
     ): JsonResponse {
-        return $this->collectionCommon($user, ['tag:profile'], onlyPublic: true);
+        return $this->collectionCommon($user, ['tag:show:public'], onlyPublic: true);
     }
 
     #[OA\Get(
@@ -98,6 +98,6 @@ final class ProfileTagController extends TagController
             ?? throw new NotFoundHttpException()
         ;
 
-        return $this->jsonResponseBuilder->single($tag, ['tag:profile']);
+        return $this->jsonResponseBuilder->single($tag, ['tag:show:public']);
     }
 }

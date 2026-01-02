@@ -20,14 +20,14 @@ class FileObject
         get => new UuidV7($this->id)->getDateTime();
     }
 
-    #[Groups(['file_object:read', 'bookmark:owner', 'bookmark:profile'])]
+    #[Groups(['file_object:read', 'bookmark:show:private', 'bookmark:show:public'])]
     public ?string $contentUrl = null;
 
-    #[Groups(['file_object:read', 'bookmark:owner', 'bookmark:profile'])]
+    #[Groups(['file_object:read', 'bookmark:show:private', 'bookmark:show:public'])]
     #[ORM\Column()]
     public int $size;
 
-    #[Groups(['file_object:read', 'bookmark:owner', 'bookmark:profile'])]
+    #[Groups(['file_object:read', 'bookmark:show:private', 'bookmark:show:public'])]
     #[ORM\Column()]
     public string $mime;
 

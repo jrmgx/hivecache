@@ -9,5 +9,7 @@ when@dev:
 when@test:
     framework:
         profiler:
-            collect: false
+            enabled: true
             collect_serializer_data: true
+            collect: false
+            dsn: 'file:%kernel.project_dir%/var/cache/dev/profiler'

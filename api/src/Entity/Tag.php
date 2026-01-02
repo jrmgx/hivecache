@@ -22,8 +22,8 @@ class Tag
     #[ORM\Id, ORM\Column(type: 'uuid')]
     public private(set) string $id;
 
-    #[Groups(['tag:profile', 'tag:create', 'tag:owner'])]
-    #[Assert\NotBlank(groups: ['tag:create'])]
+    #[Groups(['tag:show:public', 'tag:create', 'tag:show:private', 'tag:update'])]
+    #[Assert\NotBlank(groups: ['tag:create', 'tag:update'])]
     #[Assert\Length(max: 32)]
     #[ORM\Column(length: 32)]
     public string $name {
@@ -33,23 +33,23 @@ class Tag
         }
     }
 
-    #[Groups(['tag:profile', 'tag:owner'])]
-    #[Assert\NotBlank(groups: ['tag:create'])]
+    #[Groups(['tag:show:public', 'tag:show:private'])]
+    #[Assert\NotBlank(groups: ['tag:create', 'tag:update'])]
     #[Assert\Length(max: 32)]
     #[ORM\Column(length: 32)]
     public private(set) string $slug;
 
-    #[Groups(['tag:owner'])]
+    #[Groups(['tag:show:private'])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
     public User $owner;
 
     /** @var array<string, string> */
-    #[Groups(['tag:create', 'tag:owner'])]
+    #[Groups(['tag:create', 'tag:show:private', 'tag:update'])]
     #[ORM\Column(type: Types::JSON, options: ['default' => '{}'])]
     public array $meta = [];
 
-    #[Groups(['tag:create', 'tag:owner'])]
+    #[Groups(['tag:create', 'tag:show:private', 'tag:update'])]
     #[ORM\Column]
     public bool $isPublic = false;
 
@@ -62,6 +62,6 @@ class Tag
     {
         $slugger = new AsciiSlugger('en')->withEmoji();
 
-        return strtolower($slugger->slug($name));
+        return mb_strtolower($slugger->slug($name));
     }
 }

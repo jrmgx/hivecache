@@ -147,7 +147,7 @@ class UserTest extends BaseApiTestCase
 
     public function testRegisterNewAccount(): void
     {
-        $uniqUsername = uniqid('user_');
+        $uniqUsername = uniqid('UPPER_');
         $this->request('POST', '/account', [
             'headers' => ['Content-Type' => 'application/json'],
             'json' => [
@@ -159,10 +159,13 @@ class UserTest extends BaseApiTestCase
 
         $json = $this->getResponseArray();
 
-        $this->assertEquals($uniqUsername, $json['username']);
+        $this->assertEquals(mb_strtolower($uniqUsername), $json['username']);
         $this->assertUserCreateResponse($json);
 
         // Verify user can login with new credentials
+        $token = $this->getToken(mb_strtolower($uniqUsername), 'password');
+        $this->assertNotEmpty($token);
+
         $token = $this->getToken($uniqUsername, 'password');
         $this->assertNotEmpty($token);
 
@@ -358,7 +361,7 @@ class UserTest extends BaseApiTestCase
     }
 
     /**
-     * Asserts that a user response contains exactly the fields for user:owner group.
+     * Asserts that a user response contains exactly the fields for user:show:private group.
      */
     private function assertUserOwnerResponse(array $json): void
     {
@@ -379,7 +382,7 @@ class UserTest extends BaseApiTestCase
     }
 
     /**
-     * Asserts that a user response contains exactly the fields for user:profile group.
+     * Asserts that a user response contains exactly the fields for user:show:public group.
      */
     private function assertUserProfileResponse(array $json): void
     {

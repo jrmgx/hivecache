@@ -68,7 +68,7 @@ final class MeController extends AbstractController
     public function get(
         #[CurrentUser] User $user,
     ): JsonResponse {
-        return $this->jsonResponseBuilder->single($user, ['user:owner']);
+        return $this->jsonResponseBuilder->single($user, ['user:show:private']);
     }
 
     #[OA\Patch(
@@ -105,7 +105,17 @@ final class MeController extends AbstractController
             ),
             new OA\Response(
                 response: 422,
-                description: 'Validation error - invalid data'
+                description: 'Validation error - invalid data',
+                content: new OA\JsonContent(
+                    ref: '#/components/schemas/ErrorResponse',
+                    examples: [
+                        new OA\Examples(
+                            example: 'invalid_data',
+                            value: ['error' => ['code' => 422, 'message' => 'Unprocessable Content']],
+                            summary: 'Validation error'
+                        ),
+                    ]
+                )
             ),
         ]
     )]
@@ -113,7 +123,7 @@ final class MeController extends AbstractController
     public function patch(
         #[CurrentUser] User $user,
         #[MapRequestPayload(
-            serializationContext: ['groups' => ['user:owner']],
+            serializationContext: ['groups' => ['user:update']],
             validationGroups: ['Default'],
         )]
         User $userPayload,
@@ -149,7 +159,7 @@ final class MeController extends AbstractController
             throw new UnprocessableEntityHttpException(previous: $e);
         }
 
-        return $this->jsonResponseBuilder->single($user, ['user:owner']);
+        return $this->jsonResponseBuilder->single($user, ['user:show:private']);
     }
 
     #[OA\Delete(

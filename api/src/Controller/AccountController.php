@@ -5,12 +5,16 @@ namespace App\Controller;
 use App\Config\RouteAction;
 use App\Config\RouteType;
 use App\Entity\User;
+use App\Repository\UserRepository;
 use App\Response\JsonResponseBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -18,9 +22,12 @@ use Symfony\Component\Routing\Attribute\Route;
 final class AccountController extends AbstractController
 {
     public function __construct(
+        private readonly UserRepository $userRepository,
         private readonly EntityManagerInterface $entityManager,
         private readonly JsonResponseBuilder $jsonResponseBuilder,
         private readonly UserPasswordHasherInterface $passwordHasher,
+        #[Autowire('%env(ACCOUNT_LIMIT)%')]
+        private readonly int $accountLimit,
     ) {
     }
 
@@ -73,16 +80,24 @@ final class AccountController extends AbstractController
                     examples: [
                         new OA\Examples(
                             example: 'duplicate_username',
-                            value: ['error' => 'Username already exists'],
+                            value: ['error' => ['code' => 422, 'message' => 'Username already exists']],
                             summary: 'Username already taken'
                         ),
                         new OA\Examples(
                             example: 'invalid_data',
-                            value: ['error' => 'Username must be between 3 and 32 characters'],
+                            value: ['error' => ['code' => 422, 'message' => 'Username must be between 3 and 32 characters']],
                             summary: 'Validation error'
                         ),
                     ]
                 )
+            ),
+            new OA\Response(
+                response: 403,
+                description: 'Forbidden - instance does not allow new accounts'
+            ),
+            new OA\Response(
+                response: 409,
+                description: 'Conflict - username already exist with a different set of case',
             ),
         ]
     )]
@@ -94,6 +109,14 @@ final class AccountController extends AbstractController
         )]
         User $user,
     ): JsonResponse {
+        if ($this->userRepository->countAll() >= $this->accountLimit) {
+            throw new AccessDeniedHttpException('This instance does not allow new accounts.');
+        }
+
+        if ($this->userRepository->usernameExist(mb_strtolower($user->username))) {
+            throw new ConflictHttpException('Username already exists.');
+        }
+
         /** @var string $plainPassword asserted by validator */
         $plainPassword = $user->getPlainPassword();
         $user->setPassword(
@@ -103,6 +126,6 @@ final class AccountController extends AbstractController
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
-        return $this->jsonResponseBuilder->single($user, ['user:owner']);
+        return $this->jsonResponseBuilder->single($user, ['user:show:private']);
     }
 }

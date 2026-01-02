@@ -116,7 +116,17 @@ final class MeFileObjectController extends AbstractController
             ),
             new OA\Response(
                 response: 422,
-                description: 'Validation error - invalid file'
+                description: 'Validation error - invalid file',
+                content: new OA\JsonContent(
+                    ref: '#/components/schemas/ErrorResponse',
+                    examples: [
+                        new OA\Examples(
+                            example: 'invalid_file',
+                            value: ['error' => ['code' => 422, 'message' => 'Unprocessable Content']],
+                            summary: 'Invalid file validation error'
+                        ),
+                    ]
+                )
             ),
         ]
     )]

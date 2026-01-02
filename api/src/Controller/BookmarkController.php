@@ -41,7 +41,7 @@ abstract class BookmarkController extends AbstractController
         $tagSlugs = [];
         if ($tagQueryString) {
             $tagSlugs = explode(',', $tagQueryString);
-            $tagSlugs = array_map(fn (string $t) => trim($t), $tagSlugs);
+            $tagSlugs = array_map(fn (string $t) => mb_trim($t), $tagSlugs);
             $tagSlugs = array_filter($tagSlugs, fn (string $t) => '' !== $t);
         }
 
@@ -61,9 +61,6 @@ abstract class BookmarkController extends AbstractController
         /** @var array<Bookmark> $bookmarks */
         $bookmarks = $qb->getQuery()->getResult();
         $lastBookmark = end($bookmarks);
-
-        if ($onlyPublic) {
-        }
 
         $nextPage = false;
         if ($lastBookmark) {

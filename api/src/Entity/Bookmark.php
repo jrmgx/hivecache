@@ -20,21 +20,21 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Index(name: 'domain_idx', fields: ['domain'])]
 class Bookmark
 {
-    #[Groups(['bookmark:owner', 'bookmark:profile'])]
+    #[Groups(['bookmark:show:private', 'bookmark:show:public'])]
     #[ORM\Id, ORM\Column(type: 'uuid')]
     public string $id;
 
-    #[Groups(['bookmark:owner', 'bookmark:profile'])]
+    #[Groups(['bookmark:show:private', 'bookmark:show:public'])]
     public \DateTimeImmutable $createdAt {
         get => new UuidV7($this->id)->getDateTime();
     }
 
-    #[Groups(['bookmark:profile', 'bookmark:create', 'bookmark:owner'])]
-    #[Assert\NotBlank(groups: ['bookmark:create'])]
+    #[Groups(['bookmark:show:public', 'bookmark:create', 'bookmark:update', 'bookmark:show:private'])]
+    #[Assert\NotBlank(groups: ['bookmark:create', 'bookmark:update'])]
     #[ORM\Column(type: Types::TEXT)]
     public string $title;
 
-    #[Groups(['bookmark:profile', 'bookmark:create', 'bookmark:owner'])]
+    #[Groups(['bookmark:show:public', 'bookmark:create', 'bookmark:show:private'])]
     #[Assert\NotBlank(groups: ['bookmark:create'])]
     #[ORM\Column(type: Types::TEXT)]
     public string $url {
@@ -45,21 +45,21 @@ class Bookmark
         }
     }
 
-    #[Groups(['bookmark:profile', 'bookmark:create', 'bookmark:owner'])]
+    #[Groups(['bookmark:show:public', 'bookmark:create', 'bookmark:show:private'])]
     #[ORM\ManyToOne(targetEntity: FileObject::class)]
     #[ORM\JoinColumn(nullable: true)]
     public ?FileObject $mainImage = null;
 
-    #[Groups(['bookmark:profile', 'bookmark:owner'])]
+    #[Groups(['bookmark:show:public', 'bookmark:show:private'])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
     public User $owner;
 
-    #[Groups(['bookmark:create', 'bookmark:owner'])]
+    #[Groups(['bookmark:create', 'bookmark:show:private'])]
     #[ORM\Column]
     public bool $isPublic = false;
 
-    #[Groups(['bookmark:profile', 'bookmark:owner'])]
+    #[Groups(['bookmark:show:public', 'bookmark:show:private'])]
     #[ORM\Column]
     public string $domain;
 
@@ -67,14 +67,14 @@ class Bookmark
     public string $normalizedUrl;
 
     /** @var Collection<int, Tag>|array<int, Tag> */
-    #[Groups(['bookmark:owner', 'bookmark:profile', 'bookmark:create'])]
+    #[Groups(['bookmark:show:private', 'bookmark:show:public', 'bookmark:create', 'bookmark:update'])]
     #[ORM\ManyToMany(targetEntity: Tag::class, fetch: 'EAGER')]
     public Collection|array $tags;
 
     #[ORM\Column]
     public bool $outdated = false;
 
-    #[Groups(['bookmark:owner', 'bookmark:profile', 'bookmark:create'])]
+    #[Groups(['bookmark:show:private', 'bookmark:show:public', 'bookmark:create'])]
     #[ORM\ManyToOne(targetEntity: FileObject::class)]
     #[ORM\JoinColumn(nullable: true)]
     public ?FileObject $archive = null;

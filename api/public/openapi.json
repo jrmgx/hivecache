@@ -7,7 +7,7 @@
     },
     "servers": [
         {
-            "url": "/",
+            "url": "https://bookmarkhive.test",
             "description": "API Server"
         }
     ],
@@ -64,18 +64,30 @@
                                     "duplicate_username": {
                                         "summary": "Username already taken",
                                         "value": {
-                                            "error": "Username already exists"
+                                            "error": {
+                                                "code": 422,
+                                                "message": "Username already exists"
+                                            }
                                         }
                                     },
                                     "invalid_data": {
                                         "summary": "Validation error",
                                         "value": {
-                                            "error": "Username must be between 3 and 32 characters"
+                                            "error": {
+                                                "code": 422,
+                                                "message": "Username must be between 3 and 32 characters"
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
+                    },
+                    "403": {
+                        "description": "Forbidden - instance does not allow new accounts"
+                    },
+                    "409": {
+                        "description": "Conflict - username already exist with a different set of case"
                     }
                 }
             }
@@ -371,13 +383,19 @@
                                     "invalid_tag_iri": {
                                         "summary": "Invalid tag reference",
                                         "value": {
-                                            "error": "Invalid tag IRI provided"
+                                            "error": {
+                                                "code": 422,
+                                                "message": "Invalid tag IRI provided"
+                                            }
                                         }
                                     },
                                     "tags_as_objects": {
                                         "summary": "Tags provided as JSON objects instead of IRIs",
                                         "value": {
-                                            "error": "Tags must be IRIs, not objects"
+                                            "error": {
+                                                "code": 422,
+                                                "message": "Tags must be IRIs, not objects"
+                                            }
                                         }
                                     }
                                 }
@@ -441,7 +459,7 @@
                     "Bookmarks"
                 ],
                 "summary": "Delete a bookmark",
-                "description": "Permanently deletes a bookmark owned by the authenticated user.",
+                "description": "Permanently deletes a bookmark (and all its versions/history) owned by the authenticated user.",
                 "operationId": "deleteBookmark",
                 "parameters": [
                     {
@@ -556,7 +574,25 @@
                         "description": "Bookmark not found or not owned by user"
                     },
                     "422": {
-                        "description": "Validation error - invalid data"
+                        "description": "Validation error - invalid data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "invalid_data": {
+                                        "summary": "Validation error",
+                                        "value": {
+                                            "error": {
+                                                "code": 422,
+                                                "message": "Unprocessable Content"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -738,7 +774,25 @@
                         "description": "Unauthorized - authentication required"
                     },
                     "422": {
-                        "description": "Validation error - invalid data"
+                        "description": "Validation error - invalid data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "invalid_data": {
+                                        "summary": "Validation error",
+                                        "value": {
+                                            "error": {
+                                                "code": 422,
+                                                "message": "Unprocessable Content"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -837,7 +891,25 @@
                         "description": "Unauthorized - authentication required"
                     },
                     "422": {
-                        "description": "Validation error - invalid file"
+                        "description": "Validation error - invalid file",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "invalid_file": {
+                                        "summary": "Invalid file validation error",
+                                        "value": {
+                                            "error": {
+                                                "code": 422,
+                                                "message": "Unprocessable Content"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1010,7 +1082,10 @@
                                     "limit_reached": {
                                         "summary": "Tag limit reached",
                                         "value": {
-                                            "error": "You have reached the 1000 tags limit."
+                                            "error": {
+                                                "code": 422,
+                                                "message": "You have reached the 1000 tags limit."
+                                            }
                                         }
                                     }
                                 }
@@ -1169,7 +1244,25 @@
                         "description": "Conflict - tag with new name already exists"
                     },
                     "422": {
-                        "description": "Validation error - invalid data"
+                        "description": "Validation error - invalid data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "invalid_data": {
+                                        "summary": "Validation error",
+                                        "value": {
+                                            "error": {
+                                                "code": 422,
+                                                "message": "Unprocessable Content"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1480,8 +1573,22 @@
                 ],
                 "properties": {
                     "error": {
-                        "description": "Error message",
-                        "type": "string"
+                        "description": "Error object",
+                        "required": [
+                            "code",
+                            "message"
+                        ],
+                        "properties": {
+                            "code": {
+                                "description": "HTTP status code",
+                                "type": "integer"
+                            },
+                            "message": {
+                                "description": "Error message",
+                                "type": "string"
+                            }
+                        },
+                        "type": "object"
                     }
                 },
                 "type": "object"

@@ -12,10 +12,10 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
     event: 'lexik_jwt_authentication.on_jwt_decoded',
     method: 'onJWTDecoded'
 )]
-class JWTDecodedListener
+final readonly class JWTDecodedListener
 {
     public function __construct(
-        private readonly UserRepository $userRepository,
+        private UserRepository $userRepository,
     ) {
     }
 
@@ -24,7 +24,7 @@ class JWTDecodedListener
         $payload = $event->getPayload();
         $rotation = $payload['rotation'] ?? throw new BadRequestHttpException();
         $username = $payload['username'] ?? throw new BadRequestHttpException();
-        $user = $this->userRepository->findOneByUsername($username) ?? throw new NotFoundHttpException();
+        $user = $this->userRepository->loadUserByIdentifier($username) ?? throw new NotFoundHttpException();
 
         if ($rotation !== $user->securityInvalidation) {
             $event->markAsInvalid();

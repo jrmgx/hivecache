@@ -75,7 +75,7 @@ final class MeTagController extends TagController
     public function collection(
         #[CurrentUser] User $user,
     ): JsonResponse {
-        return $this->collectionCommon($user, ['tag:owner'], onlyPublic: false);
+        return $this->collectionCommon($user, ['tag:show:private'], onlyPublic: false);
     }
 
     #[OA\Get(
@@ -115,7 +115,7 @@ final class MeTagController extends TagController
     public function get(
         #[MapEntity(mapping: ['slug' => 'slug'])] Tag $tag,
     ): JsonResponse {
-        return $this->jsonResponseBuilder->single($tag, ['tag:owner']);
+        return $this->jsonResponseBuilder->single($tag, ['tag:show:private']);
     }
 
     #[OA\Post(
@@ -185,7 +185,7 @@ final class MeTagController extends TagController
                     examples: [
                         new OA\Examples(
                             example: 'limit_reached',
-                            value: ['error' => 'You have reached the 1000 tags limit.'],
+                            value: ['error' => ['code' => 422, 'message' => 'You have reached the 1000 tags limit.']],
                             summary: 'Tag limit reached'
                         ),
                     ]
@@ -222,7 +222,7 @@ final class MeTagController extends TagController
             }
         }
 
-        return $this->jsonResponseBuilder->single($existing, ['tag:owner']);
+        return $this->jsonResponseBuilder->single($existing, ['tag:show:private']);
     }
 
     #[OA\Patch(
@@ -273,7 +273,17 @@ final class MeTagController extends TagController
             ),
             new OA\Response(
                 response: 422,
-                description: 'Validation error - invalid data'
+                description: 'Validation error - invalid data',
+                content: new OA\JsonContent(
+                    ref: '#/components/schemas/ErrorResponse',
+                    examples: [
+                        new OA\Examples(
+                            example: 'invalid_data',
+                            value: ['error' => ['code' => 422, 'message' => 'Unprocessable Content']],
+                            summary: 'Validation error'
+                        ),
+                    ]
+                )
             ),
         ]
     )]
@@ -283,7 +293,7 @@ final class MeTagController extends TagController
         #[CurrentUser] User $user,
         #[MapEntity(mapping: ['slug' => 'slug'])] Tag $tag,
         #[MapRequestPayload(
-            serializationContext: ['groups' => ['tag:owner']],
+            serializationContext: ['groups' => ['tag:update']],
             validationGroups: ['Default'],
         )]
         Tag $tagPayload,
@@ -297,6 +307,10 @@ final class MeTagController extends TagController
                 throw new ConflictHttpException();
             }
         }
+        // Update isPublic if provided
+        if (isset($tagPayload->isPublic)) {
+            $tag->isPublic = $tagPayload->isPublic;
+        }
         // Meta is merge only
         $tag->meta = array_merge($tag->meta, $tagPayload->meta);
 
@@ -306,7 +320,7 @@ final class MeTagController extends TagController
             throw new UnprocessableEntityHttpException(previous: $e);
         }
 
-        return $this->jsonResponseBuilder->single($tag, ['tag:owner']);
+        return $this->jsonResponseBuilder->single($tag, ['tag:show:private']);
     }
 
     #[OA\Delete(

@@ -58,6 +58,28 @@ services:
             - "traefik.http.routers.${PROJECT_NAME}-api.service=${PROJECT_NAME}-api"
             - "traefik.http.services.${PROJECT_NAME}-api.loadbalancer.server.port=80"
 
+    swagger:
+        image: swaggerapi/swagger-ui:latest
+        environment:
+            - URL=https://bookmarkhive.test/openapi.json
+        profiles:
+            - default
+        labels:
+            - "traefik.enable=true"
+            - "project-name=${PROJECT_NAME}"
+            - "traefik.http.routers.${PROJECT_NAME}-swagger.rule=Host(${PROJECT_DOMAINS}) && PathPrefix(`/swagger`)"
+            - "traefik.http.routers.${PROJECT_NAME}-swagger.priority=20"
+            - "traefik.http.routers.${PROJECT_NAME}-swagger.tls=true"
+            - "traefik.http.routers.${PROJECT_NAME}-swagger.service=${PROJECT_NAME}-swagger"
+            - "traefik.http.services.${PROJECT_NAME}-swagger.loadbalancer.server.port=8080"
+            - "traefik.http.middlewares.${PROJECT_NAME}-swagger-replacepath.replacepathregex.regex=^/swagger(.*)"
+            - "traefik.http.middlewares.${PROJECT_NAME}-swagger-replacepath.replacepathregex.replacement=$$1"
+            - "traefik.http.routers.${PROJECT_NAME}-swagger.middlewares=${PROJECT_NAME}-swagger-replacepath"
+            - "traefik.http.routers.${PROJECT_NAME}-swagger-assets.rule=Host(${PROJECT_DOMAINS}) && (Path(`/swagger-ui-bundle.js`) || Path(`/swagger-ui-standalone-preset.js`) || Path(`/swagger-initializer.js`) || Path(`/swagger-ui.css`))"
+            - "traefik.http.routers.${PROJECT_NAME}-swagger-assets.priority=25"
+            - "traefik.http.routers.${PROJECT_NAME}-swagger-assets.tls=true"
+            - "traefik.http.routers.${PROJECT_NAME}-swagger-assets.service=${PROJECT_NAME}-swagger"
+
     builder:
         build:
             dockerfile: infrastructure/docker/services/php/Dockerfile

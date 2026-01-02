@@ -447,7 +447,7 @@ class TagTest extends BaseApiTestCase
     }
 
     /**
-     * Asserts that a tag response contains exactly the fields for tag:owner group.
+     * Asserts that a tag response contains exactly the fields for tag:show:private group.
      */
     private function assertTagOwnerResponse(array $json): void
     {
@@ -472,7 +472,7 @@ class TagTest extends BaseApiTestCase
     }
 
     /**
-     * Asserts that each tag in a collection contains exactly the fields for tag:owner group.
+     * Asserts that each tag in a collection contains exactly the fields for tag:show:private group.
      */
     private function assertTagOwnerCollection(array $tags): void
     {
@@ -497,7 +497,7 @@ class TagTest extends BaseApiTestCase
     }
 
     /**
-     * Asserts that a tag response contains exactly the fields for tag:profile group.
+     * Asserts that a tag response contains exactly the fields for tag:show:public group.
      */
     private function assertTagProfileResponse(array $json): void
     {
@@ -518,7 +518,7 @@ class TagTest extends BaseApiTestCase
     }
 
     /**
-     * Asserts that each tag in a collection contains exactly the fields for tag:profile group.
+     * Asserts that each tag in a collection contains exactly the fields for tag:show:public group.
      */
     private function assertTagProfileCollection(array $tags): void
     {

@@ -87,6 +87,24 @@ class BookmarkRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param string $url The url will be normalized
+     */
+    public function deleteByOwnerAndUrl(User $owner, string $url): void
+    {
+        $normalizedUrl = UrlHelper::normalize($url);
+
+        $this->createQueryBuilder('o')
+            ->andWhere('o.owner = :owner')
+            ->setParameter('owner', $owner)
+            ->andWhere('o.normalizedUrl = :normalizedUrl')
+            ->setParameter('normalizedUrl', $normalizedUrl)
+            ->delete()
+            ->getQuery()
+            ->execute()
+        ;
+    }
+
+    /**
      * Apply filters:
      * - tags: all given tags must be present and extra tags can be present
      * - search: fulltext search in title, url and description TODO
