@@ -17,6 +17,7 @@ export const EditTag = ({ tag, onSave, onClose }: EditTagProps) => {
     icon: '',
     layout: LAYOUT_DEFAULT,
     pinned: false,
+    isPublic: false,
   });
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -47,6 +48,7 @@ export const EditTag = ({ tag, onSave, onClose }: EditTagProps) => {
       icon: '',
       layout: LAYOUT_DEFAULT,
       pinned: false,
+      isPublic: false,
     });
     setSaveError(null);
     setSaveErrorStatus(null);
@@ -63,6 +65,7 @@ export const EditTag = ({ tag, onSave, onClose }: EditTagProps) => {
         icon: tag.icon || '',
         layout: tag.layout || LAYOUT_DEFAULT,
         pinned: tag.pinned || false,
+        isPublic: tag.isPublic || false,
       });
       setSaveError(null);
       showModal();
@@ -99,6 +102,7 @@ export const EditTag = ({ tag, onSave, onClose }: EditTagProps) => {
         icon: formData.icon.trim() || null,
         layout: formData.layout,
         pinned: formData.pinned,
+        isPublic: formData.isPublic,
       };
 
       await updateTag(tag.slug, updatedTag);
@@ -213,6 +217,22 @@ export const EditTag = ({ tag, onSave, onClose }: EditTagProps) => {
                   />
                   <label className="form-check-label" htmlFor="tagPinned">
                     Favorite
+                  </label>
+                </div>
+              </div>
+
+              <div className="mb-3">
+                <div className="form-check">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    id="tagIsPublic"
+                    checked={formData.isPublic}
+                    onChange={(e) => setFormData({ ...formData, isPublic: e.target.checked })}
+                    disabled={isSaving || isDeleting}
+                  />
+                  <label className="form-check-label" htmlFor="tagIsPublic">
+                    Public
                   </label>
                 </div>
               </div>

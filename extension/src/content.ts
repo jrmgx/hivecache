@@ -60,6 +60,10 @@ async function archivePage(): Promise<string | null> {
     const fileObjectId = await compressHTML();
 
     console.log("Archive: Page archive complete!");
+
+    // Refresh the page after capture is complete
+    window.location.reload();
+
     return fileObjectId;
 }
 

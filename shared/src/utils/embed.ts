@@ -92,7 +92,7 @@ export function findEmbed(url: string): EmbedResult | null {
       let thumbnailUrl = findThumbnail(url)!;
       return {
         type: 'youtube',
-        embedUrl: `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1`,
+        embedUrl: `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&color=white&rel=0`,
         thumbnailUrl,
       };
     }
@@ -103,7 +103,7 @@ export function findEmbed(url: string): EmbedResult | null {
     const embedUrl = url.replace(
       /https?:\/\/(www\.)?ted\.com\/talks\//i,
       'https://embed.ted.com/talks/'
-    );
+    ) + '?autoplay=1';
     return {
       type: 'ted',
       embedUrl,
@@ -116,7 +116,7 @@ export function findEmbed(url: string): EmbedResult | null {
     if (videoId) {
       return {
         type: 'vimeo',
-        embedUrl: `https://player.vimeo.com/video/${videoId}`,
+        embedUrl: `https://player.vimeo.com/video/${videoId}?autoplay=1`,
       };
     }
   }

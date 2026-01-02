@@ -7,19 +7,72 @@ import { getAPIHost, getJWTToken, uploadFileObject, createBookmark, fetchUserTag
 import { showStatus as showStatusLib, showApiHostRequiredError as showApiHostRequiredErrorLib, showLoginRequiredError as showLoginRequiredErrorLib, startClockAnimation } from './lib/ui';
 import { PageData, BookmarkPayload, Tag, ArchivePageResponse } from './types';
 import { getBrowserRuntime, getBrowserTabs } from './lib/browser';
+import { formatTagName } from '@shared';
 
 document.addEventListener('DOMContentLoaded', () => {
     // Store user tags for tag input completion
     let userTags: Tag[] = [];
     let tagsSelect: any = null; // TomSelect instance
+    let currentUrl: string = ''; // Store the current page URL
     const bookmarkForm = document.getElementById('bookmarkForm') as HTMLFormElement | null;
     const optionsLink = document.getElementById('optionsLink');
     const titleInput = document.getElementById('title') as HTMLInputElement | null;
-    const urlInput = document.getElementById('url') as HTMLInputElement | null;
     const tagsSelectElement = document.getElementById('tags') as HTMLSelectElement | null;
     const imageUrlInput = document.getElementById('imageUrl') as HTMLInputElement | null;
+    const isPublicCheckbox = document.getElementById('isPublic') as HTMLInputElement | null;
+    const imageUrlLabel = document.getElementById('imageUrlLabel') as HTMLLabelElement | null;
+    const imagePreviewContainer = document.getElementById('imagePreviewContainer') as HTMLElement | null;
+    const imagePreview = document.getElementById('imagePreview') as HTMLImageElement | null;
+    const manualImageButton = document.getElementById('manualImageButton') as HTMLButtonElement | null;
     const submitButton = document.getElementById('submitButton') as HTMLButtonElement | null;
     const statusMessage = document.getElementById('statusMessage') as HTMLElement | null;
+
+    // Helper function to convert relative URL to absolute URL
+    function makeAbsoluteUrl(url: string, baseUrl: string): string {
+        if (!url) return url;
+
+        // If URL is already absolute (starts with http:// or https://), return as is
+        if (/^https?:\/\//i.test(url)) {
+            return url;
+        }
+
+        try {
+            // Use URL constructor to resolve relative URLs
+            const base = new URL(baseUrl);
+            const resolved = new URL(url, base);
+            return resolved.href;
+        } catch (error) {
+            // If URL parsing fails, return original URL
+            console.error('Error resolving URL:', error);
+            return url;
+        }
+    }
+
+    // Helper function to update image preview
+    function updateImagePreview(imageUrl: string, currentPageUrl: string): void {
+        if (!imagePreviewContainer || !imagePreview || !imageUrlInput || !imageUrlLabel) return;
+
+        const absoluteImageUrl = makeAbsoluteUrl(imageUrl, currentPageUrl);
+
+        if (absoluteImageUrl) {
+            // Show preview, hide input and label
+            imagePreview.src = absoluteImageUrl;
+            imagePreviewContainer.style.display = 'block';
+            imageUrlInput.style.display = 'none';
+            imageUrlInput.value = absoluteImageUrl;
+            imageUrlLabel.style.display = 'none';
+        } else {
+            // Hide preview, keep input hidden (only shown via manual button)
+            imagePreviewContainer.style.display = 'none';
+            imageUrlInput.style.display = 'none';
+            imageUrlLabel.style.display = 'none';
+        }
+    }
+
+    // Helper function to store URL
+    function updateUrlDisplay(url: string): void {
+        currentUrl = url;
+    }
 
     // Helper function to show API host required error
     function showApiHostRequiredError(): void {
@@ -58,9 +111,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     const pageData: PageData = response.data;
                     // Auto-fill the form
                     if (titleInput) titleInput.value = pageData.title || '';
-                    if (urlInput) urlInput.value = pageData.url || '';
+                    // Update URL display and store URL
+                    updateUrlDisplay(pageData.url || '');
                     // Prefill with image (which may contain og:image or favicon as fallback)
-                    if (imageUrlInput) imageUrlInput.value = pageData.image || '';
+                    if (pageData.image) {
+                        updateImagePreview(pageData.image, pageData.url || '');
+                    } else {
+                        // Hide preview, input, and label if no image
+                        if (imagePreviewContainer) imagePreviewContainer.style.display = 'none';
+                        if (imageUrlInput) imageUrlInput.style.display = 'none';
+                        if (imageUrlLabel) imageUrlLabel.style.display = 'none';
+                    }
                 } else {
                     console.error('Failed to extract page data:', response);
                 }
@@ -146,10 +207,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateTomSelectOptions(): void {
         if (!tagsSelect) return;
 
-        // Prepare options from userTags (using name property and icon)
+        // Prepare options from userTags (using formatted name with icon and public indicator)
         const options = userTags.map(tag => ({
             value: tag.name,
-            text: tag.name,
+            text: formatTagName(tag),
             icon: tag.icon
         }));
 
@@ -179,10 +240,10 @@ document.addEventListener('DOMContentLoaded', () => {
             tagsSelect = null;
         }
 
-        // Prepare options from userTags (using name property and icon)
+        // Prepare options from userTags (using formatted name with icon and public indicator)
         const options = userTags.map(tag => ({
             value: tag.name,
-            text: tag.name,
+            text: formatTagName(tag),
             icon: tag.icon
         }));
 
@@ -200,16 +261,12 @@ document.addEventListener('DOMContentLoaded', () => {
             closeAfterSelect: true, // Close dropdown after selecting a tag
             render: {
                 option: function(data: any, escape: (str: string) => string) {
-                    const iconHtml = data.icon
-                        ? `<span class="ts-tag-icon">${data.icon}</span>`
-                        : '';
-                    return `<div class="ts-option-with-icon">${iconHtml}<span class="ts-option-text">${escape(data.text)}</span></div>`;
+                    // Text already includes icon and public indicator from formatTagName
+                    return `<div class="ts-option-text">${escape(data.text)}</div>`;
                 },
                 item: function(data: any, escape: (str: string) => string) {
-                    const iconHtml = data.icon
-                        ? `<span class="ts-tag-icon">${data.icon}</span>`
-                        : '';
-                    return `<div class="ts-item-with-icon">${iconHtml}<span class="ts-item-text">${escape(data.text)}</span></div>`;
+                    // Text already includes icon and public indicator from formatTagName
+                    return `<div class="ts-item-text">${escape(data.text)}</div>`;
                 }
             },
             onItemAdd: function() {
@@ -245,6 +302,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Handle close image button click
+    if (manualImageButton) {
+        manualImageButton.addEventListener('click', () => {
+            if (imagePreviewContainer && imageUrlInput && imageUrlLabel) {
+                // Hide preview, show input and label, keep current URL value
+                imagePreviewContainer.style.display = 'none';
+                imageUrlInput.style.display = 'block';
+                imageUrlInput.type = 'text';
+                imageUrlLabel.style.display = 'block';
+                // Keep the current URL value (don't clear it)
+                // The value is already set from updateImagePreview
+            }
+        });
+    }
+
     autoFillForm();
     waitForTomSelectAndInitialize();
 
@@ -253,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
         bookmarkForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            if (!titleInput || !urlInput || !imageUrlInput || !submitButton) {
+            if (!titleInput || !imageUrlInput || !submitButton) {
                 const errorMsg = 'Form fields not found';
                 console.error(errorMsg);
                 showStatus(errorMsg, 'error');
@@ -261,8 +333,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const title = titleInput.value.trim();
-            const url = urlInput.value.trim();
-            const imageUrl = imageUrlInput.value.trim();
+            const url = currentUrl.trim();
+            let imageUrl = imageUrlInput.value.trim();
+            const isPublic = isPublicCheckbox ? isPublicCheckbox.checked : false;
+
+            // Ensure image URL is absolute
+            if (imageUrl) {
+                imageUrl = makeAbsoluteUrl(imageUrl, url);
+            }
 
             if (!title || !url) {
                 const errorMsg = 'Please fill in title and URL';
@@ -377,8 +455,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const payload: BookmarkPayload = {
                     title: title,
                     url: url,
-                    mainImage: mainImageId,
-                    isPublic: false,
+                    ...(mainImageId && { mainImage: mainImageId }),
+                    isPublic: isPublic,
                     tags: tagIRIs,
                     archive: archiveId || undefined
                 };

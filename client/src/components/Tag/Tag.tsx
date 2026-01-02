@@ -1,4 +1,5 @@
 import type { Tag as TagType } from '../../types';
+import { TagName } from '../TagName/TagName';
 
 interface TagProps {
   tag: TagType;
@@ -38,8 +39,7 @@ export const Tag = ({
           className={buttonClasses}
           onClick={handleClick}
         >
-          {tag.icon && `${tag.icon} `}
-          {tag.name}
+          <TagName tag={tag} />
         </button>
       </div>
     </>

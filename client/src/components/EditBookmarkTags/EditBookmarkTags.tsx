@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import TomSelect from 'tom-select';
 import 'tom-select/dist/css/tom-select.bootstrap5.css';
 import { ErrorAlert } from '../ErrorAlert/ErrorAlert';
+import { formatTagName } from '../TagName/TagName';
 import { updateBookmarkTags, getTags, createTag, ApiError } from '../../services/api';
 import type { Bookmark as BookmarkType, Tag as TagType } from '../../types';
 
@@ -89,7 +90,7 @@ export const EditBookmarkTags = ({ bookmark, onSave, onClose }: EditBookmarkTags
           option.value = slug;
           option.selected = true;
           const tag = bookmark.tags.find((t: TagType) => t.slug === slug);
-          option.textContent = tag ? `${tag.icon ? `${tag.icon} ` : ''}${tag.name}` : slug;
+          option.textContent = tag ? formatTagName(tag) : slug;
           selectRef.current?.appendChild(option);
         });
 
@@ -115,7 +116,7 @@ export const EditBookmarkTags = ({ bookmark, onSave, onClose }: EditBookmarkTags
             if (existingTag) {
               callback({
                 value: existingTag.slug,
-                text: `${existingTag.icon ? `${existingTag.icon} ` : ''}${existingTag.name}`,
+                text: formatTagName(existingTag),
               });
               return;
             }
@@ -128,7 +129,7 @@ export const EditBookmarkTags = ({ bookmark, onSave, onClose }: EditBookmarkTags
               // Create the option object
               const newOption = {
                 value: newTag.slug,
-                text: `${newTag.icon ? `${newTag.icon} ` : ''}${newTag.name}`,
+                text: formatTagName(newTag),
               };
               // Add option to tom-select first (use the tomSelect instance from closure)
               tomSelect.addOption(newOption, true);
@@ -145,7 +146,7 @@ export const EditBookmarkTags = ({ bookmark, onSave, onClose }: EditBookmarkTags
           searchField: ['text'],
           options: tags.map(tag => ({
             value: tag.slug,
-            text: `${tag.icon ? `${tag.icon} ` : ''}${tag.name}`,
+            text: formatTagName(tag),
           })),
           render: {
             option: (data: any, escape: (str: string) => string) => {

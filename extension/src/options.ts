@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginButton = document.getElementById('loginButton') as HTMLButtonElement | null;
     const logoutButton = document.getElementById('logoutButton') as HTMLButtonElement | null;
     const statusMessage = document.getElementById('statusMessage') as HTMLElement | null;
+    const loggedInMessage = document.getElementById('loggedInMessage') as HTMLElement | null;
 
     const storageAdapter = createBrowserStorageAdapter();
 
@@ -41,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (token) {
                 // User is logged in - show logged in state
-                showLoggedInState();
+                showLoggedInState(instanceUrl || undefined);
             } else {
                 // User is not logged in - show login form
                 showLoginForm();
@@ -57,12 +58,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Show logged in state
-    function showLoggedInState(): void {
+    function showLoggedInState(instanceUrl?: string): void {
         if (loggedInState) {
             loggedInState.classList.add('show');
         }
         if (loginForm) {
             loginForm.classList.add('hide');
+        }
+        // Update message with instance URL if available
+        if (loggedInMessage) {
+            if (instanceUrl) {
+                loggedInMessage.textContent = `You are currently logged in to your BookmarkHive instance: ${instanceUrl}`;
+            } else {
+                loggedInMessage.textContent = 'You are currently logged in to your BookmarkHive instance.';
+            }
         }
     }
 
@@ -128,17 +137,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 enableCache: true,
             });
 
-            // Authenticate and get token
-            const token = await client.login(username, password);
-
-            // Token is automatically saved by the storage adapter via the API client
+            // Authenticate and get token (automatically saved by the storage adapter via the API client)
+            await client.login(username, password);
             showStatus('Authentication successful! Token saved securely.', 'success');
 
             // Clear password field for security
             passwordInput.value = '';
 
             // Switch to logged in state
-            showLoggedInState();
+            showLoggedInState(normalizedUrl);
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
             showStatus(`Authentication failed: ${errorMessage}`, 'error');

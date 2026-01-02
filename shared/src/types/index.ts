@@ -74,6 +74,7 @@ export interface TagCreate {
  */
 export interface TagUpdate {
   name?: string;
+  isPublic?: boolean;
   meta?: ApiTagMeta;
 }
 

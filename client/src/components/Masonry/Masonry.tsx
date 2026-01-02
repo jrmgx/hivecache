@@ -90,7 +90,11 @@ export const Masonry = ({ bookmarks }: MasonryProps) => {
                   target="_blank"
                   href={bookmark.url}
                   rel="noopener noreferrer"
+                  style={{ position: 'relative', display: 'block' }}
                 >
+                  {bookmark.isPublic && (
+                    <span className="bookmark-public-indicator">✦</span>
+                  )}
                   <img
                     ref={(el) => {
                       if (el) {

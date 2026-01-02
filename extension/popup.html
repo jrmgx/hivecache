@@ -20,22 +20,6 @@
             background: #ffffff;
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .header h1 {
-            font-size: 18px;
-            color: #333;
-            margin-bottom: 8px;
-        }
-
-        .header p {
-            font-size: 12px;
-            color: #666;
-        }
-
         .content {
             padding: 15px;
             background: #f5f5f5;
@@ -99,7 +83,8 @@
         }
 
         .form-group input[type="text"],
-        .form-group input[type="url"] {
+        .form-group input[type="url"],
+        .form-group input#imageUrl {
             width: 100%;
             padding: 8px;
             border: 1px solid #ddd;
@@ -109,9 +94,22 @@
         }
 
         .form-group input[type="text"]:focus,
-        .form-group input[type="url"]:focus {
+        .form-group input[type="url"]:focus,
+        .form-group input#imageUrl:focus {
             outline: none;
             border-color: #007bff;
+        }
+
+        .form-group input[type="checkbox"] {
+            margin-right: 8px;
+            cursor: pointer;
+        }
+
+        .form-group label.checkbox-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-weight: normal;
         }
 
         .form-group select {
@@ -143,6 +141,12 @@
 
         .ts-dropdown {
             font-size: 13px !important;
+            top: auto !important;
+            bottom: 100% !important;
+            margin-bottom: 0px !important;
+            border: 1px solid #ddd !important;
+            border-bottom: none !important;
+            border-radius: 4px 4px 0 0 !important;
         }
 
         .ts-dropdown-content {
@@ -167,7 +171,7 @@
 
         .ts-option-text,
         .ts-item-text {
-            flex: 1;
+            flex: 0 1 auto;
         }
 
         .ts-item-with-icon {
@@ -185,6 +189,49 @@
 
         .button-secondary:hover {
             background: #5a6268;
+        }
+
+        #imagePreviewContainer {
+            margin-bottom: 8px;
+            position: relative;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            _overflow: hidden;
+        }
+
+        #imagePreview {
+            display: block;
+            width: 100%;
+        }
+
+        .image-close-button {
+            position: absolute;
+            top: -12px;
+            right: -12px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: none;
+            font-size: 20px;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            transition: background 0.2s;
+        }
+
+        .image-close-button::before {
+            content: '×';
+            display: block;
+            transform: translateY(-2px);
+        }
+
+        .image-close-button:hover {
+            background: rgba(0, 0, 0, 0.8);
         }
 
         .status-message {
@@ -213,20 +260,19 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>BookmarkHive</h1>
-        <p>Save your bookmark</p>
-    </div>
-
     <form id="bookmarkForm" class="form" autocomplete="off">
         <div class="form-group">
-            <label for="title">Title</label>
-            <input type="text" id="title" name="title" autocomplete="off" required>
+            <label for="imageUrl" id="imageUrlLabel">Image</label>
+            <div id="imagePreviewContainer" style="display: none;">
+                <img id="imagePreview" src="" alt="Preview">
+                <button type="button" id="manualImageButton" class="image-close-button" aria-label="Remove image"></button>
+            </div>
+            <input type="text" id="imageUrl" name="imageUrl" autocomplete="off" style="display: none;">
         </div>
 
         <div class="form-group">
-            <label for="url">URL</label>
-            <input type="url" id="url" name="url" autocomplete="off" required>
+            <label for="title">Title</label>
+            <input type="text" id="title" name="title" autocomplete="off" required>
         </div>
 
         <div class="form-group">
@@ -235,8 +281,10 @@
         </div>
 
         <div class="form-group">
-            <label for="imageUrl">Image URL</label>
-            <input type="url" id="imageUrl" name="imageUrl" autocomplete="off">
+            <label for="isPublic" class="checkbox-label">
+                <input type="checkbox" id="isPublic" name="isPublic">
+                <span>Make bookmark public</span>
+            </label>
         </div>
 
         <button type="submit" class="button" id="submitButton">Save Bookmark</button>

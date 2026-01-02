@@ -51,3 +51,16 @@ export function transformTagToApi(tag: Tag): TagCreate | TagUpdate {
   };
 }
 
+/**
+ * Formats tag name as a string (for use in text-only contexts like select options)
+ * Includes icon and public indicator (green ✦)
+ *
+ * @param tag The tag to format
+ * @returns Formatted tag name string
+ */
+export function formatTagName(tag: Tag): string {
+  const icon = tag.icon ? `${tag.icon} ` : '';
+  const publicIndicator = tag.isPublic ? ' ✦' : '';
+  return `${icon}${tag.name}${publicIndicator}`;
+}
+

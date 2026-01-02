@@ -3,6 +3,7 @@ import { Icon } from '../Icon/Icon';
 import { PlaceholderImage } from '../PlaceholderImage/PlaceholderImage';
 import { EditBookmarkTags } from '../EditBookmarkTags/EditBookmarkTags';
 import { EditBookmark } from '../EditBookmark/EditBookmark';
+import { TagName } from '../TagName/TagName';
 import type { Bookmark as BookmarkType } from '../../types';
 import { LAYOUT_EMBEDDED } from '../../types';
 import { findEmbed, findThumbnail } from '@shared';
@@ -113,6 +114,9 @@ export const Bookmark = ({
       <div id={`bookmark-${bookmark.id}`} className="card h-100">
         {isEmbedded && embedResult ? (
           <div className="card-img-top bookmark-img embed-img">
+            {bookmark.isPublic && (
+              <span className="bookmark-public-indicator">✦</span>
+            )}
             {!embedLoaded ? (
               <div
                 className={`${embedResult.type}-player embed-preview`}
@@ -141,6 +145,7 @@ export const Bookmark = ({
                 className={`${embedResult.type}-player`}
                 src={embedResult.embedUrl}
                 allowFullScreen
+                allow="autoplay; fullscreen; picture-in-picture"
                 style={{
                   width: '100%',
                   height: '100%',
@@ -152,11 +157,17 @@ export const Bookmark = ({
           </div>
         ) : isEmbedded && !embedResult ? (
           <div className="card-img-top bookmark-img embed-img" style={{ position: 'relative' }}>
+            {bookmark.isPublic && (
+              <span className="bookmark-public-indicator">✦</span>
+            )}
             <PlaceholderImage type="no-embed" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
             <a target="_blank" className="d-block h-100 w-100" href={bookmark.url} rel="noopener noreferrer" style={{ position: 'relative', zIndex: 1 }}></a>
           </div>
         ) : (
           <div className="card-img-top bookmark-img flex-shrink-0" style={normalBookmarkStyle}>
+            {bookmark.isPublic && (
+              <span className="bookmark-public-indicator">✦</span>
+            )}
             {imageUrl && !imageError && (
               <img
                 src={imageUrl}
@@ -202,8 +213,7 @@ export const Bookmark = ({
                   className={`btn btn-outline-secondary btn-xs me-1 mb-1 ${isSelected ? 'active' : ''}`}
                   onClick={() => handleTagClick(tag.slug)}
                 >
-                  {tag.icon && `${tag.icon} `}
-                  {tag.name}
+                  <TagName tag={tag} />
                 </button>
               );
             })}
