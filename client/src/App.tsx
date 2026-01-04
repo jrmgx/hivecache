@@ -6,6 +6,7 @@ import { Tags } from './pages/Tags';
 import { ShowBookmark } from './pages/ShowBookmark';
 import { Styleguide } from './pages/Styleguide';
 import { Layout } from './components/Layout/Layout';
+import { IriRedirect } from './components/IriRedirect/IriRedirect';
 import { isAuthenticated } from './services/auth';
 import './App.css';
 
@@ -19,6 +20,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 function App() {
   return (
     <BrowserRouter>
+      <IriRedirect />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
