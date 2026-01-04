@@ -83,7 +83,7 @@ export const Home = () => {
   // Index all bookmarks in the background
   const startIndexing = useCallback(async () => {
     // Check if already indexed
-    const existingIndex = getIndexedBookmarks();
+    const existingIndex = await getIndexedBookmarks();
     if (existingIndex && existingIndex.length > 0) {
       setIndexedBookmarks(existingIndex);
       return;
@@ -107,10 +107,10 @@ export const Home = () => {
 
   // Listen for bookmarks updated event to refresh the list and re-index
   useEffect(() => {
-    const handleBookmarksUpdated = () => {
+    const handleBookmarksUpdated = async () => {
       loadData();
       // Clear and re-index bookmarks
-      clearIndex();
+      await clearIndex();
       setIndexedBookmarks([]);
       setIsIndexing(false);
       setIndexingProgress(0);
@@ -140,20 +140,24 @@ export const Home = () => {
       return;
     }
 
-    if (indexedBookmarks.length === 0) {
-      // Try to load from localStorage if available
-      const stored = getIndexedBookmarks();
-      if (stored) {
-        setIndexedBookmarks(stored);
-        const results = searchBookmarks(searchQuery, stored);
-        setSearchResults(results);
+    const performSearch = async () => {
+      if (indexedBookmarks.length === 0) {
+        // Try to load from IndexedDB/localStorage if available
+        const stored = await getIndexedBookmarks();
+        if (stored) {
+          setIndexedBookmarks(stored);
+          const results = searchBookmarks(searchQuery, stored);
+          setSearchResults(results);
+        } else {
+          setSearchResults([]);
+        }
       } else {
-        setSearchResults([]);
+        const results = searchBookmarks(searchQuery, indexedBookmarks);
+        setSearchResults(results);
       }
-    } else {
-      const results = searchBookmarks(searchQuery, indexedBookmarks);
-      setSearchResults(results);
-    }
+    };
+
+    performSearch();
   }, [searchQuery, indexedBookmarks]);
 
   const handleSearchChange = (query: string) => {
