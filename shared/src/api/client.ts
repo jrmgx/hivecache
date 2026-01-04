@@ -77,6 +77,7 @@ export function createApiClient(config: ApiConfig): ApiClient {
     }
     return {
       'Authorization': `Bearer ${token}`,
+      'accept': 'application/json',
       'Content-Type': 'application/json',
     };
   }
@@ -148,6 +149,7 @@ export function createApiClient(config: ApiConfig): ApiClient {
       const response = await fetch(`${baseUrl}/account`, {
         method: 'POST',
         headers: {
+          'accept': 'application/json',
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(userData),
