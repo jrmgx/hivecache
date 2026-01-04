@@ -49,13 +49,16 @@ abstract class BookmarkController extends AbstractController
         $qb = $this->bookmarkRepository->applyFilters($qb, $tagSlugs, $onlyPublic);
 
         // TODO make the count work when multiple tags (with join etc)
-        //        $count =  (clone $qb)
-        //            ->resetDQLPart('select')
-        //            ->resetDQLPart('orderBy')
-        //            ->select('COUNT(o.id)')
-        //            ->getQuery()
-        //            ->getArrayResult();
         $count = null;
+        if (0 === \count($tagSlugs)) {
+            $count = (clone $qb)
+                ->resetDQLPart('select')
+                ->resetDQLPart('orderBy')
+                ->select('COUNT(o.id)')
+                ->getQuery()
+                ->getSingleColumnResult()[0] ?? null
+            ;
+        }
 
         $qb = $this->bookmarkRepository->applyPagination($qb, $afterQueryString);
         /** @var array<Bookmark> $bookmarks */
