@@ -8,6 +8,7 @@ use App\Entity\Bookmark;
 use App\Entity\User;
 use App\Repository\BookmarkRepository;
 use App\Response\JsonResponseBuilder;
+use App\Service\IndexActionUpdater;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -24,6 +25,7 @@ abstract class BookmarkController extends AbstractController
         protected readonly EntityManagerInterface $entityManager,
         protected readonly JsonResponseBuilder $jsonResponseBuilder,
         protected readonly MessageBusInterface $messageBus,
+        protected readonly IndexActionUpdater $indexActionUpdater,
     ) {
     }
 
@@ -40,6 +42,7 @@ abstract class BookmarkController extends AbstractController
         RouteType $routeType,
         array $params = [],
         bool $onlyPublic = true,
+        int $resultPerPage = 24,
     ): JsonResponse {
         $tagSlugs = [];
         if ($tagQueryString) {
@@ -63,7 +66,7 @@ abstract class BookmarkController extends AbstractController
             ;
         }
 
-        $qb = $this->bookmarkRepository->applyPagination($qb, $afterQueryString);
+        $qb = $this->bookmarkRepository->applyPagination($qb, $afterQueryString, $resultPerPage);
         /** @var array<Bookmark> $bookmarks */
         $bookmarks = $qb->getQuery()->getResult();
         $lastBookmark = end($bookmarks);

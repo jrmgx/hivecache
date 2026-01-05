@@ -122,6 +122,22 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: '@iri', type: 'string', format: 'iri', description: 'IRI of the file object resource'),
     ]
 )]
+#[OA\Schema(
+    schema: 'BookmarkIndexAction',
+    description: 'Bookmark index action representing a change to a bookmark',
+    type: 'object',
+    properties: [
+        new OA\Property(property: 'id', type: 'string', format: 'uuid', description: 'Index action ID'),
+        new OA\Property(property: 'createdAt', type: 'string', format: 'date-time', description: 'Creation timestamp'),
+        new OA\Property(
+            property: 'type',
+            type: 'string',
+            enum: ['created', 'updated', 'deleted', 'outdated'],
+            description: 'Type of action performed on the bookmark'
+        ),
+        new OA\Property(property: 'bookmark', type: 'string', format: 'uuid', description: 'The bookmark id associated with this action'),
+    ]
+)]
 class Schemas
 {
 }

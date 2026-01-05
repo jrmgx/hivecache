@@ -7,6 +7,7 @@ enum RouteType: string
     // Me
     case Me = 'api_users_me_';
     case MeBookmarks = 'api_users_me_bookmarks_';
+    case MeBookmarksIndex = 'api_users_me_bookmarks_index_';
     case MeTags = 'api_users_me_tags_';
     case MeFileObjects = 'api_users_me_files_';
 
@@ -23,6 +24,7 @@ enum RouteType: string
         return match ($this) {
             RouteType::Me,
             RouteType::MeBookmarks,
+            RouteType::MeBookmarksIndex,
             RouteType::MeTags,
             RouteType::MeFileObjects => true,
             default => false,

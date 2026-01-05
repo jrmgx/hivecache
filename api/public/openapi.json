@@ -655,6 +655,120 @@
                 ]
             }
         },
+        "/users/me/bookmarks/search/index": {
+            "get": {
+                "tags": [
+                    "Bookmarks",
+                    "Search"
+                ],
+                "summary": "List own bookmarks for client side indexing",
+                "description": "Returns a paginated collection of bookmarks owned by the authenticated user. Default page size is 100 items, ordered by creation date (newest first).",
+                "operationId": "listOwnBookmarksIndex",
+                "parameters": [
+                    {
+                        "name": "after",
+                        "in": "query",
+                        "description": "Cursor for pagination - bookmark ID to fetch results after",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of bookmarks",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "collection": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/BookmarkOwner"
+                                            }
+                                        },
+                                        "prevPage": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "nextPage": {
+                                            "description": "URL for next page if available",
+                                            "type": "string",
+                                            "nullable": true
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/users/me/bookmarks/search/diff": {
+            "get": {
+                "tags": [
+                    "Bookmarks",
+                    "Search"
+                ],
+                "summary": "Get bookmark index changes",
+                "description": "Returns a collection of bookmark index actions (changes) for the authenticated user. Used for syncing client-side index with server changes. Results are ordered by ID (ascending).",
+                "operationId": "getBookmarkIndexDiff",
+                "parameters": [
+                    {
+                        "name": "before",
+                        "in": "query",
+                        "description": "Cursor for pagination - index action ID to fetch results after",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of bookmark index actions",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "collection": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/BookmarkIndexAction"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/users/me": {
             "get": {
                 "tags": [
@@ -2012,6 +2126,37 @@
                     }
                 },
                 "type": "object"
+            },
+            "BookmarkIndexAction": {
+                "description": "Bookmark index action representing a change to a bookmark",
+                "properties": {
+                    "id": {
+                        "description": "Index action ID",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "createdAt": {
+                        "description": "Creation timestamp",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "type": {
+                        "description": "Type of action performed on the bookmark",
+                        "type": "string",
+                        "enum": [
+                            "created",
+                            "updated",
+                            "deleted",
+                            "outdated"
+                        ]
+                    },
+                    "bookmark": {
+                        "description": "The bookmark id associated with this action",
+                        "type": "string",
+                        "format": "uuid"
+                    }
+                },
+                "type": "object"
             }
         },
         "securitySchemes": {
@@ -2035,6 +2180,10 @@
         {
             "name": "Bookmarks",
             "description": "Bookmarks"
+        },
+        {
+            "name": "Search",
+            "description": "Search"
         },
         {
             "name": "User",

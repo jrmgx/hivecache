@@ -6,6 +6,7 @@ use App\Config\RouteAction;
 use App\Config\RouteType;
 use App\Entity\Bookmark;
 use App\Entity\User;
+use App\Enum\BookmarkIndexActionType;
 use App\Security\Voter\BookmarkVoter;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\ORMInvalidArgumentException;
@@ -210,6 +211,10 @@ final class MeBookmarkController extends BookmarkController
         ;
         if ($existingBookmark) {
             $existingBookmark->outdated = true;
+
+            $indexAction = $this->indexActionUpdater->update($existingBookmark, BookmarkIndexActionType::Outdated);
+            $this->entityManager->persist($indexAction);
+
             if ($existingBookmark->isPublic) {
                 $bookmark->isPublic = true;
             }
@@ -219,6 +224,10 @@ final class MeBookmarkController extends BookmarkController
 
         try {
             $this->entityManager->persist($bookmark);
+
+            $indexAction = $this->indexActionUpdater->update($bookmark, BookmarkIndexActionType::Created);
+            $this->entityManager->persist($indexAction);
+
             $this->entityManager->flush();
         } catch (ORMInvalidArgumentException|ORMException $e) {
             throw new UnprocessableEntityHttpException(previous: $e);
@@ -408,6 +417,9 @@ final class MeBookmarkController extends BookmarkController
         }
 
         try {
+            $indexAction = $this->indexActionUpdater->update($bookmark, BookmarkIndexActionType::Updated);
+            $this->entityManager->persist($indexAction);
+
             $this->entityManager->flush();
         } catch (ORMInvalidArgumentException|ORMException $e) {
             throw new UnprocessableEntityHttpException(previous: $e);
@@ -451,7 +463,12 @@ final class MeBookmarkController extends BookmarkController
         #[CurrentUser] User $user,
         Bookmark $bookmark,
     ): JsonResponse {
+        $indexAction = $this->indexActionUpdater->update($bookmark, BookmarkIndexActionType::Deleted);
+        $this->entityManager->persist($indexAction);
+
         $this->bookmarkRepository->deleteByOwnerAndUrl($user, $bookmark->url);
+
+        $this->entityManager->flush();
 
         return new JsonResponse(status: Response::HTTP_NO_CONTENT);
     }

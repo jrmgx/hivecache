@@ -3,6 +3,7 @@
 namespace App\Tests;
 
 use App\Entity\User;
+use Doctrine\ORM\EntityManagerInterface;
 use Hautelook\AliceBundle\PhpUnit\ReloadDatabaseTrait;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -13,12 +14,15 @@ abstract class BaseApiTestCase extends WebTestCase
 
     protected KernelBrowser $client;
     protected object $container;
+    protected EntityManagerInterface $entityManager;
 
     protected function setUp(): void
     {
         parent::setUp();
+
         $this->client = self::createClient();
         $this->container = self::getContainer();
+        $this->entityManager = $this->container->get('doctrine')->getManager();
     }
 
     protected function dump($vars): mixed
@@ -143,5 +147,50 @@ abstract class BaseApiTestCase extends WebTestCase
     {
         $this->assertIsString($url, $message);
         $this->assertNotFalse(filter_var($url, \FILTER_VALIDATE_URL), $message);
+    }
+
+    /**
+     * Asserts that a bookmark collection contains exactly the fields for bookmark:show:private group.
+     */
+    protected function assertBookmarkOwnerCollection(array $bookmarks): void
+    {
+        foreach ($bookmarks as $bookmark) {
+            $this->assertIsString($bookmark['id']);
+            $this->assertIsString($bookmark['createdAt']);
+            $this->assertIsString($bookmark['title']);
+            $this->assertIsString($bookmark['url']);
+            $this->assertArrayHasKey('domain', $bookmark);
+            $this->assertIsString($bookmark['domain']);
+            $this->assertIsBool($bookmark['isPublic']);
+            $this->assertArrayHasKey('owner', $bookmark);
+            $this->assertArrayHasKey('tags', $bookmark);
+            $this->assertIsArray($bookmark['tags']);
+
+            $bookmarkFields = array_keys($bookmark);
+            $expectedBookmarkFields = ['id', 'createdAt', 'title', 'url', 'domain', 'owner', 'isPublic', 'tags', '@iri'];
+
+            // Archive and mainImage are optional, add them to expected fields if present
+            if (isset($bookmark['archive'])) {
+                $expectedBookmarkFields[] = 'archive';
+                $this->assertIsArray($bookmark['archive'], 'archive should be an unfolded FileObject');
+                $this->assertArrayHasKey('contentUrl', $bookmark['archive']);
+                $this->assertValidUrl($bookmark['archive']['contentUrl'], 'archive contentUrl should be a valid URL');
+            }
+            if (isset($bookmark['mainImage'])) {
+                $expectedBookmarkFields[] = 'mainImage';
+                $this->assertIsArray($bookmark['mainImage'], 'mainImage should be an unfolded FileObject');
+                $this->assertArrayHasKey('contentUrl', $bookmark['mainImage']);
+                $this->assertValidUrl($bookmark['mainImage']['contentUrl'], 'mainImage contentUrl should be a valid URL');
+            }
+
+            $this->assertEqualsCanonicalizing(
+                $expectedBookmarkFields,
+                array_values($bookmarkFields),
+                'Each bookmark in collection should contain exactly ' . implode(', ', $expectedBookmarkFields) . ' fields'
+            );
+
+            $this->assertArrayHasKey('@iri', $bookmark);
+            $this->assertValidUrl($bookmark['@iri'], '@iri should be a valid URL');
+        }
     }
 }

@@ -129,7 +129,7 @@ class BookmarkRepository extends ServiceEntityRepository
         return $onlyPublic ? $qb->andWhere('t.isPublic = true') : $qb;
     }
 
-    public function applyPagination(QueryBuilder $qb, ?string $after): QueryBuilder
+    public function applyPagination(QueryBuilder $qb, ?string $after, int $resultPerPage): QueryBuilder
     {
         if ($after) {
             $qb = $qb->andWhere('o.id < :after')
@@ -139,7 +139,7 @@ class BookmarkRepository extends ServiceEntityRepository
 
         return $qb
             ->addOrderBy('o.id', 'DESC')
-            ->setMaxResults(24)
+            ->setMaxResults($resultPerPage)
         ;
     }
 }
