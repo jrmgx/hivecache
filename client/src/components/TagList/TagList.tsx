@@ -37,7 +37,7 @@ export const TagList = ({
     <>
       {sortedPinnedTags.length > 0 && (
         <div>
-          <div className="mb-2 fw-bold">Favorite</div>
+          <div className="mb-2 fw-bold">Favorites</div>
           {sortedPinnedTags.map((tag) => (
             <Tag
               key={tag.slug}
