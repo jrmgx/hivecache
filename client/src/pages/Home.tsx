@@ -282,7 +282,7 @@ export const Home = () => {
 
   const handleShow = (id: string) => {
     const params = updateTagParams(selectedTagSlugs, new URLSearchParams());
-    navigate(`/bookmarks/${id}${params.toString() ? `?${params.toString()}` : ''}`);
+    navigate(`/me/bookmarks/${id}${params.toString() ? `?${params.toString()}` : ''}`);
   };
 
   return (

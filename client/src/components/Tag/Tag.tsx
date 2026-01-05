@@ -1,5 +1,6 @@
 import type { Tag as TagType } from '../../types';
 import { TagName } from '../TagName/TagName';
+import { closeOffcanvas } from '../../utils/offcanvas';
 
 interface TagProps {
   tag: TagType;
@@ -20,6 +21,10 @@ export const Tag = ({
     e.preventDefault();
     if (onToggle) {
       onToggle(tag.slug);
+    }
+    // Close offcanvas on mobile after tag selection
+    if (window.innerWidth < 768) {
+      closeOffcanvas();
     }
   };
 

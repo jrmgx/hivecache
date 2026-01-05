@@ -166,7 +166,7 @@ export const ShowBookmark = () => {
 
     const handleGoBack = () => {
       const params = updateTagParams(selectedTagSlugs, new URLSearchParams());
-      navigate(`/?${params.toString()}`);
+      navigate(`/me?${params.toString()}`);
     };
 
     return (
@@ -188,7 +188,7 @@ export const ShowBookmark = () => {
   const handleTagToggle = (slug: string) => {
     const newSelectedSlugs = toggleTag(slug, selectedTagSlugs);
     const newParams = updateTagParams(newSelectedSlugs, new URLSearchParams());
-    navigate(`/?${newParams.toString()}`);
+    navigate(`/me?${newParams.toString()}`);
   };
 
   const handleTagsSave = () => {

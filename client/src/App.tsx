@@ -42,9 +42,10 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route path="/tags" element={<Tags />} />
-          <Route path="/bookmarks/:id" element={<ShowBookmark />} />
-          <Route path="/" element={<Home />} />
+          <Route path="/me/tags" element={<Tags />} />
+          <Route path="/me/bookmarks/:id" element={<ShowBookmark />} />
+          <Route path="/me" element={<Home />} />
+          <Route path="/" element={<Navigate to="/me" replace />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -188,8 +188,8 @@ export const Bookmark = ({
           </div>
         )}
 
-        <div className={`card-body position-relative ${isEmbedded ? 'd-flex flex-column justify-content-start' : ''}`}>
-          <div className={`card-title ${isEmbedded ? 'flex-grow-1 mb-0' : ''}`}>
+        <div className="card-body position-relative">
+          <div className="card-title">
             <a
               target="_blank"
               className="text-decoration-none bookmark-title"

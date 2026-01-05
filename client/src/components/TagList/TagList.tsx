@@ -5,7 +5,6 @@ interface TagListProps {
   tags: TagType[];
   selectedTagSlugs: string[];
   pinnedTags?: TagType[];
-  children?: React.ReactNode;
   onTagToggle?: (slug: string) => void;
 }
 
@@ -15,11 +14,32 @@ const sortTags = (tags: TagType[]): TagType[] => {
   });
 };
 
+const renderTagGroup = (
+  tagList: TagType[],
+  selectedTagSlugs: string[],
+  onTagToggle?: (slug: string) => void
+) => {
+  if (tagList.length === 0) return null;
+
+  return (
+    <div>
+      {tagList.map((tag) => (
+        <Tag
+          key={tag.slug}
+          tag={tag}
+          selectedTagSlugs={selectedTagSlugs}
+          onToggle={onTagToggle}
+          className='mb-2'
+        />
+      ))}
+    </div>
+  );
+};
+
 export const TagList = ({
   tags,
   selectedTagSlugs,
   pinnedTags,
-  children,
   onTagToggle
 }: TagListProps) => {
 
@@ -35,35 +55,8 @@ export const TagList = ({
 
   return (
     <>
-      {sortedPinnedTags.length > 0 && (
-        <div>
-          <div className="mb-2 fw-bold">Favorites</div>
-          {sortedPinnedTags.map((tag) => (
-            <Tag
-              key={tag.slug}
-              tag={tag}
-              selectedTagSlugs={selectedTagSlugs}
-              onToggle={onTagToggle}
-              className='mb-2'
-            />
-          ))}
-        </div>
-      )}
-      {sortedSelectedTags.length > 0 && (
-        <div>
-          <div className="mb-2 fw-bold">Selected</div>
-          {sortedSelectedTags.map((tag) => (
-            <Tag
-              key={tag.slug}
-              tag={tag}
-              selectedTagSlugs={selectedTagSlugs}
-              onToggle={onTagToggle}
-              className='mb-2'
-            />
-          ))}
-        </div>
-      )}
-      {children}
+      {renderTagGroup(sortedPinnedTags, selectedTagSlugs, onTagToggle)}
+      {renderTagGroup(sortedSelectedTags, selectedTagSlugs, onTagToggle)}
     </>
   );
 };

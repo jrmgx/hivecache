@@ -7,6 +7,8 @@ import { Masonry } from '../components/Masonry/Masonry';
 import { PlaceholderImage } from '../components/PlaceholderImage/PlaceholderImage';
 import { Icon } from '../components/Icon/Icon';
 import { Sidebar } from '../components/Sidebar/Sidebar';
+import { MeSection } from '../components/Sidebar/sections/MeSection';
+import { SocialSection } from '../components/Sidebar/sections/SocialSection';
 import type { Bookmark as BookmarkType, Tag as TagType } from '../types';
 import { LAYOUT_DEFAULT, LAYOUT_EMBEDDED, LAYOUT_IMAGE } from '../types';
 
@@ -258,19 +260,30 @@ export const Styleguide = () => {
 
   const pinnedTags = mockTags.filter((tag) => tag.pinned);
 
+  // Create sections for sidebar
+  const sections: React.ReactNode[] = [
+    <MeSection
+      key="me"
+      tags={mockTags}
+      selectedTagSlugs={selectedTagSlugs}
+      onTagToggle={handleTagToggle}
+    />,
+    <SocialSection key="social" />
+  ];
+
   return (
     <>
       <nav className="navbar navbar-expand-md navbar-dark fixed-top bg-primary navbar-height">
         <div className="container-fluid">
-          <a className="text-white navbar-brand" href="/">
+          <a className="text-white navbar-brand" href="/me">
             BookmarkHive
           </a>
           <button
             className="navbar-toggler bookmark-navbar-toggler"
             type="button"
             data-bs-toggle="offcanvas"
-            data-bs-target="#offcanvasResponsive"
-            aria-controls="offcanvasResponsive"
+            data-bs-target="#offcanvasStyleguide"
+            aria-controls="offcanvasStyleguide"
             aria-expanded="false"
             aria-label="Toggle navigation"
           >
@@ -279,13 +292,30 @@ export const Styleguide = () => {
         </div>
       </nav>
       <main className="d-flex navbar-height-compensate h-100">
-        <Sidebar
-          tags={mockTags}
-          selectedTagSlugs={selectedTagSlugs}
-          onTagToggle={handleTagToggle}
-          isHomePage={true}
-          standalone={true}
-        />
+        <div className="h-100">
+          <div
+            className="offcanvas-md offcanvas-start h-100"
+            tabIndex={-1}
+            id="offcanvasStyleguide"
+            aria-labelledby="offcanvasStyleguideLabel"
+          >
+            <div className="offcanvas-header">
+              <h5 className="offcanvas-title" id="offcanvasStyleguideLabel">
+                BookmarkHive
+              </h5>
+              <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="offcanvas"
+                data-bs-target="#offcanvasStyleguide"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div className="offcanvas-body h-100 sidebar">
+              <Sidebar sections={sections} />
+            </div>
+          </div>
+        </div>
         <div className="container-fluid sidebar-left py-4">
           <h1 className="mb-4">Component Styleguide</h1>
 
@@ -411,13 +441,7 @@ export const Styleguide = () => {
               selectedTagSlugs={selectedTagSlugs}
               pinnedTags={pinnedTags}
               onTagToggle={handleTagToggle}
-            >
-              <div className="d-flex align-items-center mb-2 position-relative">
-                <button className="btn btn-outline-secondary text-start flex-grow-1">
-                  Show all tags
-                </button>
-              </div>
-            </TagList>
+            />
           </div>
         </div>
       </section>

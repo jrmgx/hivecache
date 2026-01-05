@@ -1,6 +1,11 @@
 import { Outlet, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Sidebar } from '../Sidebar/Sidebar';
+import { MeSection } from '../Sidebar/sections/MeSection';
+// import { SocialSection } from '../Sidebar/sections/SocialSection';
+// import { SettingsSection } from '../Sidebar/sections/SettingsSection';
+import { EditBookmarkSidebarSection } from '../Sidebar/sections/EditBookmarkSidebarSection';
+import { TagListSidebarSection } from '../Sidebar/sections/TagListSidebarSection';
 import { getTags, deleteBookmark } from '../../services/api';
 import { toggleTag, updateTagParams } from '../../utils/tags';
 import type { Tag as TagType } from '../../types';
@@ -14,11 +19,10 @@ export const Layout = () => {
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Route detection
-  const isTagsPage = location.pathname === '/tags';
-  const bookmarkMatch = location.pathname.match(/^\/bookmarks\/([^/]+)$/);
+  const isTagsPage = location.pathname === '/me/tags';
+  const bookmarkMatch = location.pathname.match(/^\/me\/bookmarks\/([^/]+)$/);
   const isBookmarkPage = !!bookmarkMatch;
   const bookmarkId = bookmarkMatch ? bookmarkMatch[1] : null;
-  const isHomePage = !isTagsPage && !isBookmarkPage;
 
   // Tag state
   const tagQueryString = searchParams.get('tags') || '';
@@ -57,7 +61,7 @@ export const Layout = () => {
     const newParams = updateTagParams(newSelectedSlugs, searchParams);
 
     if (isTagsPage) {
-      navigate(`/?${newParams.toString()}`);
+      navigate(`/me?${newParams.toString()}`);
     } else {
       setSearchParams(newParams);
     }
@@ -65,17 +69,22 @@ export const Layout = () => {
 
   const handleNavigateBack = () => {
     const params = updateTagParams(selectedTagSlugs, new URLSearchParams());
-    navigate(`/?${params.toString()}`);
+    navigate(`/me?${params.toString()}`);
   };
 
   const handleNavigateToHome = () => {
     const params = updateTagParams(selectedTagSlugs, new URLSearchParams());
-    navigate(`/?${params.toString()}`);
+    navigate(`/me?${params.toString()}`);
+  };
+
+  const handleClearTags = () => {
+    const params = updateTagParams([], searchParams);
+    setSearchParams(params);
   };
 
   const handleNavigateToTags = () => {
     const params = updateTagParams(selectedTagSlugs, new URLSearchParams());
-    navigate(`/tags${params.toString() ? `?${params.toString()}` : ''}`);
+    navigate(`/me/tags${params.toString() ? `?${params.toString()}` : ''}`);
   };
 
   const handleNavigateToEdit = () => {
@@ -97,7 +106,7 @@ export const Layout = () => {
       await deleteBookmark(bookmarkId);
       window.dispatchEvent(new Event('bookmarksUpdated'));
       const params = updateTagParams(selectedTagSlugs, new URLSearchParams());
-      navigate(`/?${params.toString()}`);
+      navigate(`/me?${params.toString()}`);
     } catch (err) {
       console.error('Failed to delete bookmark:', err);
       alert('Failed to delete bookmark. Please try again.');
@@ -106,11 +115,49 @@ export const Layout = () => {
     }
   };
 
+  // Determine which sections to show based on route
+  const sections: React.ReactNode[] = [];
+
+  if (isLoadingTags) {
+    // Don't render sections while loading tags
+  } else if (isBookmarkPage) {
+    sections.push(
+      <EditBookmarkSidebarSection
+        key="bookmark"
+        onNavigateBack={handleNavigateBack}
+        onNavigateToEdit={handleNavigateToEdit}
+        onDeleteBookmark={handleDeleteBookmark}
+        isDeleting={isDeleting}
+      />
+    );
+  } else if (isTagsPage) {
+    sections.push(
+      <TagListSidebarSection
+        key="tags"
+        onNavigateToHome={handleNavigateToHome}
+      />
+    );
+  } else {
+    // Home page: show main sections
+    sections.push(
+      <MeSection
+        key="me"
+        tags={tags}
+        selectedTagSlugs={selectedTagSlugs}
+        onTagToggle={handleTagToggle}
+        onNavigateToTags={handleNavigateToTags}
+        onClearTags={handleClearTags}
+      />
+    );
+    //sections.push(<SocialSection key="social" />);
+    //sections.push(<SettingsSection key="settings" />);
+  }
+
   return (
     <>
       <nav className="navbar navbar-expand-md navbar-dark fixed-top bg-primary navbar-height">
         <div className="container-fluid">
-          <a className="text-white navbar-brand" href="/">
+          <a className="text-white navbar-brand" href="/me">
             BookmarkHive
           </a>
           <button
@@ -127,22 +174,30 @@ export const Layout = () => {
         </div>
       </nav>
       <main className="d-flex navbar-height-compensate h-100">
-        <Sidebar
-          tags={tags}
-          isLoadingTags={isLoadingTags}
-          selectedTagSlugs={selectedTagSlugs}
-          onTagToggle={handleTagToggle}
-          onNavigateBack={handleNavigateBack}
-          onNavigateToHome={handleNavigateToHome}
-          onNavigateToTags={handleNavigateToTags}
-          onNavigateToEdit={handleNavigateToEdit}
-          onDeleteBookmark={handleDeleteBookmark}
-          isDeleting={isDeleting}
-          bookmarkId={bookmarkId}
-          isBookmarkPage={isBookmarkPage}
-          isTagsPage={isTagsPage}
-          isHomePage={isHomePage}
-        />
+        <div className="h-100">
+          <div
+            className="offcanvas-md offcanvas-start h-100"
+            tabIndex={-1}
+            id="offcanvasResponsive"
+            aria-labelledby="offcanvasResponsiveLabel"
+          >
+            <div className="offcanvas-header">
+              <h5 className="offcanvas-title" id="offcanvasResponsiveLabel">
+                BookmarkHive
+              </h5>
+              <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="offcanvas"
+                data-bs-target="#offcanvasResponsive"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div className="offcanvas-body h-100 sidebar">
+              <Sidebar sections={sections} />
+            </div>
+          </div>
+        </div>
         <div className="container-fluid sidebar-left">
           <Outlet />
         </div>

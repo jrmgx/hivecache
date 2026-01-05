@@ -20,7 +20,7 @@ export const Register = () => {
   useEffect(() => {
     const checkAuthAndLoadInstance = async () => {
       if (isAuthenticated()) {
-        navigate('/');
+        navigate('/me');
       } else {
         // Load stored instance URL if available
         const storedInstanceUrl = await getBaseUrl();

@@ -9,7 +9,7 @@ export interface IriMatcher {
    * Function that converts the matched IRI to a client route
    * @param _iri - The full IRI URL (may be used for context in future)
    * @param matches - Regex match groups if pattern is a RegExp
-   * @returns Client route path (e.g., "/bookmarks/123" or "/tags?tag=example")
+   * @returns Client route path (e.g., "/me/bookmarks/123" or "/me/tags?tag=example")
    */
   toRoute: (_iri: string, matches: RegExpMatchArray | null) => string | null;
 }
@@ -24,7 +24,7 @@ const iriMatchers: IriMatcher[] = [
     pattern: /\/users\/me\/bookmarks\/([^/]+)$/,
     toRoute: (_iri, matches) => {
       if (matches && matches[1]) {
-        return `/bookmarks/${matches[1]}`;
+        return `/me/bookmarks/${matches[1]}`;
       }
       return null;
     },
@@ -37,7 +37,7 @@ const iriMatchers: IriMatcher[] = [
       if (matches && matches[1]) {
         const tagSlug = decodeURIComponent(matches[1]);
         // Navigate to home page with tag filter applied
-        return `/?tags=${encodeURIComponent(tagSlug)}`;
+        return `/me?tags=${encodeURIComponent(tagSlug)}`;
       }
       return null;
     },
@@ -46,7 +46,7 @@ const iriMatchers: IriMatcher[] = [
   // Match: /users/me
   {
     pattern: /\/users\/me\/?$/,
-    toRoute: () => '/',
+    toRoute: () => '/me',
   },
 ];
 

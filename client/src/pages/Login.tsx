@@ -27,7 +27,7 @@ export const Login = () => {
   useEffect(() => {
     const checkAuthAndLoadInstance = async () => {
       if (isAuthenticated()) {
-        navigate('/');
+        navigate('/me');
       } else {
         // Load stored instance URL if available
         const storedInstanceUrl = await getBaseUrl();
@@ -68,7 +68,7 @@ export const Login = () => {
 
       const token = await login(normalizedUrl, username, password);
       setToken(token);
-      navigate('/');
+      navigate('/me');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
       const status = err instanceof ApiError ? err.status : null;
