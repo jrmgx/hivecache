@@ -2,7 +2,9 @@
 
 namespace App\Tests;
 
+use App\Entity\Account;
 use App\Entity\User;
+use App\Service\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
 use Hautelook\AliceBundle\PhpUnit\ReloadDatabaseTrait;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -32,30 +34,33 @@ abstract class BaseApiTestCase extends WebTestCase
         return dump($vars);
     }
 
-    protected function createUserWithPassword(string $username, string $password): User
+    /**
+     * @return array{0: User, 1: Account}
+     */
+    protected function createUserAccountWithPassword(string $username, string $password): array
     {
-        $user = new User();
-        $user->username = $username;
-        $user->setPassword(
-            $this->container->get('security.user_password_hasher')->hashPassword($user, $password)
-        );
+        /** @var UserFactory $userFactory */
+        $userFactory = $this->container->get(UserFactory::class);
 
-        $manager = $this->container->get('doctrine')->getManager();
-        $manager->persist($user);
-        $manager->flush();
+        [$user, $account] = $userFactory->new($username, $password);
 
-        return $user;
+        // We need to persist those again because in our factory we are not in the same entity manager
+        $this->entityManager->persist($user);
+        $this->entityManager->persist($account);
+        $this->entityManager->flush();
+
+        return [$user, $account];
     }
 
     /**
-     * @return array{0: User, 1: string}
+     * @return array{0: User, 1: string, 2: Account}
      */
-    protected function createAuthenticatedUser(string $username, string $password): array
+    protected function createAuthenticatedUserAccount(string $username, string $password): array
     {
-        $user = $this->createUserWithPassword($username, $password);
+        [$user, $account] = $this->createUserAccountWithPassword($username, $password);
         $token = $this->getToken($user->username, $password);
 
-        return [$user, $token];
+        return [$user, $token, $account];
     }
 
     protected function getToken(string $username, string $password): string
@@ -67,7 +72,15 @@ abstract class BaseApiTestCase extends WebTestCase
             'password' => $password,
         ]));
 
-        $json = json_decode($this->client->getResponse()->getContent(), true);
+        $response = $this->client->getResponse();
+        if (!$response->isSuccessful()) {
+            throw new \RuntimeException('Authentication failed: ' . $response->getContent());
+        }
+
+        $json = json_decode($response->getContent(), true);
+        if (!isset($json['token'])) {
+            throw new \RuntimeException('Token not found in response: ' . json_encode($json));
+        }
 
         return $json['token'];
     }
@@ -115,6 +128,7 @@ abstract class BaseApiTestCase extends WebTestCase
             }
         }
 
+        // $this->dump([$method, $uri, $parameters, $content]);
         $this->client->request($method, $uri, $parameters, $files, $server, $content);
     }
 
@@ -150,9 +164,10 @@ abstract class BaseApiTestCase extends WebTestCase
     }
 
     /**
-     * Asserts that a bookmark collection contains exactly the fields for bookmark:show:private group.
+     * Asserts that a bookmark collection contains exactly the fields for bookmark:show:{private|public} group.
+     * Note: the only difference is `isPublic` field.
      */
-    protected function assertBookmarkOwnerCollection(array $bookmarks): void
+    protected function assertBookmarkCollection(array $bookmarks, bool $private = true): void
     {
         foreach ($bookmarks as $bookmark) {
             $this->assertIsString($bookmark['id']);
@@ -161,13 +176,20 @@ abstract class BaseApiTestCase extends WebTestCase
             $this->assertIsString($bookmark['url']);
             $this->assertArrayHasKey('domain', $bookmark);
             $this->assertIsString($bookmark['domain']);
-            $this->assertIsBool($bookmark['isPublic']);
-            $this->assertArrayHasKey('owner', $bookmark);
+            if ($private) {
+                $this->assertIsBool($bookmark['isPublic']);
+            }
+            $this->assertArrayHasKey('account', $bookmark);
             $this->assertArrayHasKey('tags', $bookmark);
             $this->assertIsArray($bookmark['tags']);
+            $this->assertArrayHasKey('instance', $bookmark);
+            $this->assertIsString($bookmark['instance']);
 
             $bookmarkFields = array_keys($bookmark);
-            $expectedBookmarkFields = ['id', 'createdAt', 'title', 'url', 'domain', 'owner', 'isPublic', 'tags', '@iri'];
+            $expectedBookmarkFields = ['id', 'createdAt', 'title', 'url', 'domain', 'account', 'tags', 'instance', '@iri'];
+            if ($private) {
+                $expectedBookmarkFields[] = 'isPublic';
+            }
 
             // Archive and mainImage are optional, add them to expected fields if present
             if (isset($bookmark['archive'])) {

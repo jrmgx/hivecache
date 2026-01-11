@@ -39,7 +39,7 @@ final class MeBookmarkIndexController extends BookmarkController
                         new OA\Property(
                             property: 'collection',
                             type: 'array',
-                            items: new OA\Items(ref: '#/components/schemas/BookmarkOwner')
+                            items: new OA\Items(ref: '#/components/schemas/BookmarkShowPrivate')
                         ),
                         new OA\Property(property: 'prevPage', type: 'string', nullable: true, example: null),
                         new OA\Property(property: 'nextPage', type: 'string', nullable: true, description: 'URL for next page if available'),
@@ -59,7 +59,7 @@ final class MeBookmarkIndexController extends BookmarkController
         #[MapQueryParameter(name: 'after')] ?string $afterQueryString = null,
     ): JsonResponse {
         return $this->collectionCommon(
-            $user,
+            $user->account,
             null,
             null,
             $afterQueryString,

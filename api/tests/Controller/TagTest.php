@@ -1,15 +1,17 @@
 <?php
 
-namespace App\Tests;
+namespace App\Tests\Controller;
 
+use App\Factory\AccountFactory;
 use App\Factory\TagFactory;
 use App\Factory\UserFactory;
+use App\Tests\BaseApiTestCase;
 
 class TagTest extends BaseApiTestCase
 {
     public function testListOwnTags(): void
     {
-        [$user, $token] = $this->createAuthenticatedUser('testuser', 'test');
+        [$user, $token] = $this->createAuthenticatedUserAccount('testuser', 'test');
 
         TagFactory::createMany(3, ['owner' => $user]);
 
@@ -26,7 +28,7 @@ class TagTest extends BaseApiTestCase
 
     public function testCreateTag(): void
     {
-        [, $token] = $this->createAuthenticatedUser('testuser', 'test');
+        [, $token] = $this->createAuthenticatedUserAccount('testuser', 'test');
 
         $this->assertUnauthorized('POST', '/users/me/tags', [
             'headers' => ['Content-Type' => 'application/json'],
@@ -66,7 +68,6 @@ class TagTest extends BaseApiTestCase
         $this->assertEquals('force', $json['slug']);
         $this->assertTagOwnerResponse($json);
 
-        $this->client->enableProfiler();
         $this->request('POST', '/users/me/tags', [
             'headers' => ['Content-Type' => 'application/json'],
             'auth_bearer' => $token,
@@ -79,7 +80,7 @@ class TagTest extends BaseApiTestCase
 
     public function testCreateTagWithSameNameReturnsExisting(): void
     {
-        [, $token] = $this->createAuthenticatedUser('testuser', 'test');
+        [, $token] = $this->createAuthenticatedUserAccount('testuser', 'test');
 
         $this->request('POST', '/users/me/tags', [
             'headers' => ['Content-Type' => 'application/json'],
@@ -125,7 +126,7 @@ class TagTest extends BaseApiTestCase
 
     public function testCannotCreateMoreThan1000Tags(): void
     {
-        [$user, $token] = $this->createAuthenticatedUser('testuser', 'test');
+        [$user, $token] = $this->createAuthenticatedUserAccount('testuser', 'test');
 
         for ($i = 1; $i <= 1000; ++$i) {
             TagFactory::createOne([
@@ -151,7 +152,7 @@ class TagTest extends BaseApiTestCase
 
     public function testGetOwnTag(): void
     {
-        [$user, $token] = $this->createAuthenticatedUser('testuser', 'test');
+        [$user, $token] = $this->createAuthenticatedUserAccount('testuser', 'test');
 
         $tag = TagFactory::createOne([
             'owner' => $user,
@@ -174,7 +175,7 @@ class TagTest extends BaseApiTestCase
 
     public function testEditOwnTag(): void
     {
-        [$user, $token] = $this->createAuthenticatedUser('testuser', 'test');
+        [$user, $token] = $this->createAuthenticatedUserAccount('testuser', 'test');
 
         $tag = TagFactory::createOne([
             'owner' => $user,
@@ -211,7 +212,7 @@ class TagTest extends BaseApiTestCase
 
     public function testDeleteOwnTag(): void
     {
-        [$user, $token] = $this->createAuthenticatedUser('testuser', 'test');
+        [$user, $token] = $this->createAuthenticatedUserAccount('testuser', 'test');
 
         $tag = TagFactory::createOne(['owner' => $user]);
 
@@ -228,13 +229,13 @@ class TagTest extends BaseApiTestCase
 
     public function testListPublicTagsOfUser(): void
     {
-        $user = UserFactory::createOne([
-            'username' => 'testuser',
-        ]);
+        $user = UserFactory::createOne(['username' => 'testuser']);
+        AccountFactory::createOne(['username' => 'testuser', 'owner' => $user]);
 
         TagFactory::createMany(3, ['owner' => $user, 'isPublic' => true]);
         TagFactory::createMany(2, ['owner' => $user, 'isPublic' => false]);
 
+        $this->client->enableProfiler();
         $this->request('GET', "/profile/{$user->username}/tags");
         $this->assertResponseIsSuccessful();
 
@@ -246,9 +247,8 @@ class TagTest extends BaseApiTestCase
 
     public function testGetPublicTag(): void
     {
-        $user = UserFactory::createOne([
-            'username' => 'testuser',
-        ]);
+        $user = UserFactory::createOne(['username' => 'testuser']);
+        AccountFactory::createOne(['username' => 'testuser', 'owner' => $user]);
 
         $publicTag = TagFactory::createOne([
             'owner' => $user,
@@ -277,7 +277,7 @@ class TagTest extends BaseApiTestCase
 
     public function testCreateTagWithMeta(): void
     {
-        [, $token] = $this->createAuthenticatedUser('testuser', 'test');
+        [, $token] = $this->createAuthenticatedUserAccount('testuser', 'test');
 
         $this->request('POST', '/users/me/tags', [
             'headers' => ['Content-Type' => 'application/json'],
@@ -303,7 +303,7 @@ class TagTest extends BaseApiTestCase
 
     public function testUpdateTagWithMeta(): void
     {
-        [$user, $token] = $this->createAuthenticatedUser('testuser', 'test');
+        [$user, $token] = $this->createAuthenticatedUserAccount('testuser', 'test');
 
         $tag = TagFactory::createOne([
             'owner' => $user,
@@ -334,7 +334,7 @@ class TagTest extends BaseApiTestCase
 
     public function testUpdateTagMetaMergesNotOverwrites(): void
     {
-        [$user, $token] = $this->createAuthenticatedUser('testuser', 'test');
+        [$user, $token] = $this->createAuthenticatedUserAccount('testuser', 'test');
 
         $tag = TagFactory::createOne([
             'owner' => $user,
@@ -374,8 +374,8 @@ class TagTest extends BaseApiTestCase
 
     public function testCanNotAccessOtherUsersPrivateTag(): void
     {
-        [$owner, $ownerToken] = $this->createAuthenticatedUser('owneruser', 'test');
-        [, $otherToken] = $this->createAuthenticatedUser('otheruser', 'test');
+        [$owner, $ownerToken] = $this->createAuthenticatedUserAccount('owneruser', 'test');
+        [, $otherToken] = $this->createAuthenticatedUserAccount('otheruser', 'test');
 
         $privateTag = TagFactory::createOne([
             'owner' => $owner,
@@ -394,8 +394,8 @@ class TagTest extends BaseApiTestCase
 
     public function testCanNotEditOtherUsersTag(): void
     {
-        [$owner, $ownerToken] = $this->createAuthenticatedUser('owneruser', 'test');
-        [, $otherToken] = $this->createAuthenticatedUser('otheruser', 'test');
+        [$owner, $ownerToken] = $this->createAuthenticatedUserAccount('owneruser', 'test');
+        [, $otherToken] = $this->createAuthenticatedUserAccount('otheruser', 'test');
 
         $tag = TagFactory::createOne([
             'owner' => $owner,
@@ -428,8 +428,8 @@ class TagTest extends BaseApiTestCase
 
     public function testCanNotDeleteOtherUsersTag(): void
     {
-        [$owner, $ownerToken] = $this->createAuthenticatedUser('owneruser', 'test');
-        [, $otherToken] = $this->createAuthenticatedUser('otheruser', 'test');
+        [$owner, $ownerToken] = $this->createAuthenticatedUserAccount('owneruser', 'test');
+        [, $otherToken] = $this->createAuthenticatedUserAccount('otheruser', 'test');
 
         $tag = TagFactory::createOne([
             'owner' => $owner,
@@ -449,10 +449,8 @@ class TagTest extends BaseApiTestCase
 
     public function testGetPublicTagWithHtmlAcceptRedirects(): void
     {
-        $user = UserFactory::createOne([
-            'username' => 'testuser',
-            'isPublic' => true,
-        ]);
+        $user = UserFactory::createOne(['username' => 'testuser', 'isPublic' => true]);
+        AccountFactory::createOne(['username' => 'testuser', 'owner' => $user]);
 
         $tag = TagFactory::createOne([
             'owner' => $user,
@@ -481,7 +479,7 @@ class TagTest extends BaseApiTestCase
 
     private function assertOtherUserCannotAccess(string $method, string $url, array $options = []): void
     {
-        [, $otherToken] = $this->createAuthenticatedUser('otheruser', 'test');
+        [, $otherToken] = $this->createAuthenticatedUserAccount('otheruser', 'test');
 
         $requestOptions = array_merge($options, ['auth_bearer' => $otherToken]);
         $this->request($method, $url, $requestOptions);
@@ -495,14 +493,13 @@ class TagTest extends BaseApiTestCase
     {
         $this->assertArrayHasKey('name', $json);
         $this->assertArrayHasKey('slug', $json);
-        $this->assertArrayHasKey('owner', $json);
         $this->assertArrayHasKey('meta', $json);
         $this->assertIsArray($json['meta']);
         $this->assertArrayHasKey('isPublic', $json);
         $this->assertIsBool($json['isPublic']);
 
         $tagFields = array_keys($json);
-        $expectedTagFields = ['name', 'slug', 'owner', 'meta', 'isPublic', '@iri'];
+        $expectedTagFields = ['name', 'slug', 'meta', 'isPublic', '@iri'];
         $this->assertEqualsCanonicalizing(
             $expectedTagFields,
             array_values($tagFields),
@@ -521,12 +518,11 @@ class TagTest extends BaseApiTestCase
         foreach ($tags as $tag) {
             $this->assertIsString($tag['name']);
             $this->assertIsString($tag['slug']);
-            $this->assertArrayHasKey('owner', $tag);
             $this->assertIsArray($tag['meta']);
             $this->assertIsBool($tag['isPublic']);
 
             $tagFields = array_keys($tag);
-            $expectedTagFields = ['name', 'slug', 'owner', 'meta', 'isPublic', '@iri'];
+            $expectedTagFields = ['name', 'slug', 'meta', 'isPublic', '@iri'];
             $this->assertEqualsCanonicalizing(
                 $expectedTagFields,
                 array_values($tagFields),
@@ -551,8 +547,7 @@ class TagTest extends BaseApiTestCase
             'Response should contain exactly ' . implode(', ', $expectedTagFields) . ' fields'
         );
 
-        // Ensure owner and isPublic are not exposed in public profile
-        $this->assertArrayNotHasKey('owner', $json, 'owner should not be in public profile response');
+        // Ensure isPublic is not exposed in public profile
         $this->assertArrayNotHasKey('isPublic', $json, 'isPublic should not be in public profile response');
 
         $this->assertArrayHasKey('@iri', $json);
@@ -576,8 +571,7 @@ class TagTest extends BaseApiTestCase
                 'Each tag in public collection should contain exactly ' . implode(', ', $expectedTagFields) . ' fields'
             );
 
-            // Ensure owner and isPublic are not exposed in public profile
-            $this->assertArrayNotHasKey('owner', $tag, 'owner should not be in public profile response');
+            // Ensure isPublic is not exposed in public profile
             $this->assertArrayNotHasKey('isPublic', $tag, 'isPublic should not be in public profile response');
 
             $this->assertArrayHasKey('@iri', $tag);

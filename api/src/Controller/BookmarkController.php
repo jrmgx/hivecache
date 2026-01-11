@@ -4,8 +4,9 @@ namespace App\Controller;
 
 use App\Config\RouteAction;
 use App\Config\RouteType;
+use App\Entity\Account;
 use App\Entity\Bookmark;
-use App\Entity\User;
+use App\Helper\PaginationHelper;
 use App\Repository\BookmarkRepository;
 use App\Response\JsonResponseBuilder;
 use App\Service\IndexActionUpdater;
@@ -21,6 +22,8 @@ abstract class BookmarkController extends AbstractController
     public function __construct(
         #[Autowire('%env(PREFERRED_CLIENT)%')]
         protected readonly string $preferredClient,
+        #[Autowire('%instanceHost%')]
+        protected readonly string $instanceHost,
         protected readonly BookmarkRepository $bookmarkRepository,
         protected readonly EntityManagerInterface $entityManager,
         protected readonly JsonResponseBuilder $jsonResponseBuilder,
@@ -34,7 +37,7 @@ abstract class BookmarkController extends AbstractController
      * @param array<string> $params
      */
     public function collectionCommon(
-        User $user,
+        Account $account,
         ?string $tagQueryString,
         ?string $searchQueryString,
         ?string $afterQueryString,
@@ -51,7 +54,7 @@ abstract class BookmarkController extends AbstractController
             $tagSlugs = array_filter($tagSlugs, fn (string $t) => '' !== $t);
         }
 
-        $qb = $this->bookmarkRepository->findByOwner($user, $onlyPublic);
+        $qb = $this->bookmarkRepository->findByAccount($account, $onlyPublic);
         $qb = $this->bookmarkRepository->applyFilters($qb, $tagSlugs, $onlyPublic);
 
         // TODO make the count work when multiple tags (with join etc)
@@ -66,7 +69,7 @@ abstract class BookmarkController extends AbstractController
             ;
         }
 
-        $qb = $this->bookmarkRepository->applyPagination($qb, $afterQueryString, $resultPerPage);
+        $qb = PaginationHelper::applyPagination($qb, $afterQueryString, $resultPerPage);
         /** @var array<Bookmark> $bookmarks */
         $bookmarks = $qb->getQuery()->getResult();
         $lastBookmark = end($bookmarks);

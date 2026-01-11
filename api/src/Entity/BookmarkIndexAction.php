@@ -5,11 +5,28 @@ namespace App\Entity;
 use App\Enum\BookmarkIndexActionType;
 use App\Repository\BookmarkIndexActionRepository;
 use Doctrine\ORM\Mapping as ORM;
+use OpenApi\Attributes as OA;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Serializer\Attribute\SerializedName;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Uid\UuidV7;
 
+#[OA\Schema(
+    schema: 'BookmarkIndexAction',
+    description: 'Bookmark index action representing a change to a bookmark',
+    type: 'object',
+    properties: [
+        new OA\Property(property: 'id', type: 'string', format: 'uuid', description: 'Index action ID'),
+        new OA\Property(property: 'createdAt', type: 'string', format: 'date-time', description: 'Creation timestamp'),
+        new OA\Property(
+            property: 'type',
+            type: 'string',
+            enum: ['created', 'updated', 'deleted', 'outdated'],
+            description: 'Type of action performed on the bookmark'
+        ),
+        new OA\Property(property: 'bookmark', type: 'string', format: 'uuid', description: 'The bookmark id associated with this action'),
+    ]
+)]
 #[ORM\Entity(repositoryClass: BookmarkIndexActionRepository::class)]
 class BookmarkIndexAction
 {

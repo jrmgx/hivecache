@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\UserRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use OpenApi\Attributes as OA;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -16,19 +17,61 @@ use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
+#[OA\Schema(
+    // Serialization groups: ['user:show:private']
+    // Validation groups: ['Default']
+    schema: 'UserShowPrivate',
+    description: 'User object with owner-level details',
+    type: 'object',
+    properties: [
+        new OA\Property(property: 'username', type: 'string', description: 'Username'),
+        new OA\Property(property: 'isPublic', type: 'boolean', description: 'Whether the profile is public'),
+        new OA\Property(property: 'meta', type: 'object', description: 'Additional metadata', additionalProperties: true),
+        new OA\Property(property: 'account', type: 'object', description: 'Account associated with the user', ref: '#/components/schemas/AccountShowPublic'),
+        new OA\Property(property: '@iri', type: 'string', format: 'iri', description: 'IRI of the user resource'),
+    ]
+)]
+#[OA\Schema(
+    // Serialization groups: ['user:show:public']
+    // Validation groups: ['Default']
+    schema: 'UserShowPublic',
+    description: 'Public user profile',
+    type: 'object',
+    properties: [
+        new OA\Property(property: 'username', type: 'string', description: 'Username'),
+        new OA\Property(property: 'account', type: 'object', description: 'Account associated with the user', ref: '#/components/schemas/AccountShowPublic'),
+        new OA\Property(property: '@iri', type: 'string', format: 'iri', description: 'IRI of the user resource'),
+    ]
+)]
+#[OA\Schema(
+    // Serialization groups: ['user:create']
+    // Validation groups: ['Default', 'user:create']
+    schema: 'UserCreate',
+    description: 'User creation data',
+    type: 'object',
+    required: ['username', 'password'],
+    properties: [
+        new OA\Property(property: 'username', type: 'string', minLength: 3, maxLength: 32, description: 'Username'),
+        new OA\Property(property: 'password', type: 'string', minLength: 8, description: 'Password'),
+        new OA\Property(property: 'isPublic', type: 'boolean', description: 'Whether the profile is public', default: false),
+        new OA\Property(property: 'meta', type: 'object', description: 'Additional metadata', additionalProperties: true),
+    ]
+)]
 #[Context([DateTimeNormalizer::FORMAT_KEY => \DateTimeInterface::ATOM])]
 #[UniqueEntity('username', groups: ['user:create', 'user:update'])]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
-    #[Ignore]
+    public const string EXAMPLE_USER_IRI = 'https://bookmarkhive.test/users/me';
+
     #[ORM\Id, ORM\Column(type: 'uuid')]
     public private(set) string $id;
 
     #[Groups(['user:show:public', 'user:create', 'user:show:private', 'bookmark:show:public', 'bookmark:show:private', 'user:update'])]
     #[Assert\NotBlank(groups: ['user:create'])]
     #[Assert\Length(min: 3, max: 32)]
+    #[Assert\Regex(pattern: '`^[A-Za-z0-9]+$`')] // TODO document in Open API
     #[ORM\Column(length: 32, unique: true)]
     public string $username {
         set {
@@ -51,6 +94,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\Column(options: ['default' => 'initial'])]
     public private(set) string $securityInvalidation = 'initial';
+
+    #[Groups(['user:show:public', 'user:show:private'])]
+    #[ORM\OneToOne(mappedBy: 'owner')]
+    public Account $account {
+        set {
+            $this->account = $value;
+            $value->owner = $this;
+        }
+    }
 
     #[Ignore]
     #[ORM\Column]

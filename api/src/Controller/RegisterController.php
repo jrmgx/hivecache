@@ -4,9 +4,11 @@ namespace App\Controller;
 
 use App\Config\RouteAction;
 use App\Config\RouteType;
+use App\Entity\Account;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Response\JsonResponseBuilder;
+use App\Service\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,28 +17,27 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route(path: '/account', name: RouteType::Account->value)]
-final class AccountController extends AbstractController
+#[Route(path: '/register', name: RouteType::Register->value)]
+final class RegisterController extends AbstractController
 {
     public function __construct(
         private readonly UserRepository $userRepository,
         private readonly EntityManagerInterface $entityManager,
         private readonly JsonResponseBuilder $jsonResponseBuilder,
-        private readonly UserPasswordHasherInterface $passwordHasher,
+        private readonly UserFactory $userFactory,
         #[Autowire('%env(ACCOUNT_LIMIT)%')]
         private readonly int $accountLimit,
     ) {
     }
 
     #[OA\Post(
-        path: '/account',
-        tags: ['Account'],
-        operationId: 'createAccount',
-        summary: 'Register a new user account',
-        description: 'Creates a new user account with username and password. Returns the created user object.',
+        path: '/register',
+        tags: ['Register'],
+        operationId: 'createUser',
+        summary: 'Register a new user',
+        description: 'Creates a new user with username and password. Returns the created user object and associated account.',
         requestBody: new OA\RequestBody(
             required: true,
             description: 'User registration data',
@@ -57,7 +58,7 @@ final class AccountController extends AbstractController
                 response: 200,
                 description: 'User account created successfully',
                 content: new OA\JsonContent(
-                    ref: '#/components/schemas/UserOwner',
+                    ref: '#/components/schemas/UserShowPrivate',
                     examples: [
                         new OA\Examples(
                             example: 'success',
@@ -65,7 +66,8 @@ final class AccountController extends AbstractController
                                 'username' => 'johndoe',
                                 'isPublic' => false,
                                 'meta' => [],
-                                '@iri' => 'https://bookmarkhive.test/users/me',
+                                'account' => Account::EXAMPLE_ACCOUNT,
+                                '@iri' => User::EXAMPLE_USER_IRI,
                             ],
                             summary: 'Successfully created user account'
                         ),
@@ -107,23 +109,23 @@ final class AccountController extends AbstractController
             serializationContext: ['groups' => ['user:create']],
             validationGroups: ['Default', 'user:create'],
         )]
-        User $user,
+        User $userInput,
     ): JsonResponse {
         if ($this->userRepository->countAll() >= $this->accountLimit) {
             throw new AccessDeniedHttpException('This instance does not allow new accounts.');
         }
 
-        if ($this->userRepository->usernameExist(mb_strtolower($user->username))) {
+        if ($this->userRepository->usernameExist(mb_strtolower($userInput->username))) {
             throw new ConflictHttpException('Username already exists.');
         }
 
-        /** @var string $plainPassword asserted by validator */
-        $plainPassword = $user->getPlainPassword();
-        $user->setPassword(
-            $this->passwordHasher->hashPassword($user, $plainPassword)
+        [$user] = $this->userFactory->new(
+            $userInput->username,
+            $userInput->getPlainPassword() ?? throw new \LogicException(),
+            $userInput->isPublic,
+            $userInput->meta
         );
-        $user->setPlainPassword(null);
-        $this->entityManager->persist($user);
+
         $this->entityManager->flush();
 
         return $this->jsonResponseBuilder->single($user, ['user:show:private']);

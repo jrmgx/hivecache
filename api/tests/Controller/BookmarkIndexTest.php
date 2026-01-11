@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests;
+namespace App\Tests\Controller;
 
 use App\Entity\Bookmark;
 use App\Entity\BookmarkIndexAction;
@@ -8,6 +8,7 @@ use App\Enum\BookmarkIndexActionType;
 use App\Factory\BookmarkFactory;
 use App\Repository\BookmarkIndexActionRepository;
 use App\Repository\BookmarkRepository;
+use App\Tests\BaseApiTestCase;
 
 class BookmarkIndexTest extends BaseApiTestCase
 {
@@ -24,7 +25,7 @@ class BookmarkIndexTest extends BaseApiTestCase
 
     public function testCreateBookmarkCreatesIndexAction(): void
     {
-        [$user, $token] = $this->createAuthenticatedUser('testuser', 'test');
+        [$user, $token] = $this->createAuthenticatedUserAccount('testuser', 'test');
 
         $this->request('POST', '/users/me/bookmarks', [
             'headers' => ['Content-Type' => 'application/json'],
@@ -54,7 +55,7 @@ class BookmarkIndexTest extends BaseApiTestCase
 
     public function testUpdateBookmarkCreatesIndexAction(): void
     {
-        [$user, $token] = $this->createAuthenticatedUser('testuser', 'test');
+        [$user, $token] = $this->createAuthenticatedUserAccount('testuser', 'test');
 
         $this->request('POST', '/users/me/bookmarks', [
             'headers' => ['Content-Type' => 'application/json'],
@@ -93,7 +94,7 @@ class BookmarkIndexTest extends BaseApiTestCase
 
     public function testOutdateBookmarkCreatesIndexAction(): void
     {
-        [$user, $token] = $this->createAuthenticatedUser('testuser', 'test');
+        [$user, $token] = $this->createAuthenticatedUserAccount('testuser', 'test');
 
         $url = 'https://example.com/test-bookmark';
 
@@ -136,7 +137,7 @@ class BookmarkIndexTest extends BaseApiTestCase
 
     public function testDeleteBookmarkCreatesIndexAction(): void
     {
-        [$user, $token] = $this->createAuthenticatedUser('testuser', 'test');
+        [$user, $token] = $this->createAuthenticatedUserAccount('testuser', 'test');
 
         $this->request('POST', '/users/me/bookmarks', [
             'headers' => ['Content-Type' => 'application/json'],
@@ -154,7 +155,6 @@ class BookmarkIndexTest extends BaseApiTestCase
         $bookmark = $this->bookmarkRepository->find($bookmarkId);
         $this->assertNotNull($bookmark, 'Bookmark should exist');
 
-        $this->client->enableProfiler();
         $this->request('DELETE', "/users/me/bookmarks/{$bookmarkId}", [
             'auth_bearer' => $token,
         ]);
@@ -171,10 +171,10 @@ class BookmarkIndexTest extends BaseApiTestCase
 
     public function testGetSearchIndexReturnsBookmarks(): void
     {
-        [$user, $token] = $this->createAuthenticatedUser('testuser', 'test');
+        [$user, $token, $account] = $this->createAuthenticatedUserAccount('testuser', 'test');
 
         // Create some bookmarks for the user
-        BookmarkFactory::createMany(3, ['owner' => $user]);
+        BookmarkFactory::createMany(3, ['account' => $account]);
 
         $this->assertUnauthorized('GET', '/users/me/bookmarks/search/index');
 
@@ -186,14 +186,14 @@ class BookmarkIndexTest extends BaseApiTestCase
         $this->assertArrayHasKey('collection', $json);
         $this->assertIsArray($json['collection']);
         $this->assertCount(3, $json['collection']);
-        $this->assertBookmarkOwnerCollection($json['collection']);
+        $this->assertBookmarkCollection($json['collection']);
     }
 
     public function testGetSearchDiffReturnsIndexActions(): void
     {
-        [$user, $token] = $this->createAuthenticatedUser('testuser', 'test');
+        [$user, $token, $account] = $this->createAuthenticatedUserAccount('testuser', 'test');
 
-        $bookmarks = BookmarkFactory::createMany(5, ['owner' => $user]);
+        $bookmarks = BookmarkFactory::createMany(5, ['account' => $account]);
 
         $this->request('PATCH', "/users/me/bookmarks/{$bookmarks[0]->id}", [
             'headers' => ['Content-Type' => 'application/json'],

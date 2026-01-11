@@ -40,7 +40,7 @@ final class MeTagController extends TagController
                         new OA\Property(
                             property: 'collection',
                             type: 'array',
-                            items: new OA\Items(ref: '#/components/schemas/TagOwner')
+                            items: new OA\Items(ref: '#/components/schemas/TagShowPrivate')
                         ),
                         new OA\Property(property: 'total', type: 'integer'),
                     ],
@@ -50,12 +50,9 @@ final class MeTagController extends TagController
                             value: [
                                 'collection' => [
                                     [
-                                        'name' => 'Web Development',
-                                        'slug' => 'web-development',
-                                        'owner' => ['username' => 'johndoe', '@iri' => 'https://bookmarkhive.test/users/me'],
+                                        ...Tag::EXAMPLE_TAG,
                                         'meta' => ['color' => 'blue'],
                                         'isPublic' => true,
-                                        '@iri' => 'https://bookmarkhive.test/users/me/tags/web-development',
                                     ],
                                 ],
                                 'total' => 1,
@@ -97,7 +94,7 @@ final class MeTagController extends TagController
                 response: 200,
                 description: 'Tag details',
                 content: new OA\JsonContent(
-                    ref: '#/components/schemas/TagOwner'
+                    ref: '#/components/schemas/TagShowPrivate'
                 )
             ),
             new OA\Response(
@@ -144,29 +141,23 @@ final class MeTagController extends TagController
                 response: 200,
                 description: 'Tag created or existing tag returned',
                 content: new OA\JsonContent(
-                    ref: '#/components/schemas/TagOwner',
+                    ref: '#/components/schemas/TagShowPrivate',
                     examples: [
                         new OA\Examples(
                             example: 'created_tag',
                             value: [
-                                'name' => 'Web Development',
-                                'slug' => 'web-development',
-                                'owner' => ['username' => 'johndoe', '@iri' => 'https://bookmarkhive.test/users/me'],
+                                ...Tag::EXAMPLE_TAG,
                                 'meta' => [],
                                 'isPublic' => false,
-                                '@iri' => 'https://bookmarkhive.test/users/me/tags/web-development',
                             ],
                             summary: 'Newly created tag'
                         ),
                         new OA\Examples(
                             example: 'existing_tag',
                             value: [
-                                'name' => 'Web Development',
-                                'slug' => 'web-development',
-                                'owner' => ['username' => 'johndoe', '@iri' => 'https://bookmarkhive.test/users/me'],
+                                ...Tag::EXAMPLE_TAG,
                                 'meta' => ['color' => 'blue'],
                                 'isPublic' => true,
-                                '@iri' => 'https://bookmarkhive.test/users/me/tags/web-development',
                             ],
                             summary: 'Existing tag returned'
                         ),
@@ -256,7 +247,7 @@ final class MeTagController extends TagController
                 response: 200,
                 description: 'Tag updated successfully',
                 content: new OA\JsonContent(
-                    ref: '#/components/schemas/TagOwner'
+                    ref: '#/components/schemas/TagShowPrivate'
                 )
             ),
             new OA\Response(

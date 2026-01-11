@@ -8,90 +8,14 @@
     "servers": [
         {
             "url": "https://bookmarkhive.test",
-            "description": "API Server"
+            "description": "API Dev Server"
+        },
+        {
+            "url": "https://api2.bookmarkhive.test",
+            "description": "API 2 Dev Server"
         }
     ],
     "paths": {
-        "/account": {
-            "post": {
-                "tags": [
-                    "Account"
-                ],
-                "summary": "Register a new user account",
-                "description": "Creates a new user account with username and password. Returns the created user object.",
-                "operationId": "createAccount",
-                "requestBody": {
-                    "description": "User registration data",
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/UserCreate"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "User account created successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/UserOwner"
-                                },
-                                "examples": {
-                                    "success": {
-                                        "summary": "Successfully created user account",
-                                        "value": {
-                                            "username": "johndoe",
-                                            "isPublic": false,
-                                            "meta": [],
-                                            "@iri": "https://bookmarkhive.test/users/me"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error - username already exists or invalid data",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                },
-                                "examples": {
-                                    "duplicate_username": {
-                                        "summary": "Username already taken",
-                                        "value": {
-                                            "error": {
-                                                "code": 422,
-                                                "message": "Username already exists"
-                                            }
-                                        }
-                                    },
-                                    "invalid_data": {
-                                        "summary": "Validation error",
-                                        "value": {
-                                            "error": {
-                                                "code": 422,
-                                                "message": "Username must be between 3 and 32 characters"
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden - instance does not allow new accounts"
-                    },
-                    "409": {
-                        "description": "Conflict - username already exist with a different set of case"
-                    }
-                }
-            }
-        },
         "/auth": {
             "post": {
                 "tags": [
@@ -209,7 +133,7 @@
                                         "collection": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/components/schemas/BookmarkOwner"
+                                                "$ref": "#/components/schemas/BookmarkShowPrivate"
                                             }
                                         },
                                         "prevPage": {
@@ -240,18 +164,20 @@
                                                     "title": "Example Bookmark",
                                                     "url": "https://example.com",
                                                     "domain": "example.com",
-                                                    "owner": {
+                                                    "account": {
+                                                        "@iri": "https://bookmarkhive.test/profile/johndoe",
                                                         "username": "johndoe",
-                                                        "@iri": "https://bookmarkhive.test/users/me"
+                                                        "instance": "bookmarkhive.test"
                                                     },
                                                     "isPublic": true,
                                                     "tags": [
                                                         {
-                                                            "name": "Web Development",
-                                                            "slug": "web-development",
-                                                            "@iri": "https://bookmarkhive.test/users/me/tags/web-development"
+                                                            "name": "Bookmarking",
+                                                            "slug": "bookmarking",
+                                                            "@iri": "https://bookmarkhive.test/users/me/tags/bookmarking"
                                                         }
                                                     ],
+                                                    "instance": "bookmarkhive.test",
                                                     "@iri": "https://bookmarkhive.test/users/me/bookmarks/01234567-89ab-cdef-0123-456789abcdef"
                                                 }
                                             ],
@@ -339,7 +265,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/BookmarkOwner"
+                                    "$ref": "#/components/schemas/BookmarkShowPrivate"
                                 },
                                 "examples": {
                                     "created_bookmark": {
@@ -350,18 +276,20 @@
                                             "title": "Example Bookmark",
                                             "url": "https://example.com",
                                             "domain": "example.com",
-                                            "owner": {
+                                            "account": {
+                                                "@iri": "https://bookmarkhive.test/profile/johndoe",
                                                 "username": "johndoe",
-                                                "@iri": "https://bookmarkhive.test/users/me"
+                                                "instance": "bookmarkhive.test"
                                             },
                                             "isPublic": false,
                                             "tags": [
                                                 {
-                                                    "name": "Web Development",
-                                                    "slug": "web-development",
-                                                    "@iri": "https://bookmarkhive.test/users/me/tags/web-development"
+                                                    "name": "Bookmarking",
+                                                    "slug": "bookmarking",
+                                                    "@iri": "https://bookmarkhive.test/users/me/tags/bookmarking"
                                                 }
                                             ],
+                                            "instance": "bookmarkhive.test",
                                             "@iri": "https://bookmarkhive.test/users/me/bookmarks/01234567-89ab-cdef-0123-456789abcdef"
                                         }
                                     }
@@ -436,7 +364,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/BookmarkOwner"
+                                    "$ref": "#/components/schemas/BookmarkShowPrivate"
                                 }
                             }
                         }
@@ -562,7 +490,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/BookmarkOwner"
+                                    "$ref": "#/components/schemas/BookmarkShowPrivate"
                                 }
                             }
                         }
@@ -632,7 +560,7 @@
                                         "collection": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/components/schemas/BookmarkOwner"
+                                                "$ref": "#/components/schemas/BookmarkShowPrivate"
                                             }
                                         }
                                     },
@@ -685,7 +613,7 @@
                                         "collection": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/components/schemas/BookmarkOwner"
+                                                "$ref": "#/components/schemas/BookmarkShowPrivate"
                                             }
                                         },
                                         "prevPage": {
@@ -783,7 +711,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/UserOwner"
+                                    "$ref": "#/components/schemas/UserShowPrivate"
                                 },
                                 "examples": {
                                     "user_profile": {
@@ -794,6 +722,11 @@
                                             "meta": {
                                                 "theme": "dark",
                                                 "language": "en"
+                                            },
+                                            "account": {
+                                                "@iri": "https://bookmarkhive.test/profile/johndoe",
+                                                "username": "johndoe",
+                                                "instance": "bookmarkhive.test"
                                             },
                                             "@iri": "https://bookmarkhive.test/users/me"
                                         }
@@ -879,7 +812,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/UserOwner"
+                                    "$ref": "#/components/schemas/UserShowPrivate"
                                 }
                             }
                         }
@@ -989,8 +922,6 @@
                                     "uploaded_file": {
                                         "summary": "Successfully uploaded file",
                                         "value": {
-                                            "id": "01234567-89ab-cdef-0123-456789abcdef",
-                                            "createdAt": "2024-01-01T12:00:00+00:00",
                                             "contentUrl": "https://bookmarkhive.test/storage/files/abc123.jpg",
                                             "size": 102400,
                                             "mime": "image/jpeg",
@@ -1033,6 +964,269 @@
                 ]
             }
         },
+        "/users/me/followers": {
+            "get": {
+                "tags": [
+                    "Followers"
+                ],
+                "summary": "List own followers",
+                "description": "Returns a paginated collection of accounts that follow the authenticated user. Default page size is 100 items, ordered by creation date (newest first).",
+                "operationId": "listOwnFollowers",
+                "parameters": [
+                    {
+                        "name": "after",
+                        "in": "query",
+                        "description": "Cursor for pagination - account ID to fetch results after",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of follower accounts",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "collection": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/FollowerShowPublic"
+                                            }
+                                        },
+                                        "prevPage": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "nextPage": {
+                                            "description": "URL for next page if available",
+                                            "type": "string",
+                                            "nullable": true
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "examples": {
+                                    "follower_list": {
+                                        "summary": "Paginated list of followers",
+                                        "value": {
+                                            "collection": [
+                                                {
+                                                    "id": "01234567-89ab-cdef-0123-456789abcdef",
+                                                    "account": {
+                                                        "@iri": "https://bookmarkhive.test/profile/johndoe",
+                                                        "username": "johndoe",
+                                                        "instance": "bookmarkhive.test"
+                                                    },
+                                                    "createdAt": "2024-01-01T12:00:00+00:00"
+                                                }
+                                            ],
+                                            "prevPage": null,
+                                            "nextPage": "https://bookmarkhive.test/users/me/followers?after=01234567-89ab-cdef-0123-456789abcdef",
+                                            "total": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/users/me/following": {
+            "get": {
+                "tags": [
+                    "Following"
+                ],
+                "summary": "List accounts being followed",
+                "description": "Returns a paginated collection of accounts that the authenticated user is following. Default page size is 100 items, ordered by creation date (newest first).",
+                "operationId": "listOwnFollowing",
+                "parameters": [
+                    {
+                        "name": "after",
+                        "in": "query",
+                        "description": "Cursor for pagination - account ID to fetch results after",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of followed accounts",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "collection": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/FollowingShowPublic"
+                                            }
+                                        },
+                                        "prevPage": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "nextPage": {
+                                            "description": "URL for next page if available",
+                                            "type": "string",
+                                            "nullable": true
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "examples": {
+                                    "following_list": {
+                                        "summary": "Paginated list of followed accounts",
+                                        "value": {
+                                            "collection": [
+                                                {
+                                                    "id": "01234567-89ab-cdef-0123-456789abcdef",
+                                                    "account": {
+                                                        "@iri": "https://bookmarkhive.test/profile/johndoe",
+                                                        "username": "johndoe",
+                                                        "instance": "bookmarkhive.test"
+                                                    },
+                                                    "createdAt": "2024-01-01T12:00:00+00:00"
+                                                }
+                                            ],
+                                            "prevPage": null,
+                                            "nextPage": "https://bookmarkhive.test/users/me/following?after=01234567-89ab-cdef-0123-456789abcdef",
+                                            "total": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/users/me/following/{usernameWithInstance}": {
+            "post": {
+                "tags": [
+                    "Following"
+                ],
+                "summary": "Follow an account",
+                "description": "Creates a follow relationship with the specified account by username.",
+                "operationId": "followAccount",
+                "parameters": [
+                    {
+                        "name": "usernameWithInstance",
+                        "in": "path",
+                        "description": "Username of the account to follow (with instance)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "johndoe@bookmarkhive.test"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Account followed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FollowingShowPublic"
+                                },
+                                "examples": {
+                                    "followed_account": {
+                                        "summary": "Successfully followed account",
+                                        "value": {
+                                            "id": "01234567-89ab-cdef-0123-456789abcdef",
+                                            "account": {
+                                                "@iri": "https://bookmarkhive.test/profile/johndoe",
+                                                "username": "johndoe",
+                                                "instance": "bookmarkhive.test"
+                                            },
+                                            "createdAt": "2024-01-01T12:00:00+00:00"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    },
+                    "404": {
+                        "description": "Account not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Following"
+                ],
+                "summary": "Unfollow an account",
+                "description": "Removes the follow relationship with the specified account by username (with instance).",
+                "operationId": "unfollowAccount",
+                "parameters": [
+                    {
+                        "name": "usernameWithInstance",
+                        "in": "path",
+                        "description": "Username of the account to unfollow",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "johndoe@bookmarkhive.test"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Account unfollowed successfully"
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    },
+                    "404": {
+                        "description": "Account not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/users/me/tags": {
             "get": {
                 "tags": [
@@ -1051,7 +1245,7 @@
                                         "collection": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/components/schemas/TagOwner"
+                                                "$ref": "#/components/schemas/TagShowPrivate"
                                             }
                                         },
                                         "total": {
@@ -1066,17 +1260,13 @@
                                         "value": {
                                             "collection": [
                                                 {
-                                                    "name": "Web Development",
-                                                    "slug": "web-development",
-                                                    "owner": {
-                                                        "username": "johndoe",
-                                                        "@iri": "https://bookmarkhive.test/users/me"
-                                                    },
+                                                    "name": "Bookmarking",
+                                                    "slug": "bookmarking",
+                                                    "@iri": "https://bookmarkhive.test/users/me/tags/bookmarking",
                                                     "meta": {
                                                         "color": "blue"
                                                     },
-                                                    "isPublic": true,
-                                                    "@iri": "https://bookmarkhive.test/users/me/tags/web-development"
+                                                    "isPublic": true
                                                 }
                                             ],
                                             "total": 1
@@ -1145,37 +1335,29 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/TagOwner"
+                                    "$ref": "#/components/schemas/TagShowPrivate"
                                 },
                                 "examples": {
                                     "created_tag": {
                                         "summary": "Newly created tag",
                                         "value": {
-                                            "name": "Web Development",
-                                            "slug": "web-development",
-                                            "owner": {
-                                                "username": "johndoe",
-                                                "@iri": "https://bookmarkhive.test/users/me"
-                                            },
+                                            "name": "Bookmarking",
+                                            "slug": "bookmarking",
+                                            "@iri": "https://bookmarkhive.test/users/me/tags/bookmarking",
                                             "meta": [],
-                                            "isPublic": false,
-                                            "@iri": "https://bookmarkhive.test/users/me/tags/web-development"
+                                            "isPublic": false
                                         }
                                     },
                                     "existing_tag": {
                                         "summary": "Existing tag returned",
                                         "value": {
-                                            "name": "Web Development",
-                                            "slug": "web-development",
-                                            "owner": {
-                                                "username": "johndoe",
-                                                "@iri": "https://bookmarkhive.test/users/me"
-                                            },
+                                            "name": "Bookmarking",
+                                            "slug": "bookmarking",
+                                            "@iri": "https://bookmarkhive.test/users/me/tags/bookmarking",
                                             "meta": {
                                                 "color": "blue"
                                             },
-                                            "isPublic": true,
-                                            "@iri": "https://bookmarkhive.test/users/me/tags/web-development"
+                                            "isPublic": true
                                         }
                                     }
                                 }
@@ -1239,7 +1421,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/TagOwner"
+                                    "$ref": "#/components/schemas/TagShowPrivate"
                                 }
                             }
                         }
@@ -1343,7 +1525,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/TagOwner"
+                                    "$ref": "#/components/schemas/TagShowPrivate"
                                 }
                             }
                         }
@@ -1441,7 +1623,7 @@
                                         "collection": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/components/schemas/BookmarkProfile"
+                                                "$ref": "#/components/schemas/BookmarkShowPublic"
                                             }
                                         },
                                         "prevPage": {
@@ -1516,7 +1698,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/BookmarkProfile"
+                                    "$ref": "#/components/schemas/BookmarkShowPublic"
                                 }
                             },
                             "text/html": {
@@ -1582,14 +1764,15 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/UserProfile"
+                                    "$ref": "#/components/schemas/AccountShowPublic"
                                 },
                                 "examples": {
                                     "public_profile": {
                                         "summary": "Public user profile",
                                         "value": {
+                                            "@iri": "https://bookmarkhive.test/profile/johndoe",
                                             "username": "johndoe",
-                                            "@iri": "https://bookmarkhive.test/profile/johndoe"
+                                            "instance": "bookmarkhive.test"
                                         }
                                     }
                                 }
@@ -1650,7 +1833,7 @@
                                         "collection": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/components/schemas/TagProfile"
+                                                "$ref": "#/components/schemas/TagShowPublic"
                                             }
                                         },
                                         "total": {
@@ -1713,7 +1896,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/TagProfile"
+                                    "$ref": "#/components/schemas/TagShowPublic"
                                 }
                             },
                             "text/html": {
@@ -1739,6 +1922,91 @@
                     },
                     "404": {
                         "description": "Tag not found, not public, or user not found"
+                    }
+                }
+            }
+        },
+        "/register": {
+            "post": {
+                "tags": [
+                    "Register"
+                ],
+                "summary": "Register a new user",
+                "description": "Creates a new user with username and password. Returns the created user object and associated account.",
+                "operationId": "createUser",
+                "requestBody": {
+                    "description": "User registration data",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserCreate"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "User account created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserShowPrivate"
+                                },
+                                "examples": {
+                                    "success": {
+                                        "summary": "Successfully created user account",
+                                        "value": {
+                                            "username": "johndoe",
+                                            "isPublic": false,
+                                            "meta": [],
+                                            "account": {
+                                                "@iri": "https://bookmarkhive.test/profile/johndoe",
+                                                "username": "johndoe",
+                                                "instance": "bookmarkhive.test"
+                                            },
+                                            "@iri": "https://bookmarkhive.test/users/me"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - username already exists or invalid data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "duplicate_username": {
+                                        "summary": "Username already taken",
+                                        "value": {
+                                            "error": {
+                                                "code": 422,
+                                                "message": "Username already exists"
+                                            }
+                                        }
+                                    },
+                                    "invalid_data": {
+                                        "summary": "Validation error",
+                                        "value": {
+                                            "error": {
+                                                "code": 422,
+                                                "message": "Username must be between 3 and 32 characters"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - instance does not allow new accounts"
+                    },
+                    "409": {
+                        "description": "Conflict - username already exist with a different set of case"
                     }
                 }
             }
@@ -1810,7 +2078,307 @@
                 },
                 "type": "object"
             },
-            "UserOwner": {
+            "AccountShowPublic": {
+                "description": "Account object representing an ActivityPub account",
+                "properties": {
+                    "@iri": {
+                        "description": "IRI of the account resource",
+                        "type": "string",
+                        "format": "iri"
+                    },
+                    "username": {
+                        "description": "Account username",
+                        "type": "string"
+                    },
+                    "instance": {
+                        "description": "Instance domain where the account is hosted",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "BookmarkShowPrivate": {
+                "description": "Bookmark object with owner-level details",
+                "properties": {
+                    "id": {
+                        "description": "Bookmark ID",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "createdAt": {
+                        "description": "Creation timestamp",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "title": {
+                        "description": "Bookmark title",
+                        "type": "string"
+                    },
+                    "url": {
+                        "description": "Bookmark URL",
+                        "type": "string",
+                        "format": "uri"
+                    },
+                    "domain": {
+                        "description": "Extracted domain from URL",
+                        "type": "string"
+                    },
+                    "account": {
+                        "$ref": "#/components/schemas/AccountShowPublic"
+                    },
+                    "isPublic": {
+                        "description": "Whether the bookmark is public",
+                        "type": "boolean"
+                    },
+                    "tags": {
+                        "description": "Associated tags",
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "mainImage": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/FileObject"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "Main image file object",
+                        "type": "object"
+                    },
+                    "archive": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/FileObject"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "Archive file object",
+                        "type": "object"
+                    },
+                    "instance": {
+                        "description": "Instance host where the bookmark was created",
+                        "type": "string"
+                    },
+                    "@iri": {
+                        "description": "IRI of the bookmark resource",
+                        "type": "string",
+                        "format": "iri"
+                    }
+                },
+                "type": "object"
+            },
+            "BookmarkShowPublic": {
+                "description": "Public bookmark information",
+                "properties": {
+                    "id": {
+                        "description": "Bookmark ID",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "createdAt": {
+                        "description": "Creation timestamp",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "title": {
+                        "description": "Bookmark title",
+                        "type": "string"
+                    },
+                    "url": {
+                        "description": "Bookmark URL",
+                        "type": "string",
+                        "format": "uri"
+                    },
+                    "domain": {
+                        "description": "Extracted domain from URL",
+                        "type": "string"
+                    },
+                    "account": {
+                        "$ref": "#/components/schemas/AccountShowPublic"
+                    },
+                    "tags": {
+                        "description": "Associated public tags",
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "mainImage": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/FileObject"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "Main image file object",
+                        "type": "object"
+                    },
+                    "archive": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/FileObject"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "Archive file object",
+                        "type": "object"
+                    },
+                    "instance": {
+                        "description": "Instance host where the bookmark was created",
+                        "type": "string"
+                    },
+                    "@iri": {
+                        "description": "IRI of the bookmark resource",
+                        "type": "string",
+                        "format": "iri"
+                    }
+                },
+                "type": "object"
+            },
+            "BookmarkIndexAction": {
+                "description": "Bookmark index action representing a change to a bookmark",
+                "properties": {
+                    "id": {
+                        "description": "Index action ID",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "createdAt": {
+                        "description": "Creation timestamp",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "type": {
+                        "description": "Type of action performed on the bookmark",
+                        "type": "string",
+                        "enum": [
+                            "created",
+                            "updated",
+                            "deleted",
+                            "outdated"
+                        ]
+                    },
+                    "bookmark": {
+                        "description": "The bookmark id associated with this action",
+                        "type": "string",
+                        "format": "uuid"
+                    }
+                },
+                "type": "object"
+            },
+            "FileObject": {
+                "description": "File object representing an uploaded file",
+                "properties": {
+                    "contentUrl": {
+                        "description": "URL to access the file content",
+                        "type": "string",
+                        "format": "uri",
+                        "nullable": true
+                    },
+                    "size": {
+                        "description": "File size in bytes",
+                        "type": "integer"
+                    },
+                    "mime": {
+                        "description": "MIME type of the file",
+                        "type": "string"
+                    },
+                    "@iri": {
+                        "description": "IRI of the file object resource",
+                        "type": "string",
+                        "format": "iri"
+                    }
+                },
+                "type": "object"
+            },
+            "FollowerShowPublic": {
+                "description": "Follower object representing an account that follows the user",
+                "properties": {
+                    "id": {
+                        "description": "Follower relationship ID",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "account": {
+                        "$ref": "#/components/schemas/AccountShowPublic"
+                    },
+                    "createdAt": {
+                        "description": "When the follow relationship was created",
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "FollowingShowPublic": {
+                "description": "Following object representing an account that the user follows",
+                "properties": {
+                    "id": {
+                        "description": "Following relationship ID",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "account": {
+                        "$ref": "#/components/schemas/AccountShowPublic"
+                    },
+                    "createdAt": {
+                        "description": "When the follow relationship was created",
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "TagShowPrivate": {
+                "description": "Tag object with owner-level details",
+                "properties": {
+                    "name": {
+                        "description": "Tag name",
+                        "type": "string"
+                    },
+                    "slug": {
+                        "description": "Tag slug",
+                        "type": "string"
+                    },
+                    "meta": {
+                        "description": "Additional metadata",
+                        "type": "object",
+                        "additionalProperties": true
+                    },
+                    "isPublic": {
+                        "description": "Whether the tag is public",
+                        "type": "boolean"
+                    },
+                    "@iri": {
+                        "description": "IRI of the tag resource",
+                        "type": "string",
+                        "format": "iri"
+                    }
+                },
+                "type": "object"
+            },
+            "TagShowPublic": {
+                "description": "Public tag information",
+                "properties": {
+                    "name": {
+                        "description": "Tag name",
+                        "type": "string"
+                    },
+                    "slug": {
+                        "description": "Tag slug",
+                        "type": "string"
+                    },
+                    "@iri": {
+                        "description": "IRI of the tag resource",
+                        "type": "string",
+                        "format": "iri"
+                    }
+                },
+                "type": "object"
+            },
+            "UserShowPrivate": {
                 "description": "User object with owner-level details",
                 "properties": {
                     "username": {
@@ -1826,6 +2394,9 @@
                         "type": "object",
                         "additionalProperties": true
                     },
+                    "account": {
+                        "$ref": "#/components/schemas/AccountShowPublic"
+                    },
                     "@iri": {
                         "description": "IRI of the user resource",
                         "type": "string",
@@ -1834,12 +2405,15 @@
                 },
                 "type": "object"
             },
-            "UserProfile": {
+            "UserShowPublic": {
                 "description": "Public user profile",
                 "properties": {
                     "username": {
                         "description": "Username",
                         "type": "string"
+                    },
+                    "account": {
+                        "$ref": "#/components/schemas/AccountShowPublic"
                     },
                     "@iri": {
                         "description": "IRI of the user resource",
@@ -1879,284 +2453,6 @@
                     }
                 },
                 "type": "object"
-            },
-            "TagOwner": {
-                "description": "Tag object with owner-level details",
-                "properties": {
-                    "name": {
-                        "description": "Tag name",
-                        "type": "string"
-                    },
-                    "slug": {
-                        "description": "Tag slug",
-                        "type": "string"
-                    },
-                    "owner": {
-                        "description": "Tag owner",
-                        "properties": {
-                            "username": {
-                                "type": "string"
-                            },
-                            "@iri": {
-                                "type": "string",
-                                "format": "iri"
-                            }
-                        },
-                        "type": "object"
-                    },
-                    "meta": {
-                        "description": "Additional metadata",
-                        "type": "object",
-                        "additionalProperties": true
-                    },
-                    "isPublic": {
-                        "description": "Whether the tag is public",
-                        "type": "boolean"
-                    },
-                    "@iri": {
-                        "description": "IRI of the tag resource",
-                        "type": "string",
-                        "format": "iri"
-                    }
-                },
-                "type": "object"
-            },
-            "TagProfile": {
-                "description": "Public tag information",
-                "properties": {
-                    "name": {
-                        "description": "Tag name",
-                        "type": "string"
-                    },
-                    "slug": {
-                        "description": "Tag slug",
-                        "type": "string"
-                    },
-                    "@iri": {
-                        "description": "IRI of the tag resource",
-                        "type": "string",
-                        "format": "iri"
-                    }
-                },
-                "type": "object"
-            },
-            "BookmarkOwner": {
-                "description": "Bookmark object with owner-level details",
-                "properties": {
-                    "id": {
-                        "description": "Bookmark ID",
-                        "type": "string",
-                        "format": "uuid"
-                    },
-                    "createdAt": {
-                        "description": "Creation timestamp",
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "title": {
-                        "description": "Bookmark title",
-                        "type": "string"
-                    },
-                    "url": {
-                        "description": "Bookmark URL",
-                        "type": "string",
-                        "format": "uri"
-                    },
-                    "domain": {
-                        "description": "Extracted domain from URL",
-                        "type": "string"
-                    },
-                    "owner": {
-                        "description": "Bookmark owner",
-                        "properties": {
-                            "username": {
-                                "type": "string"
-                            },
-                            "@iri": {
-                                "type": "string",
-                                "format": "iri"
-                            }
-                        },
-                        "type": "object"
-                    },
-                    "isPublic": {
-                        "description": "Whether the bookmark is public",
-                        "type": "boolean"
-                    },
-                    "tags": {
-                        "description": "Associated tags",
-                        "type": "array",
-                        "items": {
-                            "type": "object"
-                        }
-                    },
-                    "mainImage": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/FileObject"
-                            }
-                        ],
-                        "nullable": true,
-                        "description": "Main image file object",
-                        "type": "object"
-                    },
-                    "archive": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/FileObject"
-                            }
-                        ],
-                        "nullable": true,
-                        "description": "Archive file object",
-                        "type": "object"
-                    },
-                    "@iri": {
-                        "description": "IRI of the bookmark resource",
-                        "type": "string",
-                        "format": "iri"
-                    }
-                },
-                "type": "object"
-            },
-            "BookmarkProfile": {
-                "description": "Public bookmark information",
-                "properties": {
-                    "id": {
-                        "description": "Bookmark ID",
-                        "type": "string",
-                        "format": "uuid"
-                    },
-                    "createdAt": {
-                        "description": "Creation timestamp",
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "title": {
-                        "description": "Bookmark title",
-                        "type": "string"
-                    },
-                    "url": {
-                        "description": "Bookmark URL",
-                        "type": "string",
-                        "format": "uri"
-                    },
-                    "domain": {
-                        "description": "Extracted domain from URL",
-                        "type": "string"
-                    },
-                    "owner": {
-                        "description": "Bookmark owner",
-                        "properties": {
-                            "username": {
-                                "type": "string"
-                            },
-                            "@iri": {
-                                "type": "string",
-                                "format": "iri"
-                            }
-                        },
-                        "type": "object"
-                    },
-                    "tags": {
-                        "description": "Associated public tags",
-                        "type": "array",
-                        "items": {
-                            "type": "object"
-                        }
-                    },
-                    "mainImage": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/FileObject"
-                            }
-                        ],
-                        "nullable": true,
-                        "description": "Main image file object",
-                        "type": "object"
-                    },
-                    "archive": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/FileObject"
-                            }
-                        ],
-                        "nullable": true,
-                        "description": "Archive file object",
-                        "type": "object"
-                    },
-                    "@iri": {
-                        "description": "IRI of the bookmark resource",
-                        "type": "string",
-                        "format": "iri"
-                    }
-                },
-                "type": "object"
-            },
-            "FileObject": {
-                "description": "File object representing an uploaded file",
-                "properties": {
-                    "id": {
-                        "description": "File object ID",
-                        "type": "string",
-                        "format": "uuid"
-                    },
-                    "createdAt": {
-                        "description": "Creation timestamp",
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "contentUrl": {
-                        "description": "URL to access the file content",
-                        "type": "string",
-                        "format": "uri",
-                        "nullable": true
-                    },
-                    "size": {
-                        "description": "File size in bytes",
-                        "type": "integer"
-                    },
-                    "mime": {
-                        "description": "MIME type of the file",
-                        "type": "string"
-                    },
-                    "@iri": {
-                        "description": "IRI of the file object resource",
-                        "type": "string",
-                        "format": "iri"
-                    }
-                },
-                "type": "object"
-            },
-            "BookmarkIndexAction": {
-                "description": "Bookmark index action representing a change to a bookmark",
-                "properties": {
-                    "id": {
-                        "description": "Index action ID",
-                        "type": "string",
-                        "format": "uuid"
-                    },
-                    "createdAt": {
-                        "description": "Creation timestamp",
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "type": {
-                        "description": "Type of action performed on the bookmark",
-                        "type": "string",
-                        "enum": [
-                            "created",
-                            "updated",
-                            "deleted",
-                            "outdated"
-                        ]
-                    },
-                    "bookmark": {
-                        "description": "The bookmark id associated with this action",
-                        "type": "string",
-                        "format": "uuid"
-                    }
-                },
-                "type": "object"
             }
         },
         "securitySchemes": {
@@ -2169,10 +2465,6 @@
         }
     },
     "tags": [
-        {
-            "name": "Account",
-            "description": "Account"
-        },
         {
             "name": "Authentication",
             "description": "Authentication"
@@ -2194,12 +2486,24 @@
             "description": "Files"
         },
         {
+            "name": "Followers",
+            "description": "Followers"
+        },
+        {
+            "name": "Following",
+            "description": "Following"
+        },
+        {
             "name": "Tags",
             "description": "Tags"
         },
         {
             "name": "Profile",
             "description": "Profile"
+        },
+        {
+            "name": "Register",
+            "description": "Register"
         }
     ],
     "x-tagGroups": [

@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Config\RouteAction;
 use App\Config\RouteType;
-use App\Entity\User;
+use App\Entity\Account;
 use App\Helper\RequestHelper;
 use OpenApi\Attributes as OA;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
@@ -58,7 +58,7 @@ final class ProfileBookmarkController extends BookmarkController
                         new OA\Property(
                             property: 'collection',
                             type: 'array',
-                            items: new OA\Items(ref: '#/components/schemas/BookmarkProfile')
+                            items: new OA\Items(ref: '#/components/schemas/BookmarkShowPublic')
                         ),
                         new OA\Property(property: 'prevPage', type: 'string', nullable: true, example: null),
                         new OA\Property(property: 'nextPage', type: 'string', nullable: true, description: 'URL for next page if available'),
@@ -74,19 +74,19 @@ final class ProfileBookmarkController extends BookmarkController
     )]
     #[Route(path: '', name: RouteAction::Collection->value, methods: ['GET'])]
     public function collection(
-        #[MapEntity(mapping: ['username' => 'username'])] User $user,
+        #[MapEntity(mapping: ['username' => 'username'])] Account $account,
         #[MapQueryParameter(name: 'tags')] ?string $tagQueryString = null,
         #[MapQueryParameter(name: 'q')] ?string $searchQueryString = null,
         #[MapQueryParameter(name: 'after')] ?string $afterQueryString = null,
     ): JsonResponse {
         return $this->collectionCommon(
-            $user,
+            $account,
             $tagQueryString,
             $searchQueryString,
             $afterQueryString,
             ['bookmark:show:public', 'tag:show:public'],
             RouteType::ProfileBookmarks,
-            ['username' => $user->username],
+            ['username' => $account->username],
             onlyPublic: true
         );
     }
@@ -116,7 +116,7 @@ final class ProfileBookmarkController extends BookmarkController
                 content: [
                     new OA\MediaType(
                         mediaType: 'application/json',
-                        schema: new OA\Schema(ref: '#/components/schemas/BookmarkProfile')
+                        schema: new OA\Schema(ref: '#/components/schemas/BookmarkShowPublic')
                     ),
                     new OA\MediaType(
                         mediaType: 'text/html',
@@ -155,11 +155,11 @@ final class ProfileBookmarkController extends BookmarkController
     #[Route(path: '/{id}', name: RouteAction::Get->value, methods: ['GET'])]
     public function get(
         Request $request,
-        #[MapEntity(mapping: ['username' => 'username'])] User $user,
+        #[MapEntity(mapping: ['username' => 'username'])] Account $account,
         string $id,
     ): Response {
         if (RequestHelper::accepts($request, 'application/json')) {
-            $bookmark = $this->bookmarkRepository->findOneByOwnerAndId($user, $id, onlyPublic: true)
+            $bookmark = $this->bookmarkRepository->findOneByAccountAndId($account, $id, onlyPublic: true)
                 ->getQuery()->getOneOrNullResult()
                 ?? throw new NotFoundHttpException()
             ;
@@ -169,7 +169,7 @@ final class ProfileBookmarkController extends BookmarkController
 
         $iri = $this->generateUrl(RouteType::ProfileBookmarks->value . RouteAction::Get->value, [
             'id' => $id,
-            'username' => $user->username,
+            'username' => $account->username,
         ], UrlGeneratorInterface::ABSOLUTE_URL);
 
         return new RedirectResponse($this->preferredClient . "?iri={$iri}");

@@ -47,7 +47,7 @@ readonly class IriNormalizer implements NormalizerInterface
                     'username' => $data->username,
                 ], UrlGeneratorInterface::ABSOLUTE_URL),
                 Bookmark::class => $this->router->generate(RouteType::ProfileBookmarks->value . RouteAction::Get->value, [
-                    'username' => $data->owner->username,
+                    'username' => $data->account->username,
                     'id' => $data->id,
                 ], UrlGeneratorInterface::ABSOLUTE_URL),
                 Tag::class => $this->router->generate(RouteType::ProfileTags->value . RouteAction::Get->value, [

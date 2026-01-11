@@ -4,7 +4,9 @@ namespace App\Controller;
 
 use App\Config\RouteAction;
 use App\Config\RouteType;
+use App\Entity\Account;
 use App\Entity\Bookmark;
+use App\Entity\Tag;
 use App\Entity\User;
 use App\Enum\BookmarkIndexActionType;
 use App\Security\Voter\BookmarkVoter;
@@ -57,7 +59,7 @@ final class MeBookmarkController extends BookmarkController
                         new OA\Property(
                             property: 'collection',
                             type: 'array',
-                            items: new OA\Items(ref: '#/components/schemas/BookmarkOwner')
+                            items: new OA\Items(ref: '#/components/schemas/BookmarkShowPrivate')
                         ),
                         new OA\Property(property: 'prevPage', type: 'string', nullable: true, example: null),
                         new OA\Property(property: 'nextPage', type: 'string', nullable: true, description: 'URL for next page if available'),
@@ -69,17 +71,18 @@ final class MeBookmarkController extends BookmarkController
                             value: [
                                 'collection' => [
                                     [
-                                        'id' => '01234567-89ab-cdef-0123-456789abcdef',
+                                        'id' => Bookmark::EXAMPLE_BOOKMARK_ID,
                                         'createdAt' => '2024-01-01T12:00:00+00:00',
                                         'title' => 'Example Bookmark',
                                         'url' => 'https://example.com',
                                         'domain' => 'example.com',
-                                        'owner' => ['username' => 'johndoe', '@iri' => 'https://bookmarkhive.test/users/me'],
+                                        'account' => Account::EXAMPLE_ACCOUNT,
                                         'isPublic' => true,
                                         'tags' => [
-                                            ['name' => 'Web Development', 'slug' => 'web-development', '@iri' => 'https://bookmarkhive.test/users/me/tags/web-development'],
+                                            Tag::EXAMPLE_TAG,
                                         ],
-                                        '@iri' => 'https://bookmarkhive.test/users/me/bookmarks/01234567-89ab-cdef-0123-456789abcdef',
+                                        'instance' => 'bookmarkhive.test',
+                                        '@iri' => Bookmark::EXAMPLE_BOOKMARK_IRI,
                                     ],
                                 ],
                                 'prevPage' => null,
@@ -105,7 +108,7 @@ final class MeBookmarkController extends BookmarkController
         #[MapQueryParameter(name: 'after')] ?string $afterQueryString = null,
     ): JsonResponse {
         return $this->collectionCommon(
-            $user,
+            $user->account,
             $tagQueryString,
             $searchQueryString,
             $afterQueryString,
@@ -148,22 +151,23 @@ final class MeBookmarkController extends BookmarkController
                 response: 200,
                 description: 'Bookmark created successfully',
                 content: new OA\JsonContent(
-                    ref: '#/components/schemas/BookmarkOwner',
+                    ref: '#/components/schemas/BookmarkShowPrivate',
                     examples: [
                         new OA\Examples(
                             example: 'created_bookmark',
                             value: [
-                                'id' => '01234567-89ab-cdef-0123-456789abcdef',
+                                'id' => Bookmark::EXAMPLE_BOOKMARK_ID,
                                 'createdAt' => '2024-01-01T12:00:00+00:00',
                                 'title' => 'Example Bookmark',
                                 'url' => 'https://example.com',
                                 'domain' => 'example.com',
-                                'owner' => ['username' => 'johndoe', '@iri' => 'https://bookmarkhive.test/users/me'],
+                                'account' => Account::EXAMPLE_ACCOUNT,
                                 'isPublic' => false,
                                 'tags' => [
-                                    ['name' => 'Web Development', 'slug' => 'web-development', '@iri' => 'https://bookmarkhive.test/users/me/tags/web-development'],
+                                    Tag::EXAMPLE_TAG,
                                 ],
-                                '@iri' => 'https://bookmarkhive.test/users/me/bookmarks/01234567-89ab-cdef-0123-456789abcdef',
+                                'instance' => 'bookmarkhive.test',
+                                '@iri' => Bookmark::EXAMPLE_BOOKMARK_IRI,
                             ],
                             summary: 'Successfully created bookmark'
                         ),
@@ -206,7 +210,7 @@ final class MeBookmarkController extends BookmarkController
     ): JsonResponse {
         // Find previous version and outdate it
         /** @var ?Bookmark $existingBookmark */
-        $existingBookmark = $this->bookmarkRepository->findLastOneByOwnerAndUrl($user, $bookmark->url)
+        $existingBookmark = $this->bookmarkRepository->findLastOneByAccountAndUrl($user->account, $bookmark->url)
             ->getQuery()->getOneOrNullResult()
         ;
         if ($existingBookmark) {
@@ -215,12 +219,15 @@ final class MeBookmarkController extends BookmarkController
             $indexAction = $this->indexActionUpdater->update($existingBookmark, BookmarkIndexActionType::Outdated);
             $this->entityManager->persist($indexAction);
 
+            $bookmark->mergeTags($existingBookmark->tags);
+
             if ($existingBookmark->isPublic) {
                 $bookmark->isPublic = true;
             }
         }
 
-        $bookmark->owner = $user;
+        $bookmark->account = $user->account;
+        $bookmark->instance = $this->instanceHost;
 
         try {
             $this->entityManager->persist($bookmark);
@@ -255,7 +262,7 @@ final class MeBookmarkController extends BookmarkController
                 response: 200,
                 description: 'Bookmark details',
                 content: new OA\JsonContent(
-                    ref: '#/components/schemas/BookmarkOwner'
+                    ref: '#/components/schemas/BookmarkShowPrivate'
                 )
             ),
             new OA\Response(
@@ -269,7 +276,7 @@ final class MeBookmarkController extends BookmarkController
         ]
     )]
     #[Route(path: '/{id}', name: RouteAction::Get->value, methods: ['GET'])]
-    #[IsGranted(attribute: BookmarkVoter::OWNER, subject: 'bookmark', statusCode: Response::HTTP_NOT_FOUND)]
+    #[IsGranted(attribute: BookmarkVoter::ACCOUNT, subject: 'bookmark', statusCode: Response::HTTP_NOT_FOUND)]
     public function get(
         Bookmark $bookmark,
     ): JsonResponse {
@@ -300,7 +307,7 @@ final class MeBookmarkController extends BookmarkController
                         new OA\Property(
                             property: 'collection',
                             type: 'array',
-                            items: new OA\Items(ref: '#/components/schemas/BookmarkOwner')
+                            items: new OA\Items(ref: '#/components/schemas/BookmarkShowPrivate')
                         ),
                     ]
                 )
@@ -316,13 +323,13 @@ final class MeBookmarkController extends BookmarkController
         ]
     )]
     #[Route(path: '/{id}/history', name: RouteAction::History->value, methods: ['GET'])]
-    #[IsGranted(attribute: BookmarkVoter::OWNER, subject: 'bookmark', statusCode: Response::HTTP_NOT_FOUND)]
+    #[IsGranted(attribute: BookmarkVoter::ACCOUNT, subject: 'bookmark', statusCode: Response::HTTP_NOT_FOUND)]
     public function history(
         #[CurrentUser] User $user,
         Bookmark $bookmark,
     ): JsonResponse {
         // If you call history on an outdated version it will also work by design
-        $bookmarks = $this->bookmarkRepository->findOutdatedByOwnerAndUrl($user, $bookmark->url)
+        $bookmarks = $this->bookmarkRepository->findOutdatedByAccountAndUrl($user->account, $bookmark->url)
             ->getQuery()->getResult()
         ;
 
@@ -368,7 +375,7 @@ final class MeBookmarkController extends BookmarkController
                 response: 200,
                 description: 'Bookmark updated successfully',
                 content: new OA\JsonContent(
-                    ref: '#/components/schemas/BookmarkOwner'
+                    ref: '#/components/schemas/BookmarkShowPrivate'
                 )
             ),
             new OA\Response(
@@ -396,7 +403,7 @@ final class MeBookmarkController extends BookmarkController
         ]
     )]
     #[Route(path: '/{id}', name: RouteAction::Patch->value, methods: ['PATCH'])]
-    #[IsGranted(attribute: BookmarkVoter::OWNER, subject: 'bookmark', statusCode: Response::HTTP_NOT_FOUND)]
+    #[IsGranted(attribute: BookmarkVoter::ACCOUNT, subject: 'bookmark', statusCode: Response::HTTP_NOT_FOUND)]
     public function patch(
         Bookmark $bookmark,
         #[MapRequestPayload(
@@ -458,7 +465,7 @@ final class MeBookmarkController extends BookmarkController
         ]
     )]
     #[Route(path: '/{id}', name: RouteAction::Delete->value, methods: ['DELETE'])]
-    #[IsGranted(attribute: BookmarkVoter::OWNER, subject: 'bookmark', statusCode: Response::HTTP_NOT_FOUND)]
+    #[IsGranted(attribute: BookmarkVoter::ACCOUNT, subject: 'bookmark', statusCode: Response::HTTP_NOT_FOUND)]
     public function delete(
         #[CurrentUser] User $user,
         Bookmark $bookmark,
@@ -466,7 +473,7 @@ final class MeBookmarkController extends BookmarkController
         $indexAction = $this->indexActionUpdater->update($bookmark, BookmarkIndexActionType::Deleted);
         $this->entityManager->persist($indexAction);
 
-        $this->bookmarkRepository->deleteByOwnerAndUrl($user, $bookmark->url);
+        $this->bookmarkRepository->deleteByAccountAndUrl($user->account, $bookmark->url);
 
         $this->entityManager->flush();
 

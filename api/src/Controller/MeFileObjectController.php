@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Config\RouteAction;
 use App\Config\RouteType;
+use App\Entity\Bookmark;
 use App\Entity\FileObject;
 use App\Entity\User;
 use App\Naming\HashAndSubdirectories;
@@ -98,12 +99,10 @@ final class MeFileObjectController extends AbstractController
                         new OA\Examples(
                             example: 'uploaded_file',
                             value: [
-                                'id' => '01234567-89ab-cdef-0123-456789abcdef',
-                                'createdAt' => '2024-01-01T12:00:00+00:00',
                                 'contentUrl' => 'https://bookmarkhive.test/storage/files/abc123.jpg',
                                 'size' => 102400,
                                 'mime' => 'image/jpeg',
-                                '@iri' => 'https://bookmarkhive.test/users/me/files/01234567-89ab-cdef-0123-456789abcdef',
+                                '@iri' => 'https://bookmarkhive.test/users/me/files/' . Bookmark::EXAMPLE_BOOKMARK_ID,
                             ],
                             summary: 'Successfully uploaded file'
                         ),

@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Config\RouteAction;
 use App\Config\RouteType;
-use App\Entity\User;
+use App\Entity\Account;
 use App\Helper\RequestHelper;
 use App\Repository\TagRepository;
 use App\Response\JsonResponseBuilder;
@@ -56,7 +56,7 @@ final class ProfileTagController extends TagController
                         new OA\Property(
                             property: 'collection',
                             type: 'array',
-                            items: new OA\Items(ref: '#/components/schemas/TagProfile')
+                            items: new OA\Items(ref: '#/components/schemas/TagShowPublic')
                         ),
                         new OA\Property(property: 'total', type: 'integer'),
                     ]
@@ -70,8 +70,10 @@ final class ProfileTagController extends TagController
     )]
     #[Route(path: '', name: RouteAction::Collection->value, methods: ['GET'])]
     public function collection(
-        #[MapEntity(mapping: ['username' => 'username'])] User $user,
+        #[MapEntity(mapping: ['username' => 'username'])] Account $account,
     ): JsonResponse {
+        $user = $account->owner ?? throw new NotFoundHttpException();
+
         return $this->collectionCommon($user, ['tag:show:public'], onlyPublic: true);
     }
 
@@ -100,7 +102,7 @@ final class ProfileTagController extends TagController
                 content: [
                     new OA\MediaType(
                         mediaType: 'application/json',
-                        schema: new OA\Schema(ref: '#/components/schemas/TagProfile')
+                        schema: new OA\Schema(ref: '#/components/schemas/TagShowPublic')
                     ),
                     new OA\MediaType(
                         mediaType: 'text/html',
@@ -139,9 +141,11 @@ final class ProfileTagController extends TagController
     #[Route(path: '/{slug}', name: RouteAction::Get->value, methods: ['GET'])]
     public function get(
         Request $request,
-        #[MapEntity(mapping: ['username' => 'username'])] User $user,
+        #[MapEntity(mapping: ['username' => 'username'])] Account $account,
         string $slug,
     ): Response {
+        $user = $account->owner ?? throw new NotFoundHttpException();
+
         if (RequestHelper::accepts($request, 'application/json')) {
             $tag = $this->tagRepository->findOneByOwnerAndSlug($user, $slug, onlyPublic: true)
                 ->getQuery()->getOneOrNullResult()

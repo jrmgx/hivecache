@@ -57,6 +57,14 @@ function create_default_context(): Context
     );
 }
 
+#[AsContext(name: 'api2')]
+function create_api2_context(): Context
+{
+    $c = create_default_context();
+
+    return $c->withData(['service' => 'builder2']);
+}
+
 #[AsContext(name: 'test')]
 function create_test_context(): Context
 {

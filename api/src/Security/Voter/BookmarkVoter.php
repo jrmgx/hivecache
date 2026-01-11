@@ -14,11 +14,11 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  */
 final class BookmarkVoter extends Voter
 {
-    public const string OWNER = 'BOOKMARK_OWNER';
+    public const string ACCOUNT = 'BOOKMARK_ACCOUNT';
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return \in_array($attribute, [self::OWNER]) && $subject instanceof Bookmark; // TODO simplify
+        return self::ACCOUNT === $attribute && $subject instanceof Bookmark;
     }
 
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
@@ -26,14 +26,14 @@ final class BookmarkVoter extends Voter
         /** @var Bookmark $bookmark */
         $bookmark = $subject;
 
-        if (self::OWNER === $attribute) {
+        if (self::ACCOUNT === $attribute) {
             $user = $token->getUser();
 
             if (!$user instanceof User) {
                 return false;
             }
 
-            return $bookmark->owner === $user;
+            return $bookmark->account->owner === $user;
         }
 
         return false;

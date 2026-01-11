@@ -1,16 +1,18 @@
 <?php
 
-namespace App\Tests;
+namespace App\Tests\Controller;
 
 use App\Entity\User;
+use App\Factory\AccountFactory;
 use App\Factory\UserFactory;
 use App\Repository\UserRepository;
+use App\Tests\BaseApiTestCase;
 
 class UserTest extends BaseApiTestCase
 {
     public function testGetOwnProfile(): void
     {
-        [, $token] = $this->createAuthenticatedUser('test', 'test');
+        [, $token] = $this->createAuthenticatedUserAccount('test', 'test');
 
         $this->assertUnauthorized('GET', '/users/me');
 
@@ -25,7 +27,7 @@ class UserTest extends BaseApiTestCase
 
     public function testUpdateOwnProfile(): void
     {
-        [, $originalToken] = $this->createAuthenticatedUser('test', 'test');
+        [, $originalToken] = $this->createAuthenticatedUserAccount('test', 'test');
 
         $this->request('PATCH', '/users/me', [
             'headers' => ['Content-Type' => 'application/json'],
@@ -58,7 +60,7 @@ class UserTest extends BaseApiTestCase
 
     public function testPasswordChangeInvalidatesOldJwt(): void
     {
-        [, $oldToken] = $this->createAuthenticatedUser('test', 'oldpassword');
+        [, $oldToken] = $this->createAuthenticatedUserAccount('test', 'oldpassword');
 
         // Verify user can see his profile with the original token
         $this->request('GET', '/users/me', ['auth_bearer' => $oldToken]);
@@ -94,10 +96,11 @@ class UserTest extends BaseApiTestCase
 
     public function testDeleteOwnProfile(): void
     {
-        [$user, $token] = $this->createAuthenticatedUser('test', 'test');
+        [$user, $token] = $this->createAuthenticatedUserAccount('test', 'test');
 
         $this->assertUnauthorized('DELETE', '/users/me', [], 'Deletion authorized but it should not.');
 
+        $this->client->enableProfiler();
         $this->request('DELETE', '/users/me', [
             'auth_bearer' => $token,
         ]);
@@ -117,38 +120,40 @@ class UserTest extends BaseApiTestCase
 
     public function testShowPublicProfile(): void
     {
-        [, $token] = $this->createAuthenticatedUser('test', 'test');
+        [, $token] = $this->createAuthenticatedUserAccount('test', 'test');
 
-        UserFactory::createOne([
-            'username' => 'publicuser',
-            'isPublic' => true,
-        ]);
+        $user = UserFactory::createOne(['username' => 'publicuser', 'isPublic' => true]);
+        AccountFactory::createOne(['username' => 'publicuser', 'owner' => $user]);
 
-        UserFactory::createOne([
-            'username' => 'privateuser',
-            'isPublic' => false,
-        ]);
+        $privateUser = UserFactory::createOne(['username' => 'privateuser', 'isPublic' => false]);
+        AccountFactory::createOne(['username' => 'privateuser', 'owner' => $privateUser]);
 
         // Test accessing public profile via username (no JWT)
         $this->request('GET', '/profile/publicuser');
         $this->assertResponseIsSuccessful();
         $json = $this->getResponseArray();
         $this->assertEquals('publicuser', $json['username']);
-        $this->assertUserProfileResponse($json);
+        $this->assertAccountResponse($json);
 
-        // Test accessing private profile (should fail)
+        // Test accessing private profile (should work as we access account not user)
         $this->request('GET', '/profile/privateuser');
-        $this->assertResponseStatusCodeSame(404, 'Private user profile is accessible (no JWT).');
+        $this->assertResponseIsSuccessful();
+        $json = $this->getResponseArray();
+        $this->assertEquals('privateuser', $json['username']);
+        $this->assertAccountResponse($json);
 
-        // Test accessing private profile (should fail)
+        // Test accessing private profile (should work too)
         $this->request('GET', '/profile/privateuser', ['auth_bearer' => $token]);
-        $this->assertResponseStatusCodeSame(404, 'Private user profile is accessible (with other JWT).');
+        $this->assertResponseIsSuccessful();
+        $json = $this->getResponseArray();
+        $this->assertEquals('privateuser', $json['username']);
+        $this->assertAccountResponse($json);
     }
 
     public function testRegisterNewAccount(): void
     {
-        $uniqUsername = uniqid('UPPER_');
-        $this->request('POST', '/account', [
+        $uniqUsername = uniqid('UPPER');
+        $this->request('POST', '/register', [
             'headers' => ['Content-Type' => 'application/json'],
             'json' => [
                 'username' => $uniqUsername,
@@ -170,7 +175,7 @@ class UserTest extends BaseApiTestCase
         $this->assertNotEmpty($token);
 
         // Test registration with duplicate username (should fail)
-        $this->request('POST', '/account', [
+        $this->request('POST', '/register', [
             'headers' => ['Content-Type' => 'application/json'],
             'json' => [
                 'username' => $uniqUsername,
@@ -180,8 +185,8 @@ class UserTest extends BaseApiTestCase
         $this->assertResponseStatusCodeSame(422);
 
         // Test registration with roles specified (should ignore roles)
-        $uniqUsernameWithRoles = uniqid('user_');
-        $this->request('POST', '/account', [
+        $uniqUsernameWithRoles = uniqid('user');
+        $this->request('POST', '/register', [
             'headers' => ['Content-Type' => 'application/json'],
             'json' => [
                 'username' => $uniqUsernameWithRoles,
@@ -212,7 +217,7 @@ class UserTest extends BaseApiTestCase
     public function testUsernameLengthValidation(): void
     {
         // Test registration with username too short (< 3 chars)
-        $this->request('POST', '/account', [
+        $this->request('POST', '/register', [
             'headers' => ['Content-Type' => 'application/json'],
             'json' => [
                 'username' => 'ab',
@@ -222,7 +227,7 @@ class UserTest extends BaseApiTestCase
         $this->assertResponseStatusCodeSame(422, 'Username with 2 characters should be rejected.');
 
         // Test registration with username too long (> 32 chars)
-        $this->request('POST', '/account', [
+        $this->request('POST', '/register', [
             'headers' => ['Content-Type' => 'application/json'],
             'json' => [
                 'username' => str_repeat('a', 33),
@@ -232,7 +237,7 @@ class UserTest extends BaseApiTestCase
         $this->assertResponseStatusCodeSame(422, 'Username with 33 characters should be rejected.');
 
         // Test registration with username at minimum length (3 chars) - should succeed
-        $this->request('POST', '/account', [
+        $this->request('POST', '/register', [
             'headers' => ['Content-Type' => 'application/json'],
             'json' => [
                 'username' => 'abc',
@@ -245,7 +250,7 @@ class UserTest extends BaseApiTestCase
         $this->assertUserCreateResponse($json);
 
         // Test updating profile with username too short
-        [, $token] = $this->createAuthenticatedUser('testuser', 'test');
+        [, $token] = $this->createAuthenticatedUserAccount('testuser', 'test');
 
         $this->request('PATCH', '/users/me', [
             'headers' => ['Content-Type' => 'application/json'],
@@ -269,8 +274,8 @@ class UserTest extends BaseApiTestCase
 
     public function testCreateUserWithMeta(): void
     {
-        $uniqUsername = uniqid('user_');
-        $this->request('POST', '/account', [
+        $uniqUsername = uniqid('user');
+        $this->request('POST', '/register', [
             'headers' => ['Content-Type' => 'application/json'],
             'json' => [
                 'username' => $uniqUsername,
@@ -294,7 +299,7 @@ class UserTest extends BaseApiTestCase
 
     public function testUpdateUserWithMeta(): void
     {
-        [, $token] = $this->createAuthenticatedUser('testuser', 'test');
+        [, $token] = $this->createAuthenticatedUserAccount('testuser', 'test');
 
         $this->request('PATCH', '/users/me', [
             'headers' => ['Content-Type' => 'application/json'],
@@ -319,7 +324,7 @@ class UserTest extends BaseApiTestCase
 
     public function testUpdateUserMetaMergesNotOverwrites(): void
     {
-        [$user, $token] = $this->createAuthenticatedUser('testuser', 'test');
+        [$user, $token] = $this->createAuthenticatedUserAccount('testuser', 'test');
 
         $user->meta = [
             'theme' => 'dark',
@@ -357,10 +362,8 @@ class UserTest extends BaseApiTestCase
 
     public function testGetPublicProfileWithHtmlAcceptRedirects(): void
     {
-        UserFactory::createOne([
-            'username' => 'testuser',
-            'isPublic' => true,
-        ]);
+        $user = UserFactory::createOne(['username' => 'testuser', 'isPublic' => true]);
+        AccountFactory::createOne(['username' => 'testuser', 'owner' => $user]);
 
         $this->request('GET', '/profile/testuser', [
             'headers' => ['Accept' => 'text/html'],
@@ -396,7 +399,7 @@ class UserTest extends BaseApiTestCase
         $this->assertIsArray($json['meta']);
 
         $userFields = array_keys($json);
-        $expectedUserFields = ['username', 'isPublic', 'meta', '@iri'];
+        $expectedUserFields = ['username', 'isPublic', 'meta', 'account', '@iri'];
         $this->assertEqualsCanonicalizing(
             $expectedUserFields,
             array_values($userFields),
@@ -408,16 +411,16 @@ class UserTest extends BaseApiTestCase
     }
 
     /**
-     * Asserts that a user response contains exactly the fields for user:show:public group.
+     * Asserts that a user response contains exactly the fields for account:show:public group.
      */
-    private function assertUserProfileResponse(array $json): void
+    private function assertAccountResponse(array $json): void
     {
         $userFields = array_keys($json);
-        $expectedUserFields = ['username', '@iri'];
-        $this->assertEquals(
+        $expectedUserFields = ['username', '@iri', 'instance'];
+        $this->assertEqualsCanonicalizing(
             $expectedUserFields,
             array_values($userFields),
-            'Response should contain exactly ' . implode(', ', $expectedUserFields) . ' field'
+            'Response should contain exactly ' . implode(', ', $expectedUserFields) . ' fields'
         );
 
         $this->assertArrayHasKey('@iri', $json);
@@ -434,7 +437,7 @@ class UserTest extends BaseApiTestCase
         $this->assertIsArray($json['meta']);
 
         $userFields = array_keys($json);
-        $expectedUserFields = ['username', 'isPublic', 'meta', '@iri'];
+        $expectedUserFields = ['username', 'isPublic', 'meta', 'account', '@iri'];
         sort($expectedUserFields);
         $actualFields = array_values($userFields);
         sort($actualFields);

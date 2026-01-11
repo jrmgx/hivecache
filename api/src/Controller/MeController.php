@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Config\RouteAction;
 use App\Config\RouteType;
+use App\Entity\Account;
 use App\Entity\User;
 use App\Response\JsonResponseBuilder;
 use Doctrine\ORM\EntityManagerInterface;
@@ -43,7 +44,7 @@ final class MeController extends AbstractController
                 response: 200,
                 description: 'Current user profile',
                 content: new OA\JsonContent(
-                    ref: '#/components/schemas/UserOwner',
+                    ref: '#/components/schemas/UserShowPrivate',
                     examples: [
                         new OA\Examples(
                             example: 'user_profile',
@@ -51,7 +52,8 @@ final class MeController extends AbstractController
                                 'username' => 'johndoe',
                                 'isPublic' => true,
                                 'meta' => ['theme' => 'dark', 'language' => 'en'],
-                                '@iri' => 'https://bookmarkhive.test/users/me',
+                                'account' => Account::EXAMPLE_ACCOUNT,
+                                '@iri' => User::EXAMPLE_USER_IRI,
                             ],
                             summary: 'Current user profile'
                         ),
@@ -96,7 +98,7 @@ final class MeController extends AbstractController
                 response: 200,
                 description: 'User profile updated successfully',
                 content: new OA\JsonContent(
-                    ref: '#/components/schemas/UserOwner'
+                    ref: '#/components/schemas/UserShowPrivate'
                 )
             ),
             new OA\Response(
@@ -184,6 +186,7 @@ final class MeController extends AbstractController
     public function delete(
         #[CurrentUser] User $user,
     ): JsonResponse {
+        $this->entityManager->remove($user->account);
         $this->entityManager->remove($user);
         $this->entityManager->flush();
 

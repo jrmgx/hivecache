@@ -7,7 +7,7 @@ namespace App\Controller;
 use OpenApi\Attributes as OA;
 use Symfony\Bridge\Twig\Attribute\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[OA\OpenApi(
@@ -17,7 +17,8 @@ use Symfony\Component\Routing\Attribute\Route;
         description: 'Decentralized social bookmarking service based on the Activity Pub protocol.'
     ),
     servers: [
-        new OA\Server(url: 'https://bookmarkhive.test', description: 'API Server'),
+        new OA\Server(url: 'https://bookmarkhive.test', description: 'API Dev Server'),
+        new OA\Server(url: 'https://api2.bookmarkhive.test', description: 'API 2 Dev Server'),
     ],
     x: [
         'tagGroups' => [
@@ -82,9 +83,15 @@ class AppController extends AbstractController
         return [];
     }
 
-    #[Route(path: '/docs', name: 'docs', methods: ['GET'])]
-    public function docs(): RedirectResponse
+    #[Route(path: '/docs', name: 'docs')]
+    public function docs(): JsonResponse
     {
-        return new RedirectResponse('/openapi.json');
+        // TODO when prod update the servers def and urls on the fly for the real instance
+        $response = new JsonResponse(file_get_contents(__DIR__ . '/../../openapi.json'), json: true);
+        $response->headers->set('Access-Control-Allow-Origin', '*');
+        $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+        $response->headers->set('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept, Authorization');
+
+        return $response;
     }
 }

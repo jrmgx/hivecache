@@ -106,7 +106,7 @@ function consume_messages(#[AsOption] int $limit = 100): void
 #[AsTask(description: 'Update the openapi definition file', aliases: ['openapi'])]
 function openapi(): void
 {
-    docker_compose_run("./vendor/bin/openapi src/Controller src/OpenApi --format json --output public/openapi.json");
+    docker_compose_run("./vendor/bin/openapi src/Entity src/Controller --format json --output openapi.json");
 }
 
 /**

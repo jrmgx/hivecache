@@ -10,11 +10,6 @@ use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
  */
 final class UserFactory extends PersistentObjectFactory
 {
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
     #[\Override]
     public static function class(): string
     {

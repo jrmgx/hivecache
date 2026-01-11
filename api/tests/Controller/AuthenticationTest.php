@@ -1,8 +1,10 @@
 <?php
 
-namespace App\Tests;
+namespace App\Tests\Controller;
 
 use App\Entity\User;
+use App\Service\UserFactory;
+use App\Tests\BaseApiTestCase;
 use Hautelook\AliceBundle\PhpUnit\ReloadDatabaseTrait;
 
 class AuthenticationTest extends BaseApiTestCase
@@ -19,8 +21,13 @@ class AuthenticationTest extends BaseApiTestCase
             $container->get('security.user_password_hasher')->hashPassword($user, 'test')
         );
 
+        /** @var UserFactory $userFactory */
+        $userFactory = $container->get(UserFactory::class);
+        [$user, $account] = $userFactory->new('test', 'test');
+
         $manager = $container->get('doctrine')->getManager();
         $manager->persist($user);
+        $manager->persist($account);
         $manager->flush();
 
         // retrieve a token

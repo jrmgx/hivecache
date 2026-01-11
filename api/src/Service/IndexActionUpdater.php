@@ -16,9 +16,13 @@ final readonly class IndexActionUpdater
 
     public function update(Bookmark $bookmark, BookmarkIndexActionType $type): BookmarkIndexAction
     {
+        if (!$bookmark->account->owner) {
+            throw new \RuntimeException('When updating the index, the bookmark must have an owner.');
+        }
+
         $indexAction = new BookmarkIndexAction();
         $indexAction->bookmark = $bookmark;
-        $indexAction->owner = $bookmark->owner;
+        $indexAction->owner = $bookmark->account->owner;
         $indexAction->type = $type;
 
         $this->bookmarkIndexActionRepository->deleteOlderThan('30 days');

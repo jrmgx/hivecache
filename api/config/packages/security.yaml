@@ -28,10 +28,12 @@ security:
             jwt: ~
 
     access_control:
+        - { path: ^/.well-known, roles: PUBLIC_ACCESS } # ActivityPub related
+        - { path: ^/ap/, roles: PUBLIC_ACCESS } # ActivityPub related
         - { path: ^/auth$, roles: PUBLIC_ACCESS } # Allows login
         - { path: ^/$, roles: PUBLIC_ACCESS } # Homepage
         - { path: ^/docs$, roles: PUBLIC_ACCESS } # API documentation
-        - { path: ^/account$, roles: PUBLIC_ACCESS, methods: ['POST'] } # Allows create user
+        - { path: ^/register$, roles: PUBLIC_ACCESS, methods: ['POST'] } # Allows register
         - { path: ^/profile, roles: PUBLIC_ACCESS } # Public side
         - { path: ^/users/me, roles: IS_AUTHENTICATED_FULLY } # Own user account
         - { path: ^/, roles: IS_AUTHENTICATED_FULLY } # Everything else

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests;
+namespace App\Tests\Helper;
 
 use App\Helper\UrlHelper;
 use PHPUnit\Framework\Attributes\DataProvider;

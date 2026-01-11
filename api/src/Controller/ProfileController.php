@@ -4,10 +4,9 @@ namespace App\Controller;
 
 use App\Config\RouteAction;
 use App\Config\RouteType;
-use App\Entity\User;
+use App\Entity\Account;
 use App\Helper\RequestHelper;
 use App\Response\JsonResponseBuilder;
-use App\Security\Voter\UserVoter;
 use OpenApi\Attributes as OA;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,7 +16,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route(path: '/profile/{username}', name: RouteType::Profile->value)]
 final class ProfileController extends AbstractController
@@ -49,14 +47,11 @@ final class ProfileController extends AbstractController
                 content: [
                     new OA\MediaType(
                         mediaType: 'application/json',
-                        schema: new OA\Schema(ref: '#/components/schemas/UserProfile'),
+                        schema: new OA\Schema(ref: '#/components/schemas/AccountShowPublic'),
                         examples: [
                             new OA\Examples(
                                 example: 'public_profile',
-                                value: [
-                                    'username' => 'johndoe',
-                                    '@iri' => 'https://bookmarkhive.test/profile/johndoe',
-                                ],
+                                value: Account::EXAMPLE_ACCOUNT,
                                 summary: 'Public user profile'
                             ),
                         ]
@@ -96,17 +91,16 @@ final class ProfileController extends AbstractController
         ]
     )]
     #[Route(path: '', name: RouteAction::Get->value, methods: ['GET'])]
-    #[IsGranted(attribute: UserVoter::PUBLIC, subject: 'user', statusCode: Response::HTTP_NOT_FOUND)]
     public function get(
         Request $request,
-        #[MapEntity(mapping: ['username' => 'username'])] User $user,
+        #[MapEntity(mapping: ['username' => 'username'])] Account $account,
     ): Response {
         if (RequestHelper::accepts($request, 'application/json')) {
-            return $this->jsonResponseBuilder->single($user, ['user:show:public']);
+            return $this->jsonResponseBuilder->single($account, ['account:show:public']);
         }
 
         $iri = $this->generateUrl(RouteType::Profile->value . RouteAction::Get->value, [
-            'username' => $user->username,
+            'username' => $account->username,
         ], UrlGeneratorInterface::ABSOLUTE_URL);
 
         return new RedirectResponse($this->preferredClient . "?iri={$iri}");

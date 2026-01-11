@@ -380,7 +380,7 @@ function docker_compose_run(
         $command[] = "{$key}={$value}";
     }
 
-    $command[] = $service;
+    $command[] = $c['service'] ?? $service;
     $command[] = '/bin/bash';
     $command[] = '-c';
     $command[] = "{$runCommand}";

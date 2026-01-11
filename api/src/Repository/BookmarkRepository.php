@@ -1,9 +1,11 @@
 <?php
 
+/** @noinspection PhpUnused */
+
 namespace App\Repository;
 
+use App\Entity\Account;
 use App\Entity\Bookmark;
-use App\Entity\User;
 use App\Helper\UrlHelper;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
@@ -27,11 +29,11 @@ class BookmarkRepository extends ServiceEntityRepository
         ;
     }
 
-    public function findByOwner(User $owner, bool $onlyPublic): QueryBuilder
+    public function findByAccount(Account $account, bool $onlyPublic): QueryBuilder
     {
         $qb = $this->createQueryBuilder('o')
-            ->andWhere('o.owner = :owner')
-            ->setParameter('owner', $owner)
+            ->andWhere('o.account = :account')
+            ->setParameter('account', $account)
             ->addOrderBy('o.id', 'DESC')
             ->andWhere('o.outdated = false')
         ;
@@ -39,11 +41,11 @@ class BookmarkRepository extends ServiceEntityRepository
         return $onlyPublic ? $qb->andWhere('o.isPublic = true') : $qb;
     }
 
-    public function findOneByOwnerAndId(User $owner, string $id, bool $onlyPublic): QueryBuilder
+    public function findOneByAccountAndId(Account $account, string $id, bool $onlyPublic): QueryBuilder
     {
         $qb = $this->createQueryBuilder('o')
-            ->andWhere('o.owner = :owner')
-            ->setParameter('owner', $owner)
+            ->andWhere('o.account = :account')
+            ->setParameter('account', $account)
             ->andWhere('o.id = :id')
             ->setParameter('id', $id)
         ;
@@ -54,13 +56,13 @@ class BookmarkRepository extends ServiceEntityRepository
     /**
      * @param string $url The url will be normalized
      */
-    public function findLastOneByOwnerAndUrl(User $owner, string $url): QueryBuilder
+    public function findLastOneByAccountAndUrl(Account $account, string $url): QueryBuilder
     {
         $normalizedUrl = UrlHelper::normalize($url);
 
         return $this->createQueryBuilder('o')
-            ->andWhere('o.owner = :owner')
-            ->setParameter('owner', $owner)
+            ->andWhere('o.account = :account')
+            ->setParameter('account', $account)
             ->andWhere('o.normalizedUrl = :normalizedUrl')
             ->setParameter('normalizedUrl', $normalizedUrl)
             ->orderBy('o.id', 'DESC')
@@ -71,13 +73,13 @@ class BookmarkRepository extends ServiceEntityRepository
     /**
      * @param string $url The url will be normalized
      */
-    public function findOutdatedByOwnerAndUrl(User $owner, string $url): QueryBuilder
+    public function findOutdatedByAccountAndUrl(Account $account, string $url): QueryBuilder
     {
         $normalizedUrl = UrlHelper::normalize($url);
 
         return $this->createQueryBuilder('o')
-            ->andWhere('o.owner = :owner')
-            ->setParameter('owner', $owner)
+            ->andWhere('o.account = :account')
+            ->setParameter('account', $account)
             ->andWhere('o.normalizedUrl = :normalizedUrl')
             ->setParameter('normalizedUrl', $normalizedUrl)
             ->andWhere('o.outdated = :true')
@@ -89,13 +91,13 @@ class BookmarkRepository extends ServiceEntityRepository
     /**
      * @param string $url The url will be normalized
      */
-    public function deleteByOwnerAndUrl(User $owner, string $url): void
+    public function deleteByAccountAndUrl(Account $account, string $url): void
     {
         $normalizedUrl = UrlHelper::normalize($url);
 
         $this->createQueryBuilder('o')
-            ->andWhere('o.owner = :owner')
-            ->setParameter('owner', $owner)
+            ->andWhere('o.account = :account')
+            ->setParameter('account', $account)
             ->andWhere('o.normalizedUrl = :normalizedUrl')
             ->setParameter('normalizedUrl', $normalizedUrl)
             ->delete()
@@ -127,19 +129,5 @@ class BookmarkRepository extends ServiceEntityRepository
         ;
 
         return $onlyPublic ? $qb->andWhere('t.isPublic = true') : $qb;
-    }
-
-    public function applyPagination(QueryBuilder $qb, ?string $after, int $resultPerPage): QueryBuilder
-    {
-        if ($after) {
-            $qb = $qb->andWhere('o.id < :after')
-                ->setParameter('after', $after)
-            ;
-        }
-
-        return $qb
-            ->addOrderBy('o.id', 'DESC')
-            ->setMaxResults($resultPerPage)
-        ;
     }
 }
