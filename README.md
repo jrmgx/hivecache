@@ -21,6 +21,7 @@ all in a decentralized manner for greater resilience.
 - User documentation
 - [API](./documentation/API.md)
 - [Web Extension](./documentation/WebExtension.md)
+- [ActivityPub](./documentation/ActivityPub.md)
 - [Client](./documentation/Client.md)
 - Limitations
 - 🛠️ [Development](./documentation/Development.md)
