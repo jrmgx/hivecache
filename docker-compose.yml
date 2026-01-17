@@ -61,7 +61,10 @@ services:
     api2:
         <<: *api-base
         env_file:
-            - ./api/.env.api2
+            -   path: ./api/.env.api2
+                required: true
+            -   path: ./api/.env.api2.local
+                required: false
         labels:
             - "traefik.enable=true"
             - "project-name=${PROJECT_NAME}"
@@ -118,4 +121,7 @@ services:
     builder2:
         <<: *builder-base
         env_file:
-            - ./api/.env.api2
+            -   path: ./api/.env.api2
+                required: true
+            -   path: ./api/.env.api2.local
+                required: false

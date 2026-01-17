@@ -9,6 +9,7 @@ use Castor\Attribute\AsOption;
 use function Castor\context;
 use function Castor\io;
 use function Castor\notify;
+use function Castor\run;
 use function Castor\variable;
 use function docker\build;
 use function docker\docker_compose_run;
@@ -106,7 +107,13 @@ function consume_messages(#[AsOption] int $limit = 100): void
 #[AsTask(description: 'Update the openapi definition file', aliases: ['openapi'])]
 function openapi(): void
 {
-    docker_compose_run("./vendor/bin/openapi src/Entity src/Controller --format json --output openapi.json");
+    docker_compose_run("./vendor/bin/openapi src/Entity src/Controller src/Dto --format json --output openapi.json");
+}
+
+#[AsTask(description: 'Start a local tunnel to have this instance exposed', aliases: ['tunnel'])]
+function tunnel(string $domain, string $host = 'bookmarkhive.test'): void
+{
+    run("ngrok http --host-header=$host 443 --domain=$domain");
 }
 
 /**
