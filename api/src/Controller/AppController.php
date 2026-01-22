@@ -9,6 +9,7 @@ use Symfony\Bridge\Twig\Attribute\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[OA\OpenApi(
@@ -87,9 +88,9 @@ final class AppController extends AbstractController
     /** @return array<mixed> */
     #[Route(path: '/', name: 'index', methods: ['GET'])]
     #[Template('base.html.twig')]
-    public function index(): array
+    public function index(): RedirectResponse
     {
-        return [];
+        return $this->redirect('https://app.hivecache.net');
     }
 
     #[Route(path: '/docs', name: 'docs')]
