@@ -2,7 +2,7 @@
 
 namespace App\ActivityPub\MessageHandler;
 
-use App\ActivityPub\Builder\FollowActivityBuilder;
+use App\ActivityPub\Bundler\FollowActivityBundler;
 use App\ActivityPub\Message\SendFollowMessage;
 use App\ActivityPub\Message\SendMessage;
 use App\Repository\FollowingRepository;
@@ -18,7 +18,7 @@ final readonly class SendFollowMessageHandler
         private MessageBusInterface $messageBus,
         private SerializerInterface $serializer,
         private FollowingRepository $followingRepository,
-        private FollowActivityBuilder $followActivityBuilder,
+        private FollowActivityBundler $followActivityBundler,
     ) {
     }
 
@@ -33,7 +33,7 @@ final readonly class SendFollowMessageHandler
         $url = $objectAccount->inboxUrl
             ?? throw new UnrecoverableMessageHandlingException('No inbox url for actor.');
 
-        $follow = $this->followActivityBuilder->buildFromFollowing($following);
+        $follow = $this->followActivityBundler->bundleFromFollowing($following);
 
         $this->messageBus->dispatch(new SendMessage(
             payload: $this->serializer->serialize($follow, 'json'),

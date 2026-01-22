@@ -78,7 +78,7 @@ final class MeFollowingController extends AbstractController
                                     ],
                                 ],
                                 'prevPage' => null,
-                                'nextPage' => 'https://bookmarkhive.test/users/me/following?after=01234567-89ab-cdef-0123-456789abcdef',
+                                'nextPage' => 'https://hivecache.test/users/me/following?after=01234567-89ab-cdef-0123-456789abcdef',
                                 'total' => null,
                             ],
                             summary: 'Paginated list of followed accounts'
@@ -120,7 +120,7 @@ final class MeFollowingController extends AbstractController
             new OA\PathParameter(
                 name: 'usernameWithInstance',
                 description: 'Username of the account to follow (with instance)',
-                schema: new OA\Schema(type: 'string', example: 'janedoe@bookmarkhive.test')
+                schema: new OA\Schema(type: 'string', example: 'janedoe@hivecache.test')
             ),
         ],
         responses: [
@@ -191,7 +191,7 @@ final class MeFollowingController extends AbstractController
             new OA\PathParameter(
                 name: 'usernameWithInstance',
                 description: 'Username of the account to unfollow',
-                schema: new OA\Schema(type: 'string', example: 'janedoe@bookmarkhive.test')
+                schema: new OA\Schema(type: 'string', example: 'janedoe@hivecache.test')
             ),
         ],
         responses: [

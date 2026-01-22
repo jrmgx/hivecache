@@ -10,13 +10,11 @@ use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
  */
 final class UserTagFactory extends PersistentObjectFactory
 {
-    #[\Override]
     public static function class(): string
     {
         return UserTag::class;
     }
 
-    #[\Override]
     protected function defaults(): array|callable
     {
         /** @var string $name */

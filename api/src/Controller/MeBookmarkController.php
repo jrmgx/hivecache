@@ -71,23 +71,10 @@ final class MeBookmarkController extends BookmarkController
                             example: 'bookmark_list',
                             value: [
                                 'collection' => [
-                                    [
-                                        'id' => Bookmark::EXAMPLE_BOOKMARK_ID,
-                                        'createdAt' => '2024-01-01T12:00:00+00:00',
-                                        'title' => 'Example Bookmark',
-                                        'url' => 'https://example.com',
-                                        'domain' => 'example.com',
-                                        'account' => Account::EXAMPLE_ACCOUNT,
-                                        'isPublic' => true,
-                                        'tags' => [
-                                            UserTag::EXAMPLE_TAG,
-                                        ],
-                                        'instance' => 'bookmarkhive.test',
-                                        '@iri' => Bookmark::EXAMPLE_BOOKMARK_IRI,
-                                    ],
+                                    [...Bookmark::EXAMPLE_PUBLIC_BOOKMARK, 'isPublic' => true],
                                 ],
                                 'prevPage' => null,
-                                'nextPage' => 'https://bookmarkhive.test/users/me/bookmarks?after=01234567-89ab-cdef-0123-456789abcdef',
+                                'nextPage' => 'https://hivecache.test/users/me/bookmarks?after=01234567-89ab-cdef-0123-456789abcdef',
                                 'total' => null,
                             ],
                             summary: 'Paginated list of bookmarks'
@@ -113,6 +100,7 @@ final class MeBookmarkController extends BookmarkController
             $afterQueryString,
             ['bookmark:show:private', 'tag:show:private'],
             RouteType::MeBookmarks,
+            RouteAction::Collection,
             onlyPublic: false
         );
     }
@@ -149,7 +137,7 @@ final class MeBookmarkController extends BookmarkController
                                 'tags' => [
                                     UserTag::EXAMPLE_TAG,
                                 ],
-                                'instance' => 'bookmarkhive.test',
+                                'instance' => 'hivecache.test',
                                 '@iri' => Bookmark::EXAMPLE_BOOKMARK_IRI,
                             ],
                             summary: 'Successfully created bookmark'

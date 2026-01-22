@@ -2,7 +2,7 @@
 
 namespace App\ActivityPub\MessageHandler;
 
-use App\ActivityPub\Builder\CreateActivityBuilder;
+use App\ActivityPub\Bundler\CreateActivityBundler;
 use App\ActivityPub\Message\SendCreateNoteMessage;
 use App\ActivityPub\Message\SendMessage;
 use App\Entity\Follower;
@@ -21,7 +21,7 @@ final readonly class SendCreateNoteMessageHandler
         private MessageBusInterface $messageBus,
         private SerializerInterface $serializer,
         private BookmarkRepository $bookmarkRepository,
-        private CreateActivityBuilder $createActivityBuilder,
+        private CreateActivityBundler $createActivityBundler,
         private FollowerRepository $followerRepository,
         private LoggerInterface $logger,
     ) {
@@ -41,7 +41,7 @@ final readonly class SendCreateNoteMessageHandler
             ->getQuery()->getResult()
         ;
 
-        $createActivity = $this->createActivityBuilder->buildFromBookmark($bookmark, $followers);
+        $createActivity = $this->createActivityBundler->bundleFromBookmark($bookmark, $followers);
         $payload = $this->serializer->serialize($createActivity, 'json');
 
         $urls = [];

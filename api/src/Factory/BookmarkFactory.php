@@ -21,7 +21,6 @@ final class BookmarkFactory extends PersistentObjectFactory
         parent::__construct();
     }
 
-    #[\Override]
     public static function class(): string
     {
         return Bookmark::class;
@@ -30,7 +29,6 @@ final class BookmarkFactory extends PersistentObjectFactory
     /**
      * @see https://symfony.com/bundles/ZenstruckFoundryBundle/current/index.html#model-factories
      */
-    #[\Override]
     protected function defaults(): array|callable
     {
         return [

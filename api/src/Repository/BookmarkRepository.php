@@ -6,6 +6,9 @@ namespace App\Repository;
 
 use App\Entity\Account;
 use App\Entity\Bookmark;
+use App\Entity\InstanceTag;
+use App\Entity\User;
+use App\Entity\UserTimelineEntry;
 use App\Helper\UrlHelper;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
@@ -39,6 +42,48 @@ class BookmarkRepository extends ServiceEntityRepository
         ;
 
         return $onlyPublic ? $qb->andWhere('o.isPublic = true') : $qb;
+    }
+
+    public function findTimelineByOwner(User $owner): QueryBuilder
+    {
+        return $this->createQueryBuilder('o')
+            ->join(UserTimelineEntry::class, 'ute', 'WITH', 'ute.bookmark = o')
+            ->andWhere('ute.owner = :owner')
+            ->setParameter('owner', $owner)
+            ->addOrderBy('ute.id', 'DESC')
+        ;
+    }
+
+    public function findTimelineByInstanceTag(InstanceTag $instanceTag): QueryBuilder
+    {
+        return $this->createQueryBuilder('o')
+            ->join('o.instanceTags', 'it')
+            ->andWhere('it = :instanceTag')
+            ->setParameter('instanceTag', $instanceTag)
+            ->addOrderBy('o.id', 'DESC')
+        ;
+    }
+
+    public function findByThisInstance(string $instance): QueryBuilder
+    {
+        return $this->createQueryBuilder('o')
+            ->andWhere('o.instance = :instance')
+            ->setParameter('instance', $instance)
+            ->addOrderBy('o.id', 'DESC')
+            ->andWhere('o.outdated = false')
+            ->andWhere('o.isPublic = true')
+        ;
+    }
+
+    public function findByOtherInstance(string $instance): QueryBuilder
+    {
+        return $this->createQueryBuilder('o')
+            ->andWhere('o.instance <> :instance')
+            ->setParameter('instance', $instance)
+            ->addOrderBy('o.id', 'DESC')
+            ->andWhere('o.outdated = false')
+            ->andWhere('o.isPublic = true')
+            ;
     }
 
     public function findOneByAccountAndId(Account $account, string $id, bool $onlyPublic): QueryBuilder

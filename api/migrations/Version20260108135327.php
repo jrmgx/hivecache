@@ -44,7 +44,7 @@ final class Version20260108135327 extends AbstractMigration
             $keyPair = KeysGenerator::doctrineMigrationHelper();
             $publicKey = $keyPair['public'];
             $privateKey = $keyPair['private'];
-            $uri = "https://api.bookmarkhive.test/profile/{$user['username']}";
+            $uri = "https://api.hivecache.test/profile/{$user['username']}";
             $lastUpdatedAt = new \DateTimeImmutable()->format('Y-m-d H:i:s');
 
             $this->connection->executeStatement(

@@ -11,6 +11,7 @@ enum RouteType: string
     case Me = 'api_users_me_';
     case MeBookmarks = 'api_users_me_bookmarks_';
     case MeBookmarksIndex = 'api_users_me_bookmarks_index_';
+    case MeBookmarksSocial = 'api_users_me_bookmarks_social_';
     case MeTags = 'api_users_me_tags_';
     case MeFileObjects = 'api_users_me_files_';
     case MeFollowing = 'api_users_following_';
@@ -20,6 +21,9 @@ enum RouteType: string
     case ProfileBookmarks = 'api_users_profile_bookmarks_';
     case ProfileTags = 'api_users_profile_tags_';
     case Profile = 'api_users_profile_';
+
+    // Instance
+    case Instance = 'api_instance_';
 
     // Specials
     case Register = 'api_register_';

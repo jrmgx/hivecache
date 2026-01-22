@@ -11,7 +11,7 @@ final class Version20260108175956 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'Update Account';
     }
 
     public function up(Schema $schema): void
@@ -21,6 +21,6 @@ final class Version20260108175956 extends AbstractMigration
 
     public function down(Schema $schema): void
     {
-        $this->addSql('ALTER TABLE account ALTER instance SET DEFAULT \'bookmarkhive.test\'');
+        $this->addSql('ALTER TABLE account ALTER instance SET DEFAULT \'hivecache.test\'');
     }
 }

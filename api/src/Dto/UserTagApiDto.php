@@ -2,7 +2,7 @@
 
 namespace App\Dto;
 
-use App\Entity\InstanceTag;
+use App\Service\InstanceTagService;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -36,7 +36,7 @@ class UserTagApiDto
     public string $name {
         set {
             $this->name = $value;
-            $this->slug = InstanceTag::slugger($value);
+            $this->slug = InstanceTagService::slugger($value);
         }
     }
 

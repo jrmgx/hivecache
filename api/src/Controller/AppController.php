@@ -13,13 +13,13 @@ use Symfony\Component\Routing\Attribute\Route;
 
 #[OA\OpenApi(
     info: new OA\Info(
-        title: 'BookmarkHive API',
+        title: 'HiveCache API',
         version: '0.1',
         description: 'Decentralized social bookmarking service based on the Activity Pub protocol.'
     ),
     servers: [
-        new OA\Server(url: 'https://bookmarkhive.test', description: 'API Dev Server'),
-        new OA\Server(url: 'https://api2.bookmarkhive.test', description: 'API 2 Dev Server'),
+        new OA\Server(url: 'https://hivecache.test', description: 'API Dev Server'),
+        new OA\Server(url: 'https://api2.hivecache.test', description: 'API 2 Dev Server'),
     ],
     x: [
         'tagGroups' => [
@@ -102,13 +102,13 @@ final class AppController extends AbstractController
 
         if ('prod' === $this->appEnv) {
             $data = json_decode($json, true);
-            $data['servers'] = [['url' => 'https://' . $this->instanceHost, 'description' => 'BookmarkHive API server']];
+            $data['servers'] = [['url' => 'https://' . $this->instanceHost, 'description' => 'HiveCache API server']];
             $json = json_encode($data);
             if (!$json) {
                 throw new \RuntimeException();
             }
 
-            $json = str_replace('bookmarkhive.test', $this->instanceHost, $json);
+            $json = str_replace('hivecache.test', $this->instanceHost, $json);
         }
 
         return new JsonResponse($json, json: true);

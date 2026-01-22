@@ -25,6 +25,9 @@ final class FileObjectVoter extends Voter
     {
         /** @var FileObject $fileObject */
         $fileObject = $subject;
+        if (!$fileObject->owner) {
+            return false;
+        }
 
         if (self::OWNER === $attribute) {
             $user = $token->getUser();

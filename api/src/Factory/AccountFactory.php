@@ -20,13 +20,11 @@ final class AccountFactory extends PersistentObjectFactory
         parent::__construct();
     }
 
-    #[\Override]
     public static function class(): string
     {
         return Account::class;
     }
 
-    #[\Override]
     protected function defaults(): array|callable
     {
         $key = $this->keysGenerator->generate();

@@ -7,7 +7,6 @@ namespace App\Controller;
 use App\Config\RouteAction;
 use App\Config\RouteType;
 use App\Dto\UserTagApiDto;
-use App\Entity\InstanceTag;
 use App\Entity\User;
 use App\Entity\UserTag;
 use App\Security\Voter\UserTagVoter;
@@ -18,7 +17,6 @@ use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\Routing\Attribute\Route;
@@ -79,6 +77,20 @@ final class MeTagController extends TagController
     ): JsonResponse {
         return $this->collectionCommon($user, ['tag:show:private'], onlyPublic: false);
     }
+
+//    #[Route(path: '', name: RouteAction::A->value, methods: ['GET'])]
+//    public function a(
+//        #[CurrentUser] User $user,
+//    ): JsonResponse {
+//        $tags = $this->instanceTagService->findByOwner($user, onlyPublic: $onlyPublic)
+//            ->getQuery()
+//            ->getResult()
+//        ;
+//
+//        return $this->jsonResponseBuilder->collection(
+//            $tags, $groups, ['total' => \count($tags)]
+//        );
+//    }
 
     #[OA\Get(
         path: '/users/me/tags/{slug}',
@@ -209,13 +221,7 @@ final class MeTagController extends TagController
             return $this->jsonResponseBuilder->single($existing, ['tag:show:private']);
         }
 
-        $instanceTag = $this->instanceTagRepository->findBySlug($userTag->slug);
-        if (!$instanceTag) {
-            // Create the tag on the instance if it does not exist
-            $instanceTag = new InstanceTag();
-            $instanceTag->name = $tagPayload->name ?? throw new BadRequestHttpException();
-            $this->entityManager->persist($instanceTag);
-        }
+        $this->instanceTagService->findOrCreate($userTag->name);
 
         try {
             $this->entityManager->persist($userTag);
@@ -301,13 +307,7 @@ final class MeTagController extends TagController
             }
 
             $userTag->name = $tagPayload->name;
-            $instanceTag = $this->instanceTagRepository->findBySlug($userTag->slug);
-            if (!$instanceTag) {
-                // Create the tag on the instance if it does not exist
-                $instanceTag = new InstanceTag();
-                $instanceTag->name = $tagPayload->name;
-                $this->entityManager->persist($instanceTag);
-            }
+            $this->instanceTagService->findOrCreate($userTag->name);
         }
 
         if (isset($tagPayload->isPublic)) {

@@ -10,13 +10,11 @@ use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
  */
 final class FileObjectFactory extends PersistentObjectFactory
 {
-    #[\Override]
     public static function class(): string
     {
         return FileObject::class;
     }
 
-    #[\Override]
     protected function defaults(): array|callable
     {
         return [

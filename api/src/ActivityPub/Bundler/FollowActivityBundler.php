@@ -1,6 +1,6 @@
 <?php
 
-namespace App\ActivityPub\Builder;
+namespace App\ActivityPub\Bundler;
 
 use App\ActivityPub\Dto\FollowActivity;
 use App\Config\RouteAction;
@@ -8,14 +8,14 @@ use App\Config\RouteType;
 use App\Entity\Following;
 use App\Service\UrlGenerator;
 
-final readonly class FollowActivityBuilder
+final readonly class FollowActivityBundler
 {
     public function __construct(
         private UrlGenerator $urlGenerator,
     ) {
     }
 
-    public function buildFromFollowing(Following $following): FollowActivity
+    public function bundleFromFollowing(Following $following): FollowActivity
     {
         $actorAccount = $following->owner->account;
         $objectAccount = $following->account;

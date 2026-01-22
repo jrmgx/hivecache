@@ -6,9 +6,10 @@ use App\Config\RouteAction;
 use App\Config\RouteType;
 use App\Entity\Account;
 use App\Helper\RequestHelper;
-use App\Repository\InstanceTagRepository;
 use App\Repository\UserTagRepository;
 use App\Response\JsonResponseBuilder;
+use App\Service\InstanceTagService;
+use App\Service\UrlGenerator;
 use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
@@ -19,22 +20,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 #[Route(path: '/profile/{username}/tags', name: RouteType::ProfileTags->value)]
 final class ProfileTagController extends TagController
 {
-    public function __construct(
-        #[Autowire('%env(PREFERRED_CLIENT)%')]
-        private readonly string $preferredClient,
-        UserTagRepository $userTagRepository,
-        InstanceTagRepository $instanceTagRepository,
-        EntityManagerInterface $entityManager,
-        JsonResponseBuilder $jsonResponseBuilder,
-    ) {
-        parent::__construct($userTagRepository, $instanceTagRepository, $entityManager, $jsonResponseBuilder);
-    }
-
     #[OA\Get(
         path: '/profile/{username}/tags',
         tags: ['Profile'],
@@ -118,7 +107,7 @@ final class ProfileTagController extends TagController
                     new OA\Header(
                         header: 'Location',
                         description: 'Redirect URL (when Accept: text/html)',
-                        schema: new OA\Schema(type: 'string', format: 'uri', example: 'https://bookmarkhive.net/profile/username/tags/tag-slug'),
+                        schema: new OA\Schema(type: 'string', format: 'uri', example: 'https://hivecache.net/profile/username/tags/tag-slug'),
                         required: false
                     ),
                 ]
@@ -130,7 +119,7 @@ final class ProfileTagController extends TagController
                     new OA\Header(
                         header: 'Location',
                         description: 'Redirect URL',
-                        schema: new OA\Schema(type: 'string', format: 'uri', example: 'https://bookmarkhive.net/profile/username/tags/tag-slug')
+                        schema: new OA\Schema(type: 'string', format: 'uri', example: 'https://hivecache.net/profile/username/tags/tag-slug')
                     ),
                 ]
             ),
@@ -149,10 +138,11 @@ final class ProfileTagController extends TagController
         $user = $account->owner ?? throw new NotFoundHttpException();
 
         if (RequestHelper::accepts($request, ['text/html'])) {
-            $iri = $this->generateUrl(RouteType::ProfileTags->value . RouteAction::Get->value, [
-                'slug' => $slug,
-                'username' => $user->username,
-            ], UrlGeneratorInterface::ABSOLUTE_URL);
+            $iri = $this->urlGenerator->generate(
+                RouteType::ProfileTags,
+                RouteAction::Get,
+                ['slug' => $slug, 'username' => $user->username]
+            );
 
             return new RedirectResponse($this->preferredClient . "?iri={$iri}");
         }

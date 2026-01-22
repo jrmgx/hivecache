@@ -1,24 +1,24 @@
 <?php
 
-namespace App\ActivityPub\Builder;
+namespace App\ActivityPub\Bundler;
 
 use App\ActivityPub\Dto\CreateNoteActivity;
 use App\Entity\Bookmark;
 use App\Entity\Follower;
 
-final readonly class CreateActivityBuilder
+final readonly class CreateActivityBundler
 {
     public function __construct(
-        private NoteObjectBuilder $noteObjectBuilder,
+        private NoteObjectBundler $noteObjectBundler,
     ) {
     }
 
     /**
      * @param array<int, Follower> $followers
      */
-    public function buildFromBookmark(Bookmark $bookmark, array $followers): CreateNoteActivity
+    public function bundleFromBookmark(Bookmark $bookmark, array $followers): CreateNoteActivity
     {
-        $noteObject = $this->noteObjectBuilder->buildFromBookmark($bookmark, $followers);
+        $noteObject = $this->noteObjectBundler->bundleFromBookmark($bookmark, $followers);
 
         $createActivity = new CreateNoteActivity();
         $createActivity->id = $noteObject->id;

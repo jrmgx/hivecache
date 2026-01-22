@@ -67,7 +67,7 @@ final class MeFollowerController extends AbstractController
                                     ],
                                 ],
                                 'prevPage' => null,
-                                'nextPage' => 'https://bookmarkhive.test/users/me/followers?after=01234567-89ab-cdef-0123-456789abcdef',
+                                'nextPage' => 'https://hivecache.test/users/me/followers?after=01234567-89ab-cdef-0123-456789abcdef',
                                 'total' => null,
                             ],
                             summary: 'Paginated list of followers'

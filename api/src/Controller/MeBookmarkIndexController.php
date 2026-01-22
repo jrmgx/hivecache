@@ -64,6 +64,7 @@ final class MeBookmarkIndexController extends BookmarkController
             $afterQueryString,
             ['bookmark:show:private', 'tag:show:private'],
             RouteType::MeBookmarksIndex,
+            RouteAction::Collection,
             onlyPublic: false,
             resultPerPage: 100,
         );

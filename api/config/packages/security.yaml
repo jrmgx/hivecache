@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=../../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
 security:
     # https://symfony.com/doc/current/security.html#c-hashing-passwords
     password_hashers:
@@ -36,6 +37,7 @@ security:
         - { path: ^/docs$, roles: PUBLIC_ACCESS } # API documentation
         - { path: ^/register$, roles: PUBLIC_ACCESS, methods: ['POST'] } # Allows register
         - { path: ^/profile, roles: PUBLIC_ACCESS } # Public side
+        - { path: ^/instance, roles: PUBLIC_ACCESS } # Instance side
         - { path: ^/users/me, roles: IS_AUTHENTICATED_FULLY } # Own user account
         - { path: ^/, roles: IS_AUTHENTICATED_FULLY } # Everything else
 

@@ -42,14 +42,14 @@ class Account
      * @var array<string, string|null>
      */
     public const array EXAMPLE_ACCOUNT = [
-        '@iri' => 'https://bookmarkhive.test/profile/janedoe',
+        '@iri' => 'https://hivecache.test/profile/janedoe',
         'username' => 'janedoe',
-        'instance' => 'bookmarkhive.test',
-        'inboxUrl' => 'https://bookmarkhive.test/profile/janedoe/inbox',
-        'outboxUrl' => 'https://bookmarkhive.test/profile/janedoe/outbox',
-        'sharedInboxUrl' => 'https://bookmarkhive.test/inbox',
-        'followerUrl' => 'https://bookmarkhive.test/profile/janedoe/followers',
-        'followingUrl' => 'https://bookmarkhive.test/profile/janedoe/following',
+        'instance' => 'hivecache.test',
+        'inboxUrl' => 'https://hivecache.test/profile/janedoe/inbox',
+        'outboxUrl' => 'https://hivecache.test/profile/janedoe/outbox',
+        'sharedInboxUrl' => 'https://hivecache.test/inbox',
+        'followerUrl' => 'https://hivecache.test/profile/janedoe/followers',
+        'followingUrl' => 'https://hivecache.test/profile/janedoe/following',
     ];
 
     #[ORM\Id, ORM\Column(type: 'uuid')]

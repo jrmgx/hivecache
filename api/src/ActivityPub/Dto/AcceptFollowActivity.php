@@ -12,9 +12,9 @@ final class AcceptFollowActivity
             "type":"Accept",
             "actor":"https://activitypub.academy/users/bob",
             "object":{
-                "id":"https://bookmarkhive.test/ap/u/alice/following#019bc314-d1d9-7d5d-a545-6e07a3ba6d3c",
+                "id":"https://hivecache.test/ap/u/alice/following#019bc314-d1d9-7d5d-a545-6e07a3ba6d3c",
                 "type":"Follow",
-                "actor":"https://bookmarkhive.test/profile/alice",
+                "actor":"https://hivecache.test/profile/alice",
                 "object":"https://activitypub.academy/users/bob"
             }
     } */

@@ -1,17 +1,17 @@
 {
     "openapi": "3.0.0",
     "info": {
-        "title": "BookmarkHive API",
+        "title": "HiveCache API",
         "description": "Decentralized social bookmarking service based on the Activity Pub protocol.",
         "version": "0.1"
     },
     "servers": [
         {
-            "url": "https://bookmarkhive.test",
+            "url": "https://hivecache.test",
             "description": "API Dev Server"
         },
         {
-            "url": "https://api2.bookmarkhive.test",
+            "url": "https://api2.hivecache.test",
             "description": "API 2 Dev Server"
         }
     ],
@@ -87,6 +87,192 @@
                 }
             }
         },
+        "/instance/this": {
+            "get": {
+                "tags": [
+                    "Instance"
+                ],
+                "summary": "List bookmarks from this instance",
+                "description": "Returns a paginated collection of public bookmarks from this instance. Supports cursor-based pagination. Default page size is 24 items, ordered by creation date (newest first).",
+                "operationId": "listThisInstanceBookmarks",
+                "parameters": [
+                    {
+                        "name": "after",
+                        "in": "query",
+                        "description": "Cursor for pagination - bookmark ID to fetch results after",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of public bookmarks from this instance",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "collection": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/BookmarkShowPublic"
+                                            }
+                                        },
+                                        "prevPage": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "nextPage": {
+                                            "description": "URL for next page if available",
+                                            "type": "string",
+                                            "nullable": true
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "examples": {
+                                    "instance_bookmarks": {
+                                        "summary": "Paginated list of bookmarks from this instance",
+                                        "value": {
+                                            "collection": [
+                                                {
+                                                    "id": "01234567-89ab-cdef-0123-456789abcdef",
+                                                    "createdAt": "2024-01-01T12:00:00+00:00",
+                                                    "title": "Example Bookmark",
+                                                    "url": "https://example.com",
+                                                    "domain": "example.com",
+                                                    "account": {
+                                                        "@iri": "https://hivecache.test/profile/janedoe",
+                                                        "username": "janedoe",
+                                                        "instance": "hivecache.test",
+                                                        "inboxUrl": "https://hivecache.test/profile/janedoe/inbox",
+                                                        "outboxUrl": "https://hivecache.test/profile/janedoe/outbox",
+                                                        "sharedInboxUrl": "https://hivecache.test/inbox",
+                                                        "followerUrl": "https://hivecache.test/profile/janedoe/followers",
+                                                        "followingUrl": "https://hivecache.test/profile/janedoe/following"
+                                                    },
+                                                    "tags": [
+                                                        {
+                                                            "name": "Bookmarking",
+                                                            "slug": "bookmarking",
+                                                            "@iri": "https://hivecache.test/users/me/tags/bookmarking"
+                                                        }
+                                                    ],
+                                                    "instance": "hivecache.test",
+                                                    "@iri": "https://hivecache.test/users/me/bookmarks/01234567-89ab-cdef-0123-456789abcdef"
+                                                }
+                                            ],
+                                            "prevPage": null,
+                                            "nextPage": "https://hivecache.test/instance/this?after=01234567-89ab-cdef-0123-456789abcdef",
+                                            "total": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/instance/other": {
+            "get": {
+                "tags": [
+                    "Instance"
+                ],
+                "summary": "List bookmarks from other instances",
+                "description": "Returns a paginated collection of public bookmarks from other instances (federated bookmarks). Supports cursor-based pagination. Default page size is 24 items, ordered by creation date (newest first).",
+                "operationId": "listOtherInstanceBookmarks",
+                "parameters": [
+                    {
+                        "name": "after",
+                        "in": "query",
+                        "description": "Cursor for pagination - bookmark ID to fetch results after",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of public bookmarks from other instances",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "collection": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/BookmarkShowPublic"
+                                            }
+                                        },
+                                        "prevPage": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "nextPage": {
+                                            "description": "URL for next page if available",
+                                            "type": "string",
+                                            "nullable": true
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "examples": {
+                                    "federated_bookmarks": {
+                                        "summary": "Paginated list of bookmarks from other instances",
+                                        "value": {
+                                            "collection": [
+                                                {
+                                                    "id": "01234567-89ab-cdef-0123-456789abcdef",
+                                                    "createdAt": "2024-01-01T12:00:00+00:00",
+                                                    "title": "Example Bookmark",
+                                                    "url": "https://example.com",
+                                                    "domain": "example.com",
+                                                    "account": {
+                                                        "@iri": "https://hivecache.test/profile/janedoe",
+                                                        "username": "janedoe",
+                                                        "instance": "hivecache.test",
+                                                        "inboxUrl": "https://hivecache.test/profile/janedoe/inbox",
+                                                        "outboxUrl": "https://hivecache.test/profile/janedoe/outbox",
+                                                        "sharedInboxUrl": "https://hivecache.test/inbox",
+                                                        "followerUrl": "https://hivecache.test/profile/janedoe/followers",
+                                                        "followingUrl": "https://hivecache.test/profile/janedoe/following"
+                                                    },
+                                                    "tags": [
+                                                        {
+                                                            "name": "Bookmarking",
+                                                            "slug": "bookmarking",
+                                                            "@iri": "https://hivecache.test/users/me/tags/bookmarking"
+                                                        }
+                                                    ],
+                                                    "instance": "hivecache.test",
+                                                    "@iri": "https://hivecache.test/users/me/bookmarks/01234567-89ab-cdef-0123-456789abcdef"
+                                                }
+                                            ],
+                                            "prevPage": null,
+                                            "nextPage": "https://hivecache.test/instance/other?after=01234567-89ab-cdef-0123-456789abcdef",
+                                            "total": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/users/me/bookmarks": {
             "get": {
                 "tags": [
@@ -157,29 +343,29 @@
                                                     "url": "https://example.com",
                                                     "domain": "example.com",
                                                     "account": {
-                                                        "@iri": "https://bookmarkhive.test/profile/janedoe",
+                                                        "@iri": "https://hivecache.test/profile/janedoe",
                                                         "username": "janedoe",
-                                                        "instance": "bookmarkhive.test",
-                                                        "inboxUrl": "https://bookmarkhive.test/profile/janedoe/inbox",
-                                                        "outboxUrl": "https://bookmarkhive.test/profile/janedoe/outbox",
-                                                        "sharedInboxUrl": "https://bookmarkhive.test/inbox",
-                                                        "followerUrl": "https://bookmarkhive.test/profile/janedoe/followers",
-                                                        "followingUrl": "https://bookmarkhive.test/profile/janedoe/following"
+                                                        "instance": "hivecache.test",
+                                                        "inboxUrl": "https://hivecache.test/profile/janedoe/inbox",
+                                                        "outboxUrl": "https://hivecache.test/profile/janedoe/outbox",
+                                                        "sharedInboxUrl": "https://hivecache.test/inbox",
+                                                        "followerUrl": "https://hivecache.test/profile/janedoe/followers",
+                                                        "followingUrl": "https://hivecache.test/profile/janedoe/following"
                                                     },
-                                                    "isPublic": true,
                                                     "tags": [
                                                         {
                                                             "name": "Bookmarking",
                                                             "slug": "bookmarking",
-                                                            "@iri": "https://bookmarkhive.test/users/me/tags/bookmarking"
+                                                            "@iri": "https://hivecache.test/users/me/tags/bookmarking"
                                                         }
                                                     ],
-                                                    "instance": "bookmarkhive.test",
-                                                    "@iri": "https://bookmarkhive.test/users/me/bookmarks/01234567-89ab-cdef-0123-456789abcdef"
+                                                    "instance": "hivecache.test",
+                                                    "@iri": "https://hivecache.test/users/me/bookmarks/01234567-89ab-cdef-0123-456789abcdef",
+                                                    "isPublic": true
                                                 }
                                             ],
                                             "prevPage": null,
-                                            "nextPage": "https://bookmarkhive.test/users/me/bookmarks?after=01234567-89ab-cdef-0123-456789abcdef",
+                                            "nextPage": "https://hivecache.test/users/me/bookmarks?after=01234567-89ab-cdef-0123-456789abcdef",
                                             "total": null
                                         }
                                     }
@@ -233,25 +419,25 @@
                                             "url": "https://example.com",
                                             "domain": "example.com",
                                             "account": {
-                                                "@iri": "https://bookmarkhive.test/profile/janedoe",
+                                                "@iri": "https://hivecache.test/profile/janedoe",
                                                 "username": "janedoe",
-                                                "instance": "bookmarkhive.test",
-                                                "inboxUrl": "https://bookmarkhive.test/profile/janedoe/inbox",
-                                                "outboxUrl": "https://bookmarkhive.test/profile/janedoe/outbox",
-                                                "sharedInboxUrl": "https://bookmarkhive.test/inbox",
-                                                "followerUrl": "https://bookmarkhive.test/profile/janedoe/followers",
-                                                "followingUrl": "https://bookmarkhive.test/profile/janedoe/following"
+                                                "instance": "hivecache.test",
+                                                "inboxUrl": "https://hivecache.test/profile/janedoe/inbox",
+                                                "outboxUrl": "https://hivecache.test/profile/janedoe/outbox",
+                                                "sharedInboxUrl": "https://hivecache.test/inbox",
+                                                "followerUrl": "https://hivecache.test/profile/janedoe/followers",
+                                                "followingUrl": "https://hivecache.test/profile/janedoe/following"
                                             },
                                             "isPublic": false,
                                             "tags": [
                                                 {
                                                     "name": "Bookmarking",
                                                     "slug": "bookmarking",
-                                                    "@iri": "https://bookmarkhive.test/users/me/tags/bookmarking"
+                                                    "@iri": "https://hivecache.test/users/me/tags/bookmarking"
                                                 }
                                             ],
-                                            "instance": "bookmarkhive.test",
-                                            "@iri": "https://bookmarkhive.test/users/me/bookmarks/01234567-89ab-cdef-0123-456789abcdef"
+                                            "instance": "hivecache.test",
+                                            "@iri": "https://hivecache.test/users/me/bookmarks/01234567-89ab-cdef-0123-456789abcdef"
                                         }
                                     }
                                 }
@@ -622,6 +808,221 @@
                 ]
             }
         },
+        "/users/me/bookmarks/social/timeline": {
+            "get": {
+                "tags": [
+                    "Bookmarks"
+                ],
+                "summary": "Get social timeline",
+                "description": "Returns a paginated collection of public bookmarks from the social timeline. The timeline includes bookmarks from users you follow and public bookmarks from your instance. Supports cursor-based pagination. Default page size is 24 items, ordered by creation date (newest first).",
+                "operationId": "listSocialTimeline",
+                "parameters": [
+                    {
+                        "name": "after",
+                        "in": "query",
+                        "description": "Cursor for pagination - bookmark ID to fetch results after",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of public bookmarks from timeline",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "collection": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/BookmarkShowPublic"
+                                            }
+                                        },
+                                        "prevPage": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "nextPage": {
+                                            "description": "URL for next page if available",
+                                            "type": "string",
+                                            "nullable": true
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "examples": {
+                                    "timeline_bookmarks": {
+                                        "summary": "Paginated list of timeline bookmarks",
+                                        "value": {
+                                            "collection": [
+                                                {
+                                                    "id": "01234567-89ab-cdef-0123-456789abcdef",
+                                                    "createdAt": "2024-01-01T12:00:00+00:00",
+                                                    "title": "Example Bookmark",
+                                                    "url": "https://example.com",
+                                                    "domain": "example.com",
+                                                    "account": {
+                                                        "@iri": "https://hivecache.test/profile/janedoe",
+                                                        "username": "janedoe",
+                                                        "instance": "hivecache.test",
+                                                        "inboxUrl": "https://hivecache.test/profile/janedoe/inbox",
+                                                        "outboxUrl": "https://hivecache.test/profile/janedoe/outbox",
+                                                        "sharedInboxUrl": "https://hivecache.test/inbox",
+                                                        "followerUrl": "https://hivecache.test/profile/janedoe/followers",
+                                                        "followingUrl": "https://hivecache.test/profile/janedoe/following"
+                                                    },
+                                                    "tags": [
+                                                        {
+                                                            "name": "Bookmarking",
+                                                            "slug": "bookmarking",
+                                                            "@iri": "https://hivecache.test/users/me/tags/bookmarking"
+                                                        }
+                                                    ],
+                                                    "instance": "hivecache.test",
+                                                    "@iri": "https://hivecache.test/users/me/bookmarks/01234567-89ab-cdef-0123-456789abcdef"
+                                                }
+                                            ],
+                                            "prevPage": null,
+                                            "nextPage": "https://hivecache.test/users/me/bookmarks/timeline?after=01234567-89ab-cdef-0123-456789abcdef",
+                                            "total": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/users/me/bookmarks/social/tag/{slug}": {
+            "get": {
+                "tags": [
+                    "Bookmarks"
+                ],
+                "summary": "Get bookmarks by instance tag",
+                "description": "Returns a paginated collection of public bookmarks filtered by an instance tag. Instance tags are tags that are used across multiple users on the instance. Supports cursor-based pagination. Default page size is 24 items, ordered by creation date (newest first).",
+                "operationId": "listSocialTagBookmarks",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Instance tag slug",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "example-tag"
+                        }
+                    },
+                    {
+                        "name": "after",
+                        "in": "query",
+                        "description": "Cursor for pagination - bookmark ID to fetch results after",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of public bookmarks with the specified tag",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "collection": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/BookmarkShowPublic"
+                                            }
+                                        },
+                                        "prevPage": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "nextPage": {
+                                            "description": "URL for next page if available",
+                                            "type": "string",
+                                            "nullable": true
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "examples": {
+                                    "tagged_bookmarks": {
+                                        "summary": "Paginated list of bookmarks with tag",
+                                        "value": {
+                                            "collection": [
+                                                {
+                                                    "id": "01234567-89ab-cdef-0123-456789abcdef",
+                                                    "createdAt": "2024-01-01T12:00:00+00:00",
+                                                    "title": "Example Bookmark",
+                                                    "url": "https://example.com",
+                                                    "domain": "example.com",
+                                                    "account": {
+                                                        "@iri": "https://hivecache.test/profile/janedoe",
+                                                        "username": "janedoe",
+                                                        "instance": "hivecache.test",
+                                                        "inboxUrl": "https://hivecache.test/profile/janedoe/inbox",
+                                                        "outboxUrl": "https://hivecache.test/profile/janedoe/outbox",
+                                                        "sharedInboxUrl": "https://hivecache.test/inbox",
+                                                        "followerUrl": "https://hivecache.test/profile/janedoe/followers",
+                                                        "followingUrl": "https://hivecache.test/profile/janedoe/following"
+                                                    },
+                                                    "tags": [
+                                                        {
+                                                            "name": "Bookmarking",
+                                                            "slug": "bookmarking",
+                                                            "@iri": "https://hivecache.test/users/me/tags/bookmarking"
+                                                        }
+                                                    ],
+                                                    "instance": "hivecache.test",
+                                                    "@iri": "https://hivecache.test/users/me/bookmarks/01234567-89ab-cdef-0123-456789abcdef"
+                                                }
+                                            ],
+                                            "prevPage": null,
+                                            "nextPage": "https://hivecache.test/users/me/bookmarks/tag/example-tag?after=01234567-89ab-cdef-0123-456789abcdef",
+                                            "total": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    },
+                    "404": {
+                        "description": "Instance tag not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/users/me": {
             "get": {
                 "tags": [
@@ -649,16 +1050,16 @@
                                                 "language": "en"
                                             },
                                             "account": {
-                                                "@iri": "https://bookmarkhive.test/profile/janedoe",
+                                                "@iri": "https://hivecache.test/profile/janedoe",
                                                 "username": "janedoe",
-                                                "instance": "bookmarkhive.test",
-                                                "inboxUrl": "https://bookmarkhive.test/profile/janedoe/inbox",
-                                                "outboxUrl": "https://bookmarkhive.test/profile/janedoe/outbox",
-                                                "sharedInboxUrl": "https://bookmarkhive.test/inbox",
-                                                "followerUrl": "https://bookmarkhive.test/profile/janedoe/followers",
-                                                "followingUrl": "https://bookmarkhive.test/profile/janedoe/following"
+                                                "instance": "hivecache.test",
+                                                "inboxUrl": "https://hivecache.test/profile/janedoe/inbox",
+                                                "outboxUrl": "https://hivecache.test/profile/janedoe/outbox",
+                                                "sharedInboxUrl": "https://hivecache.test/inbox",
+                                                "followerUrl": "https://hivecache.test/profile/janedoe/followers",
+                                                "followingUrl": "https://hivecache.test/profile/janedoe/following"
                                             },
-                                            "@iri": "https://bookmarkhive.test/users/me"
+                                            "@iri": "https://hivecache.test/users/me"
                                         }
                                     }
                                 }
@@ -852,10 +1253,10 @@
                                     "uploaded_file": {
                                         "summary": "Successfully uploaded file",
                                         "value": {
-                                            "contentUrl": "https://bookmarkhive.test/storage/files/abc123.jpg",
+                                            "contentUrl": "https://hivecache.test/storage/files/abc123.jpg",
                                             "size": 102400,
                                             "mime": "image/jpeg",
-                                            "@iri": "https://bookmarkhive.test/users/me/files/01234567-89ab-cdef-0123-456789abcdef"
+                                            "@iri": "https://hivecache.test/users/me/files/01234567-89ab-cdef-0123-456789abcdef"
                                         }
                                     }
                                 }
@@ -951,20 +1352,20 @@
                                                 {
                                                     "id": "01234567-89ab-cdef-0123-456789abcdef",
                                                     "account": {
-                                                        "@iri": "https://bookmarkhive.test/profile/janedoe",
+                                                        "@iri": "https://hivecache.test/profile/janedoe",
                                                         "username": "janedoe",
-                                                        "instance": "bookmarkhive.test",
-                                                        "inboxUrl": "https://bookmarkhive.test/profile/janedoe/inbox",
-                                                        "outboxUrl": "https://bookmarkhive.test/profile/janedoe/outbox",
-                                                        "sharedInboxUrl": "https://bookmarkhive.test/inbox",
-                                                        "followerUrl": "https://bookmarkhive.test/profile/janedoe/followers",
-                                                        "followingUrl": "https://bookmarkhive.test/profile/janedoe/following"
+                                                        "instance": "hivecache.test",
+                                                        "inboxUrl": "https://hivecache.test/profile/janedoe/inbox",
+                                                        "outboxUrl": "https://hivecache.test/profile/janedoe/outbox",
+                                                        "sharedInboxUrl": "https://hivecache.test/inbox",
+                                                        "followerUrl": "https://hivecache.test/profile/janedoe/followers",
+                                                        "followingUrl": "https://hivecache.test/profile/janedoe/following"
                                                     },
                                                     "createdAt": "2024-01-01T12:00:00+00:00"
                                                 }
                                             ],
                                             "prevPage": null,
-                                            "nextPage": "https://bookmarkhive.test/users/me/followers?after=01234567-89ab-cdef-0123-456789abcdef",
+                                            "nextPage": "https://hivecache.test/users/me/followers?after=01234567-89ab-cdef-0123-456789abcdef",
                                             "total": null
                                         }
                                     }
@@ -1040,20 +1441,20 @@
                                                 {
                                                     "id": "01234567-89ab-cdef-0123-456789abcdef",
                                                     "account": {
-                                                        "@iri": "https://bookmarkhive.test/profile/janedoe",
+                                                        "@iri": "https://hivecache.test/profile/janedoe",
                                                         "username": "janedoe",
-                                                        "instance": "bookmarkhive.test",
-                                                        "inboxUrl": "https://bookmarkhive.test/profile/janedoe/inbox",
-                                                        "outboxUrl": "https://bookmarkhive.test/profile/janedoe/outbox",
-                                                        "sharedInboxUrl": "https://bookmarkhive.test/inbox",
-                                                        "followerUrl": "https://bookmarkhive.test/profile/janedoe/followers",
-                                                        "followingUrl": "https://bookmarkhive.test/profile/janedoe/following"
+                                                        "instance": "hivecache.test",
+                                                        "inboxUrl": "https://hivecache.test/profile/janedoe/inbox",
+                                                        "outboxUrl": "https://hivecache.test/profile/janedoe/outbox",
+                                                        "sharedInboxUrl": "https://hivecache.test/inbox",
+                                                        "followerUrl": "https://hivecache.test/profile/janedoe/followers",
+                                                        "followingUrl": "https://hivecache.test/profile/janedoe/following"
                                                     },
                                                     "createdAt": "2024-01-01T12:00:00+00:00"
                                                 }
                                             ],
                                             "prevPage": null,
-                                            "nextPage": "https://bookmarkhive.test/users/me/following?after=01234567-89ab-cdef-0123-456789abcdef",
+                                            "nextPage": "https://hivecache.test/users/me/following?after=01234567-89ab-cdef-0123-456789abcdef",
                                             "total": null
                                         }
                                     }
@@ -1088,7 +1489,7 @@
                         "required": true,
                         "schema": {
                             "type": "string",
-                            "example": "janedoe@bookmarkhive.test"
+                            "example": "janedoe@hivecache.test"
                         }
                     }
                 ],
@@ -1106,14 +1507,14 @@
                                         "value": {
                                             "id": "01234567-89ab-cdef-0123-456789abcdef",
                                             "account": {
-                                                "@iri": "https://bookmarkhive.test/profile/janedoe",
+                                                "@iri": "https://hivecache.test/profile/janedoe",
                                                 "username": "janedoe",
-                                                "instance": "bookmarkhive.test",
-                                                "inboxUrl": "https://bookmarkhive.test/profile/janedoe/inbox",
-                                                "outboxUrl": "https://bookmarkhive.test/profile/janedoe/outbox",
-                                                "sharedInboxUrl": "https://bookmarkhive.test/inbox",
-                                                "followerUrl": "https://bookmarkhive.test/profile/janedoe/followers",
-                                                "followingUrl": "https://bookmarkhive.test/profile/janedoe/following"
+                                                "instance": "hivecache.test",
+                                                "inboxUrl": "https://hivecache.test/profile/janedoe/inbox",
+                                                "outboxUrl": "https://hivecache.test/profile/janedoe/outbox",
+                                                "sharedInboxUrl": "https://hivecache.test/inbox",
+                                                "followerUrl": "https://hivecache.test/profile/janedoe/followers",
+                                                "followingUrl": "https://hivecache.test/profile/janedoe/following"
                                             },
                                             "createdAt": "2024-01-01T12:00:00+00:00"
                                         }
@@ -1153,7 +1554,7 @@
                         "required": true,
                         "schema": {
                             "type": "string",
-                            "example": "janedoe@bookmarkhive.test"
+                            "example": "janedoe@hivecache.test"
                         }
                     }
                 ],
@@ -1210,7 +1611,7 @@
                                                 {
                                                     "name": "Bookmarking",
                                                     "slug": "bookmarking",
-                                                    "@iri": "https://bookmarkhive.test/users/me/tags/bookmarking",
+                                                    "@iri": "https://hivecache.test/users/me/tags/bookmarking",
                                                     "meta": {
                                                         "color": "blue"
                                                     },
@@ -1266,7 +1667,7 @@
                                         "value": {
                                             "name": "Bookmarking",
                                             "slug": "bookmarking",
-                                            "@iri": "https://bookmarkhive.test/users/me/tags/bookmarking",
+                                            "@iri": "https://hivecache.test/users/me/tags/bookmarking",
                                             "meta": [],
                                             "isPublic": false
                                         }
@@ -1276,7 +1677,7 @@
                                         "value": {
                                             "name": "Bookmarking",
                                             "slug": "bookmarking",
-                                            "@iri": "https://bookmarkhive.test/users/me/tags/bookmarking",
+                                            "@iri": "https://hivecache.test/users/me/tags/bookmarking",
                                             "meta": {
                                                 "color": "blue"
                                             },
@@ -1541,6 +1942,44 @@
                                         }
                                     },
                                     "type": "object"
+                                },
+                                "examples": {
+                                    "public_bookmarks": {
+                                        "summary": "Paginated list of public bookmarks",
+                                        "value": {
+                                            "collection": [
+                                                {
+                                                    "id": "01234567-89ab-cdef-0123-456789abcdef",
+                                                    "createdAt": "2024-01-01T12:00:00+00:00",
+                                                    "title": "Example Bookmark",
+                                                    "url": "https://example.com",
+                                                    "domain": "example.com",
+                                                    "account": {
+                                                        "@iri": "https://hivecache.test/profile/janedoe",
+                                                        "username": "janedoe",
+                                                        "instance": "hivecache.test",
+                                                        "inboxUrl": "https://hivecache.test/profile/janedoe/inbox",
+                                                        "outboxUrl": "https://hivecache.test/profile/janedoe/outbox",
+                                                        "sharedInboxUrl": "https://hivecache.test/inbox",
+                                                        "followerUrl": "https://hivecache.test/profile/janedoe/followers",
+                                                        "followingUrl": "https://hivecache.test/profile/janedoe/following"
+                                                    },
+                                                    "tags": [
+                                                        {
+                                                            "name": "Bookmarking",
+                                                            "slug": "bookmarking",
+                                                            "@iri": "https://hivecache.test/users/me/tags/bookmarking"
+                                                        }
+                                                    ],
+                                                    "instance": "hivecache.test",
+                                                    "@iri": "https://hivecache.test/users/me/bookmarks/01234567-89ab-cdef-0123-456789abcdef"
+                                                }
+                                            ],
+                                            "prevPage": null,
+                                            "nextPage": "https://hivecache.test/profile/janedoe/bookmarks?after=01234567-89ab-cdef-0123-456789abcdef",
+                                            "total": null
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -1590,7 +2029,7 @@
                                 "schema": {
                                     "type": "string",
                                     "format": "uri",
-                                    "example": "https://bookmarkhive.net/profile/username/bookmarks/id"
+                                    "example": "https://hivecache.net/profile/username/bookmarks/id"
                                 }
                             }
                         },
@@ -1598,6 +2037,37 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/BookmarkShowPublic"
+                                },
+                                "examples": {
+                                    "public_bookmark": {
+                                        "summary": "Public bookmark details",
+                                        "value": {
+                                            "id": "01234567-89ab-cdef-0123-456789abcdef",
+                                            "createdAt": "2024-01-01T12:00:00+00:00",
+                                            "title": "Example Bookmark",
+                                            "url": "https://example.com",
+                                            "domain": "example.com",
+                                            "account": {
+                                                "@iri": "https://hivecache.test/profile/janedoe",
+                                                "username": "janedoe",
+                                                "instance": "hivecache.test",
+                                                "inboxUrl": "https://hivecache.test/profile/janedoe/inbox",
+                                                "outboxUrl": "https://hivecache.test/profile/janedoe/outbox",
+                                                "sharedInboxUrl": "https://hivecache.test/inbox",
+                                                "followerUrl": "https://hivecache.test/profile/janedoe/followers",
+                                                "followingUrl": "https://hivecache.test/profile/janedoe/following"
+                                            },
+                                            "tags": [
+                                                {
+                                                    "name": "Bookmarking",
+                                                    "slug": "bookmarking",
+                                                    "@iri": "https://hivecache.test/users/me/tags/bookmarking"
+                                                }
+                                            ],
+                                            "instance": "hivecache.test",
+                                            "@iri": "https://hivecache.test/users/me/bookmarks/01234567-89ab-cdef-0123-456789abcdef"
+                                        }
+                                    }
                                 }
                             },
                             "text/html": {
@@ -1616,7 +2086,7 @@
                                 "schema": {
                                     "type": "string",
                                     "format": "uri",
-                                    "example": "https://bookmarkhive.net/profile/username/bookmarks/id"
+                                    "example": "https://hivecache.net/profile/username/bookmarks/id"
                                 }
                             }
                         }
@@ -1656,7 +2126,7 @@
                                 "schema": {
                                     "type": "string",
                                     "format": "uri",
-                                    "example": "https://bookmarkhive.net/profile/username"
+                                    "example": "https://hivecache.net/profile/username"
                                 }
                             }
                         },
@@ -1669,14 +2139,14 @@
                                     "public_profile": {
                                         "summary": "Public user profile",
                                         "value": {
-                                            "@iri": "https://bookmarkhive.test/profile/janedoe",
+                                            "@iri": "https://hivecache.test/profile/janedoe",
                                             "username": "janedoe",
-                                            "instance": "bookmarkhive.test",
-                                            "inboxUrl": "https://bookmarkhive.test/profile/janedoe/inbox",
-                                            "outboxUrl": "https://bookmarkhive.test/profile/janedoe/outbox",
-                                            "sharedInboxUrl": "https://bookmarkhive.test/inbox",
-                                            "followerUrl": "https://bookmarkhive.test/profile/janedoe/followers",
-                                            "followingUrl": "https://bookmarkhive.test/profile/janedoe/following"
+                                            "instance": "hivecache.test",
+                                            "inboxUrl": "https://hivecache.test/profile/janedoe/inbox",
+                                            "outboxUrl": "https://hivecache.test/profile/janedoe/outbox",
+                                            "sharedInboxUrl": "https://hivecache.test/inbox",
+                                            "followerUrl": "https://hivecache.test/profile/janedoe/followers",
+                                            "followingUrl": "https://hivecache.test/profile/janedoe/following"
                                         }
                                     }
                                 }
@@ -1697,7 +2167,7 @@
                                 "schema": {
                                     "type": "string",
                                     "format": "uri",
-                                    "example": "https://bookmarkhive.net/profile/username"
+                                    "example": "https://hivecache.net/profile/username"
                                 }
                             }
                         }
@@ -1793,7 +2263,7 @@
                                 "schema": {
                                     "type": "string",
                                     "format": "uri",
-                                    "example": "https://bookmarkhive.net/profile/username/tags/tag-slug"
+                                    "example": "https://hivecache.net/profile/username/tags/tag-slug"
                                 }
                             }
                         },
@@ -1819,7 +2289,7 @@
                                 "schema": {
                                     "type": "string",
                                     "format": "uri",
-                                    "example": "https://bookmarkhive.net/profile/username/tags/tag-slug"
+                                    "example": "https://hivecache.net/profile/username/tags/tag-slug"
                                 }
                             }
                         }
@@ -1869,16 +2339,16 @@
                                             "isPublic": false,
                                             "meta": [],
                                             "account": {
-                                                "@iri": "https://bookmarkhive.test/profile/janedoe",
+                                                "@iri": "https://hivecache.test/profile/janedoe",
                                                 "username": "janedoe",
-                                                "instance": "bookmarkhive.test",
-                                                "inboxUrl": "https://bookmarkhive.test/profile/janedoe/inbox",
-                                                "outboxUrl": "https://bookmarkhive.test/profile/janedoe/outbox",
-                                                "sharedInboxUrl": "https://bookmarkhive.test/inbox",
-                                                "followerUrl": "https://bookmarkhive.test/profile/janedoe/followers",
-                                                "followingUrl": "https://bookmarkhive.test/profile/janedoe/following"
+                                                "instance": "hivecache.test",
+                                                "inboxUrl": "https://hivecache.test/profile/janedoe/inbox",
+                                                "outboxUrl": "https://hivecache.test/profile/janedoe/outbox",
+                                                "sharedInboxUrl": "https://hivecache.test/inbox",
+                                                "followerUrl": "https://hivecache.test/profile/janedoe/followers",
+                                                "followingUrl": "https://hivecache.test/profile/janedoe/following"
                                             },
-                                            "@iri": "https://bookmarkhive.test/users/me"
+                                            "@iri": "https://hivecache.test/users/me"
                                         }
                                     }
                                 }
@@ -2018,7 +2488,7 @@
                         "items": {
                             "type": "string",
                             "format": "iri",
-                            "example": "https://bookmarkhive.test/users/me/tags/web-development"
+                            "example": "https://hivecache.test/users/me/tags/web-development"
                         }
                     },
                     "mainImage": {
@@ -2516,6 +2986,10 @@
         {
             "name": "Authentication",
             "description": "Authentication"
+        },
+        {
+            "name": "Instance",
+            "description": "Instance"
         },
         {
             "name": "Bookmarks",

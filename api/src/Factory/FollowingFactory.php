@@ -10,13 +10,11 @@ use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
  */
 final class FollowingFactory extends PersistentObjectFactory
 {
-    #[\Override]
     public static function class(): string
     {
         return Following::class;
     }
 
-    #[\Override]
     protected function defaults(): array|callable
     {
         return [

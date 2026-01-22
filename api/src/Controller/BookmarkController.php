@@ -11,12 +11,13 @@ use App\Repository\BookmarkRepository;
 use App\Response\JsonResponseBuilder;
 use App\Service\IndexActionUpdater;
 use App\Service\InstanceTagService;
+use App\Service\UrlGenerator;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 abstract class BookmarkController extends AbstractController
 {
@@ -31,6 +32,7 @@ abstract class BookmarkController extends AbstractController
         protected readonly MessageBusInterface $messageBus,
         protected readonly IndexActionUpdater $indexActionUpdater,
         protected readonly InstanceTagService $instanceTagService,
+        protected readonly UrlGenerator $urlGenerator,
     ) {
     }
 
@@ -44,6 +46,7 @@ abstract class BookmarkController extends AbstractController
         ?string $afterQueryString,
         array $groups,
         RouteType $routeType,
+        RouteAction $routeAction,
         array $params = [],
         bool $onlyPublic = true,
         int $resultPerPage = 24,
@@ -58,6 +61,33 @@ abstract class BookmarkController extends AbstractController
         $qb = $this->bookmarkRepository->findByAccount($account, $onlyPublic);
         $qb = $this->bookmarkRepository->applyFilters($qb, $tagSlugs, $onlyPublic);
 
+        return $this->responseFromQueryBuilder(
+            $qb,
+            $afterQueryString,
+            $groups,
+            $routeType,
+            $routeAction,
+            $params,
+            $tagSlugs,
+            $resultPerPage
+        );
+    }
+
+    /**
+     * @param list<string>  $groups
+     * @param array<string> $params
+     * @param array<string> $tagSlugs
+     */
+    protected function responseFromQueryBuilder(
+        QueryBuilder $qb,
+        ?string $afterQueryString,
+        array $groups,
+        RouteType $routeType,
+        RouteAction $routeAction,
+        array $params = [],
+        array $tagSlugs = [],
+        int $resultPerPage = 24,
+    ): JsonResponse {
         // TODO make the count work when multiple tags (with join etc)
         $count = null;
         if (0 === \count($tagSlugs)) {
@@ -78,10 +108,10 @@ abstract class BookmarkController extends AbstractController
         $nextPage = false;
         if ($lastBookmark) {
             $params['after'] = $lastBookmark->id;
-            if ($tagQueryString) {
-                $params['tags'] = $tagQueryString;
+            if (\count($tagSlugs)) {
+                $params['tags'] = implode(',', $tagSlugs);
             }
-            $nextPage = $this->generateUrl($routeType->value . RouteAction::Collection->value, $params, UrlGeneratorInterface::ABSOLUTE_URL);
+            $nextPage = $this->urlGenerator->generate($routeType, $routeAction, $params);
         }
 
         return $this->jsonResponseBuilder->collection(

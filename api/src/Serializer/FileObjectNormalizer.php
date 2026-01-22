@@ -23,10 +23,15 @@ readonly class FileObjectNormalizer implements NormalizerInterface
     {
         $normalizedData = $this->normalizer->normalize($data, $format, $context);
 
-        /* @phpstan-ignore-next-line */
-        $normalizedData['contentUrl'] =
-            // TODO use flysystem instead
-            $this->baseUri . $this->storageDefaultPublicPath . '/' . $data->filePath;
+        if ($data->owner) {
+            /* @phpstan-ignore-next-line */
+            $normalizedData['contentUrl'] =
+                // TODO use flysystem instead
+                $this->baseUri . $this->storageDefaultPublicPath . '/' . $data->filePath;
+        } else {
+            /* @phpstan-ignore-next-line */
+            $normalizedData['contentUrl'] = $data->filePath;
+        }
 
         return $normalizedData;
     }

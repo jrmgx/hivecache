@@ -21,7 +21,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             property: 'tags',
             type: 'array',
             description: 'Array of tag IRIs (must be valid IRIs pointing to existing tags owned by the user)',
-            items: new OA\Items(type: 'string', format: 'iri', example: 'https://bookmarkhive.test/users/me/tags/web-development')
+            items: new OA\Items(type: 'string', format: 'iri', example: 'https://hivecache.test/users/me/tags/web-development')
         ),
         new OA\Property(property: 'mainImage', type: 'string', format: 'iri', nullable: true, description: 'IRI of main image FileObject'),
         new OA\Property(property: 'archive', type: 'string', format: 'iri', nullable: true, description: 'IRI of archive FileObject'),

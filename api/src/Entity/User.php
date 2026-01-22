@@ -51,7 +51,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: '`user`')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
-    public const string EXAMPLE_USER_IRI = 'https://bookmarkhive.test/users/me';
+    public const string EXAMPLE_USER_IRI = 'https://hivecache.test/users/me';
 
     #[ORM\Id, ORM\Column(type: 'uuid')]
     public private(set) string $id;

@@ -3,32 +3,35 @@
 namespace App\Entity;
 
 use App\Repository\InstanceTagRepository;
+use App\Service\InstanceTagService;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Context;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Serializer\Attribute\Ignore;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
-use Symfony\Component\String\Slugger\AsciiSlugger;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[Context([DateTimeNormalizer::FORMAT_KEY => \DateTimeInterface::ATOM])]
 #[ORM\Entity(repositoryClass: InstanceTagRepository::class)]
 #[ORM\UniqueConstraint(name: 'unique_slug', fields: ['slug'])]
-class InstanceTag // TODO add test on this
+class InstanceTag
 {
     #[Ignore]
     #[ORM\Id, ORM\Column(type: 'uuid')]
     public private(set) string $id;
 
+    #[Groups(['tag:show:public'])]
     #[Assert\Length(max: 32)]
     #[ORM\Column(length: 32)]
     public string $name {
         set {
             $this->name = $value;
-            $this->slug = self::slugger($value);
+            $this->slug = InstanceTagService::slugger($value);
         }
     }
 
+    #[Groups(['tag:show:public'])]
     #[Assert\NotBlank]
     #[Assert\Length(max: 32)]
     #[ORM\Column(length: 32)]
@@ -37,12 +40,5 @@ class InstanceTag // TODO add test on this
     public function __construct()
     {
         $this->id = Uuid::v7()->toString();
-    }
-
-    public static function slugger(string $name): string
-    {
-        $slugger = new AsciiSlugger('en');
-
-        return mb_strtolower($slugger->slug($name));
     }
 }

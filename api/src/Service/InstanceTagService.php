@@ -6,6 +6,7 @@ use App\Entity\Bookmark;
 use App\Entity\InstanceTag;
 use App\Repository\InstanceTagRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\String\Slugger\AsciiSlugger;
 
 // TODO add tests
 final readonly class InstanceTagService
@@ -16,6 +17,19 @@ final readonly class InstanceTagService
     ) {
     }
 
+    public function findOrCreate(string $name): InstanceTag
+    {
+        $slug = self::slugger($name);
+        $instanceTag = $this->instanceTagRepository->findBySlug($slug);
+        if (!$instanceTag) {
+            $instanceTag = new InstanceTag();
+            $instanceTag->name = $name;
+            $this->entityManager->persist($instanceTag);
+        }
+
+        return $instanceTag;
+    }
+
     public function synchronize(Bookmark $bookmark): void
     {
         $bookmark->instanceTags->clear();
@@ -23,13 +37,14 @@ final readonly class InstanceTagService
             if (!$userTag->isPublic) {
                 continue;
             }
-            $instanceTag = $this->instanceTagRepository->findBySlug($userTag->slug);
-            if (!$instanceTag) {
-                $instanceTag = new InstanceTag();
-                $instanceTag->name = $userTag->name;
-                $this->entityManager->persist($instanceTag);
-            }
-            $bookmark->instanceTags->add($instanceTag);
+            $bookmark->instanceTags->add($this->findOrCreate($userTag->name));
         }
+    }
+
+    public static function slugger(string $name): string
+    {
+        $slugger = new AsciiSlugger('en');
+
+        return mb_strtolower($slugger->slug($name));
     }
 }

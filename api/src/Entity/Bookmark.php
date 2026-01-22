@@ -11,7 +11,6 @@ use Doctrine\ORM\Mapping as ORM;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Serializer\Attribute\Context;
 use Symfony\Component\Serializer\Attribute\Groups;
-use Symfony\Component\Serializer\Attribute\SerializedName;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Uid\UuidV7;
@@ -64,7 +63,20 @@ use Symfony\Component\Uid\UuidV7;
 class Bookmark
 {
     public const string EXAMPLE_BOOKMARK_ID = '01234567-89ab-cdef-0123-456789abcdef';
-    public const string EXAMPLE_BOOKMARK_IRI = 'https://bookmarkhive.test/users/me/bookmarks/' . self::EXAMPLE_BOOKMARK_ID;
+    public const string EXAMPLE_BOOKMARK_IRI = 'https://hivecache.test/users/me/bookmarks/' . self::EXAMPLE_BOOKMARK_ID;
+
+    /** @var array<string, mixed> */
+    public const array EXAMPLE_PUBLIC_BOOKMARK = [
+        'id' => self::EXAMPLE_BOOKMARK_ID,
+        'createdAt' => '2024-01-01T12:00:00+00:00',
+        'title' => 'Example Bookmark',
+        'url' => 'https://example.com',
+        'domain' => 'example.com',
+        'account' => Account::EXAMPLE_ACCOUNT,
+        'tags' => [UserTag::EXAMPLE_TAG],
+        'instance' => 'hivecache.test',
+        '@iri' => self::EXAMPLE_BOOKMARK_IRI,
+    ];
 
     #[Groups(['bookmark:show:private', 'bookmark:show:public'])]
     #[ORM\Id, ORM\Column(type: 'uuid')]
@@ -123,15 +135,18 @@ class Bookmark
     public string $instance;
 
     /** @var Collection<int, UserTag> */
-    #[SerializedName('tags')]
-    #[Groups(['bookmark:show:private', 'bookmark:show:public'])]
     #[ORM\ManyToMany(targetEntity: UserTag::class)]
     public Collection $userTags;
 
     /** @var Collection<int, InstanceTag> */
-    // #[Groups(['bookmark:show:private', 'bookmark:show:public'])]
     #[ORM\ManyToMany(targetEntity: InstanceTag::class)]
     public Collection $instanceTags;
+
+    /** @var Collection<int, UserTag>|Collection<int, InstanceTag> */
+    #[Groups(['bookmark:show:private', 'bookmark:show:public'])]
+    public Collection $tags {
+        get => $this->account->owner ? $this->userTags : $this->instanceTags;
+    }
 
     public function __construct()
     {

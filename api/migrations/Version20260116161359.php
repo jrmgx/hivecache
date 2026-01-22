@@ -11,7 +11,7 @@ final class Version20260116161359 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'Re organize tags part 1';
     }
 
     public function up(Schema $schema): void

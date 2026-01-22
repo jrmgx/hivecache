@@ -71,7 +71,7 @@ final class NoteObject
     /** @var array<int, DocumentObject> */
     public array $attachment;
     /** @var array<int, HashtagObject> */
-    public array $tags = [];
+    public array $tag = [];
     public ?Collection $replies = null;
 
     public ?string $summary = null;

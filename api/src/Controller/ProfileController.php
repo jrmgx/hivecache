@@ -8,6 +8,7 @@ use App\Entity\Account;
 use App\Helper\RequestHelper;
 use App\Response\ActivityPubResponseBuilder;
 use App\Response\JsonResponseBuilder;
+use App\Service\UrlGenerator;
 use OpenApi\Attributes as OA;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -16,7 +17,6 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 #[Route(path: '/profile/{username}', name: RouteType::Profile->value)]
 final class ProfileController extends AbstractController
@@ -26,6 +26,7 @@ final class ProfileController extends AbstractController
         private readonly string $preferredClient,
         private readonly JsonResponseBuilder $jsonResponseBuilder,
         private readonly ActivityPubResponseBuilder $activityPubResponseBuilder,
+        private readonly UrlGenerator $urlGenerator,
     ) {
     }
 
@@ -70,7 +71,7 @@ final class ProfileController extends AbstractController
                     new OA\Header(
                         header: 'Location',
                         description: 'Redirect URL (when Accept: text/html)',
-                        schema: new OA\Schema(type: 'string', format: 'uri', example: 'https://bookmarkhive.net/profile/username'),
+                        schema: new OA\Schema(type: 'string', format: 'uri', example: 'https://hivecache.net/profile/username'),
                         required: false
                     ),
                 ]
@@ -82,7 +83,7 @@ final class ProfileController extends AbstractController
                     new OA\Header(
                         header: 'Location',
                         description: 'Redirect URL',
-                        schema: new OA\Schema(type: 'string', format: 'uri', example: 'https://bookmarkhive.net/profile/username')
+                        schema: new OA\Schema(type: 'string', format: 'uri', example: 'https://hivecache.net/profile/username')
                     ),
                 ]
             ),
@@ -103,9 +104,11 @@ final class ProfileController extends AbstractController
         }
 
         if (RequestHelper::accepts($request, ['text/html'])) {
-            $iri = $this->generateUrl(RouteType::Profile->value . RouteAction::Get->value, [
-                'username' => $account->username,
-            ], UrlGeneratorInterface::ABSOLUTE_URL);
+            $iri = $this->urlGenerator->generate(
+                RouteType::Profile,
+                RouteAction::Get,
+                ['username' => $account->username]
+            );
 
             return new RedirectResponse($this->preferredClient . "?iri={$iri}");
         }

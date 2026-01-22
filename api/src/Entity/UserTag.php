@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\UserTagRepository;
+use App\Service\InstanceTagService;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use OpenApi\Attributes as OA;
@@ -50,7 +51,7 @@ class UserTag
     public const array EXAMPLE_TAG = [
         'name' => 'Bookmarking',
         'slug' => 'bookmarking',
-        '@iri' => 'https://bookmarkhive.test/users/me/tags/bookmarking',
+        '@iri' => 'https://hivecache.test/users/me/tags/bookmarking',
     ];
 
     #[Ignore]
@@ -63,7 +64,7 @@ class UserTag
     public string $name {
         set {
             $this->name = $value;
-            $this->slug = InstanceTag::slugger($value);
+            $this->slug = InstanceTagService::slugger($value);
         }
     }
 

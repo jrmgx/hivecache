@@ -7,19 +7,15 @@ namespace DoctrineMigrations;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
-/**
- * Auto-generated Migration: Please modify to your needs!
- */
 final class Version20260117093728 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'Re organize tags part 2';
     }
 
     public function up(Schema $schema): void
     {
-        // this up() migration is auto-generated, please modify it to your needs
         $this->addSql('CREATE TABLE bookmark_instance_tag (bookmark_id UUID NOT NULL, instance_tag_id UUID NOT NULL, PRIMARY KEY(bookmark_id, instance_tag_id))');
         $this->addSql('CREATE INDEX IDX_627E6A4C92741D25 ON bookmark_instance_tag (bookmark_id)');
         $this->addSql('CREATE INDEX IDX_627E6A4CF9B7146A ON bookmark_instance_tag (instance_tag_id)');
@@ -47,7 +43,6 @@ final class Version20260117093728 extends AbstractMigration
 
     public function down(Schema $schema): void
     {
-        // this down() migration is auto-generated, please modify it to your needs
         $this->addSql('ALTER TABLE bookmark_instance_tag DROP CONSTRAINT FK_627E6A4C92741D25');
         $this->addSql('ALTER TABLE bookmark_instance_tag DROP CONSTRAINT FK_627E6A4CF9B7146A');
         $this->addSql('DROP TABLE bookmark_instance_tag');

@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Config\RouteAction;
 use App\Config\RouteType;
 use App\Entity\Account;
+use App\Entity\Bookmark;
 use App\Helper\RequestHelper;
 use OpenApi\Attributes as OA;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
@@ -14,7 +15,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 #[Route(path: '/profile/{username}/bookmarks', name: RouteType::ProfileBookmarks->value)]
 final class ProfileBookmarkController extends BookmarkController
@@ -57,6 +57,20 @@ final class ProfileBookmarkController extends BookmarkController
                         new OA\Property(property: 'prevPage', type: 'string', nullable: true, example: null),
                         new OA\Property(property: 'nextPage', type: 'string', nullable: true, description: 'URL for next page if available'),
                         new OA\Property(property: 'total', type: 'integer', nullable: true),
+                    ],
+                    examples: [
+                        new OA\Examples(
+                            example: 'public_bookmarks',
+                            value: [
+                                'collection' => [
+                                    Bookmark::EXAMPLE_PUBLIC_BOOKMARK,
+                                ],
+                                'prevPage' => null,
+                                'nextPage' => 'https://hivecache.test/profile/janedoe/bookmarks?after=01234567-89ab-cdef-0123-456789abcdef',
+                                'total' => null,
+                            ],
+                            summary: 'Paginated list of public bookmarks'
+                        ),
                     ]
                 )
             ),
@@ -74,9 +88,11 @@ final class ProfileBookmarkController extends BookmarkController
         #[MapQueryParameter(name: 'after')] ?string $afterQueryString = null,
     ): Response {
         if (RequestHelper::accepts($request, ['text/html'])) {
-            $iri = $this->generateUrl(RouteType::ProfileBookmarks->value . RouteAction::Collection->value, [
-                'username' => $account->username,
-            ], UrlGeneratorInterface::ABSOLUTE_URL);
+            $iri = $this->urlGenerator->generate(
+                RouteType::ProfileBookmarks,
+                RouteAction::Collection,
+                ['username' => $account->username]
+            );
 
             return new RedirectResponse($this->preferredClient . "?iri={$iri}");
         }
@@ -87,6 +103,7 @@ final class ProfileBookmarkController extends BookmarkController
             $afterQueryString,
             ['bookmark:show:public', 'tag:show:public'],
             RouteType::ProfileBookmarks,
+            RouteAction::Collection,
             ['username' => $account->username],
             onlyPublic: true
         );
@@ -117,7 +134,14 @@ final class ProfileBookmarkController extends BookmarkController
                 content: [
                     new OA\MediaType(
                         mediaType: 'application/json',
-                        schema: new OA\Schema(ref: '#/components/schemas/BookmarkShowPublic')
+                        schema: new OA\Schema(ref: '#/components/schemas/BookmarkShowPublic'),
+                        examples: [
+                            new OA\Examples(
+                                example: 'public_bookmark',
+                                value: Bookmark::EXAMPLE_PUBLIC_BOOKMARK,
+                                summary: 'Public bookmark details'
+                            ),
+                        ]
                     ),
                     new OA\MediaType(
                         mediaType: 'text/html',
@@ -131,7 +155,7 @@ final class ProfileBookmarkController extends BookmarkController
                     new OA\Header(
                         header: 'Location',
                         description: 'Redirect URL (when Accept: text/html)',
-                        schema: new OA\Schema(type: 'string', format: 'uri', example: 'https://bookmarkhive.net/profile/username/bookmarks/id'),
+                        schema: new OA\Schema(type: 'string', format: 'uri', example: 'https://hivecache.net/profile/username/bookmarks/id'),
                         required: false
                     ),
                 ]
@@ -143,7 +167,7 @@ final class ProfileBookmarkController extends BookmarkController
                     new OA\Header(
                         header: 'Location',
                         description: 'Redirect URL',
-                        schema: new OA\Schema(type: 'string', format: 'uri', example: 'https://bookmarkhive.net/profile/username/bookmarks/id')
+                        schema: new OA\Schema(type: 'string', format: 'uri', example: 'https://hivecache.net/profile/username/bookmarks/id')
                     ),
                 ]
             ),
@@ -160,10 +184,11 @@ final class ProfileBookmarkController extends BookmarkController
         string $id,
     ): Response {
         if (RequestHelper::accepts($request, ['text/html'])) {
-            $iri = $this->generateUrl(RouteType::ProfileBookmarks->value . RouteAction::Get->value, [
-                'id' => $id,
-                'username' => $account->username,
-            ], UrlGeneratorInterface::ABSOLUTE_URL);
+            $iri = $this->urlGenerator->generate(
+                RouteType::ProfileBookmarks,
+                RouteAction::Get,
+                ['id' => $id, 'username' => $account->username]
+            );
 
             return new RedirectResponse($this->preferredClient . "?iri={$iri}");
         }

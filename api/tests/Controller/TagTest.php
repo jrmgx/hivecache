@@ -473,7 +473,7 @@ class TagTest extends BaseApiTestCase
         $this->assertArrayHasKey('query', $parsedUrl, 'Location URL should have query parameters');
         parse_str($parsedUrl['query'], $queryParams);
         $this->assertArrayHasKey('iri', $queryParams, 'Query parameters should contain iri');
-        $this->assertStringStartsWith('http://', $queryParams['iri'], 'iri parameter should be an absolute URL starting with http://');
+        $this->assertStringStartsWith('https://', $queryParams['iri'], 'iri parameter should be an absolute URL starting with http://');
     }
 
     private function assertOtherUserCannotAccess(string $method, string $url, array $options = []): void

@@ -99,10 +99,10 @@ final class MeFileObjectController extends AbstractController
                         new OA\Examples(
                             example: 'uploaded_file',
                             value: [
-                                'contentUrl' => 'https://bookmarkhive.test/storage/files/abc123.jpg',
+                                'contentUrl' => 'https://hivecache.test/storage/files/abc123.jpg',
                                 'size' => 102400,
                                 'mime' => 'image/jpeg',
-                                '@iri' => 'https://bookmarkhive.test/users/me/files/' . Bookmark::EXAMPLE_BOOKMARK_ID,
+                                '@iri' => 'https://hivecache.test/users/me/files/' . Bookmark::EXAMPLE_BOOKMARK_ID,
                             ],
                             summary: 'Successfully uploaded file'
                         ),

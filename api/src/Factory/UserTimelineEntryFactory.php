@@ -2,24 +2,24 @@
 
 namespace App\Factory;
 
-use App\Entity\Follower;
+use App\Entity\UserTimelineEntry;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentObjectFactory<Follower>
+ * @extends PersistentObjectFactory<UserTimelineEntry>
  */
-final class FollowerFactory extends PersistentObjectFactory
+final class UserTimelineEntryFactory extends PersistentObjectFactory
 {
     public static function class(): string
     {
-        return Follower::class;
+        return UserTimelineEntry::class;
     }
 
     protected function defaults(): array|callable
     {
         return [
+            'bookmark' => BookmarkFactory::new(),
             'owner' => UserFactory::new(),
-            'account' => AccountFactory::new(),
         ];
     }
 }

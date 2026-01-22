@@ -48,8 +48,8 @@ class FileObject
     public string $filePath;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
-    public User $owner;
+    #[ORM\JoinColumn(nullable: true)]
+    public ?User $owner = null;
 
     public function __construct()
     {

@@ -11,13 +11,13 @@ final class Version20260109082602 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'Update Bookmark';
     }
 
     public function up(Schema $schema): void
     {
         $this->addSql('DROP INDEX from_this_server_idx');
-        $this->addSql('ALTER TABLE bookmark ADD instance VARCHAR(255) DEFAULT \'https://bookmarkhive.test\' NOT NULL');
+        $this->addSql('ALTER TABLE bookmark ADD instance VARCHAR(255) DEFAULT \'https://hivecache.test\' NOT NULL');
         $this->addSql('ALTER TABLE bookmark DROP from_this_server');
         $this->addSql('CREATE INDEX instance_idx ON bookmark (instance)');
     }
