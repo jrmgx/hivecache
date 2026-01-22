@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "BookmarkHive",
+    "name": "HiveCache",
     "version": "0.1",
     "description": "The decentralized social bookmarking service official web extension.",
     "permissions": [
@@ -15,7 +15,7 @@
     ],
     "action": {
         "default_popup": "popup.html",
-        "default_title": "Extension Action",
+        "default_title": "Add Bookmark",
         "default_icon": "icons/icon.svg"
     },
     "icons": {

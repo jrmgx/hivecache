@@ -1,21 +1,21 @@
 {
-  "name": "bookmarkhive-extension",
+  "name": "hivecache-extension",
   "version": "0.0.1",
-  "description": "Browser extension for BookmarkHive",
+  "description": "Browser extension for HiveCache",
   "scripts": {
-    "build": "npm run copy:libs && npm run bundle",
+    "build": "yarn copy:libs && yarn bundle",
     "copy:libs": "mkdir -p lib && cp node_modules/tom-select/dist/js/tom-select.complete.min.js lib/tom-select.complete.min.js && cp node_modules/tom-select/dist/css/tom-select.css lib/tom-select.css",
-    "bundle": "npm run bundle:content && npm run bundle:background && npm run bundle:popup && npm run bundle:options",
-    "bundle:content": "node esbuild.config.js content",
-    "bundle:background": "node esbuild.config.js background",
-    "bundle:popup": "node esbuild.config.js popup",
-    "bundle:options": "node esbuild.config.js options",
-    "watch:content": "node esbuild.config.js content --watch",
-    "watch:background": "node esbuild.config.js background --watch",
-    "watch:popup": "node esbuild.config.js popup --watch",
-    "watch:options": "node esbuild.config.js options --watch",
+    "bundle": "yarn bundle:content && yarn bundle:background && yarn bundle:popup && yarn bundle:options",
+    "bundle:content": "tsx esbuild.config.ts content",
+    "bundle:background": "tsx esbuild.config.ts background",
+    "bundle:popup": "tsx esbuild.config.ts popup",
+    "bundle:options": "tsx esbuild.config.ts options",
+    "watch:content": "tsx esbuild.config.ts content --watch",
+    "watch:background": "tsx esbuild.config.ts background --watch",
+    "watch:popup": "tsx esbuild.config.ts popup --watch",
+    "watch:options": "tsx esbuild.config.ts options --watch",
     "typecheck": "tsc --noEmit",
-    "watch": "npm run copy:libs && concurrently \"npm run watch:content\" \"npm run watch:background\" \"npm run watch:popup\" \"npm run watch:options\"",
+    "watch": "yarn copy:libs && concurrently \"yarn watch:content\" \"yarn watch:background\" \"yarn watch:popup\" \"yarn watch:options\"",
     "clean": "rm -f *.js *.js.map lib/*.js lib/*.js.map"
   },
   "devDependencies": {
@@ -23,6 +23,7 @@
     "@types/node": "^20.0.0",
     "concurrently": "^9.2.1",
     "esbuild": "^0.19.12",
+    "tsx": "^4.21.0",
     "typescript": "^5.3.0"
   },
   "dependencies": {

@@ -23,7 +23,7 @@
       "@shared/*": ["../shared/src/*"]
     }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "esbuild.config.ts"],
   "exclude": ["node_modules", "icons", "*.html", "*.js", "*.js.map"]
 }
 

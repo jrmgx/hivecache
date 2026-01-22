@@ -68,9 +68,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update message with instance URL if available
         if (loggedInMessage) {
             if (instanceUrl) {
-                loggedInMessage.textContent = `You are currently logged in to your BookmarkHive instance: ${instanceUrl}`;
+                loggedInMessage.textContent = `You are currently logged in to your HiveCache instance: ${instanceUrl}`;
             } else {
-                loggedInMessage.textContent = 'You are currently logged in to your BookmarkHive instance.';
+                loggedInMessage.textContent = 'You are currently logged in to your HiveCache instance.';
             }
         }
     }
@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
             normalizedUrl = normalizedUrl.replace(/\/$/, '');
             new URL(normalizedUrl);
         } catch (error) {
-            showStatus('Please enter a valid URL (e.g., https://bookmarkhive.test)', 'error');
+            showStatus('Please enter a valid URL (e.g., https://hivecache.test)', 'error');
             return;
         }
 
