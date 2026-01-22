@@ -150,7 +150,7 @@ export const PublicShowBookmark = () => {
   if (error || !bookmark) {
     const handleGoBack = () => {
       const params = updateTagParams(selectedTagSlugs, new URLSearchParams());
-      navigate(`/profile/${profileIdentifier}?${params.toString()}`);
+      navigate(`/social/${profileIdentifier}?${params.toString()}`);
     };
 
     return (
@@ -169,7 +169,7 @@ export const PublicShowBookmark = () => {
   const handleTagToggle = (slug: string) => {
     const newSelectedSlugs = toggleTag(slug, selectedTagSlugs);
     const newParams = updateTagParams(newSelectedSlugs, new URLSearchParams());
-    navigate(`/profile/${profileIdentifier}?${newParams.toString()}`);
+    navigate(`/social/${profileIdentifier}?${newParams.toString()}`);
   };
 
   const handleShow = () => {

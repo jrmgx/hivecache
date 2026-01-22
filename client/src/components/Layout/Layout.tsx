@@ -23,7 +23,10 @@ export const Layout = () => {
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Detect if we're in profile mode
-  const isProfileMode = location.pathname.startsWith('/profile/');
+  const isProfileMode = location.pathname.startsWith('/social/') &&
+    location.pathname !== '/social/timeline' &&
+    !location.pathname.startsWith('/social/tag/') &&
+    !location.pathname.startsWith('/social/instance/');
   const profileIdentifier = params.profileIdentifier;
   const profileContext = useProfileContext(isProfileMode && profileIdentifier ? profileIdentifier : '');
 
@@ -31,7 +34,10 @@ export const Layout = () => {
   const isTagsPage = isProfileMode
     ? location.pathname.endsWith('/tags')
     : location.pathname === '/me/tags';
-  const bookmarkMatch = location.pathname.match(/^\/(?:me|profile\/[^/]+)\/bookmarks\/([^/]+)$/);
+  const isTimelinePage = !isProfileMode && location.pathname === '/social/timeline';
+  const isSocialTagPage = !isProfileMode && location.pathname.startsWith('/social/tag/');
+  const isInstancePage = !isProfileMode && (location.pathname === '/social/instance/this' || location.pathname === '/social/instance/other');
+  const bookmarkMatch = location.pathname.match(/^\/(?:me|social\/[^/]+)\/bookmarks\/([^/]+)$/);
   const isBookmarkPage = !!bookmarkMatch;
   const bookmarkId = bookmarkMatch ? bookmarkMatch[1] : null;
 
@@ -88,7 +94,7 @@ export const Layout = () => {
 
     if (isProfileMode) {
       if (isTagsPage) {
-        navigate(`/profile/${profileIdentifier}?${newParams.toString()}`);
+        navigate(`/social/${profileIdentifier}?${newParams.toString()}`);
       } else {
         setSearchParams(newParams);
       }
@@ -109,7 +115,7 @@ export const Layout = () => {
       params.set('search', searchQuery);
     }
     if (isProfileMode) {
-      navigate(`/profile/${profileIdentifier}?${params.toString()}`);
+      navigate(`/social/${profileIdentifier}?${params.toString()}`);
     } else {
       navigate(`/me?${params.toString()}`);
     }
@@ -117,10 +123,10 @@ export const Layout = () => {
 
   const handleClearTags = () => {
     const params = updateTagParams([], searchParams);
-    if (isTagsPage) {
-      // If on tags page, navigate back to home page
+    if (isTagsPage || isTimelinePage || isSocialTagPage || isInstancePage) {
+      // If on tags page, timeline page, social tag page, or instance page, navigate back to home page
       if (isProfileMode) {
-        navigate(`/profile/${profileIdentifier}?${params.toString()}`);
+        navigate(`/social/${profileIdentifier}?${params.toString()}`);
       } else {
         navigate(`/me?${params.toString()}`);
       }
@@ -132,7 +138,7 @@ export const Layout = () => {
   const handleNavigateToTags = () => {
     const params = updateTagParams(selectedTagSlugs, new URLSearchParams());
     if (isProfileMode) {
-      navigate(`/profile/${profileIdentifier}/tags${params.toString() ? `?${params.toString()}` : ''}`);
+      navigate(`/social/${profileIdentifier}/tags${params.toString() ? `?${params.toString()}` : ''}`);
     } else {
       navigate(`/me/tags${params.toString() ? `?${params.toString()}` : ''}`);
     }
@@ -228,7 +234,7 @@ export const Layout = () => {
               window.dispatchEvent(new Event('refreshCurrentPage'));
             }}
           >
-            BookmarkHive
+            HiveCache
           </button>
           <button
             className="navbar-toggler bookmark-navbar-toggler"
@@ -260,7 +266,7 @@ export const Layout = () => {
                   window.dispatchEvent(new Event('refreshCurrentPage'));
                 }}
               >
-                BookmarkHive
+                HiveCache
               </h5>
               <button
                 type="button"

@@ -192,7 +192,7 @@ export const Bookmark = ({
               rel="noopener noreferrer"
               title={bookmark.title}
             >
-              <small 
+              <small
                 className={`badge me-2 rounded-pill text-bg-light border fw-light ${isEmbedded ? '' : 'domain-pill'}`}
                 title={bookmark.domain}
               >

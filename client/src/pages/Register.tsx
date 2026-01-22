@@ -86,7 +86,7 @@ export const Register = () => {
             <div className="card shadow">
               <div className="card-body p-4">
                 <div className="text-center mb-4">
-                  <h1 className="h3 mb-1 fw-bold">BookmarkHive</h1>
+                  <h1 className="h3 mb-1 fw-bold">HiveCache</h1>
                   <p className="text-muted mb-0">Create a new account</p>
                 </div>
 
@@ -107,7 +107,7 @@ export const Register = () => {
                       disabled={isLoading}
                       autoFocus
                     />
-                    <small className="form-text text-muted">Enter your BookmarkHive instance URL</small>
+                    <small className="form-text text-muted">Enter your HiveCache instance URL</small>
                   </div>
                   <div className="mb-3">
                     <label htmlFor="username" className="form-label">

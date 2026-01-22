@@ -8,12 +8,27 @@ interface BookmarkImageProps {
 }
 
 export const BookmarkImage = ({ bookmark, imageRef }: BookmarkImageProps) => {
-  const { profileIdentifier } = useParams<{ profileIdentifier?: string }>();
+  const { profileIdentifier: urlProfileIdentifier } = useParams<{ profileIdentifier?: string }>();
   const [searchParams] = useSearchParams();
   const imageUrl = bookmark.mainImage?.contentUrl;
 
   if (!imageUrl) {
     return null;
+  }
+
+  // Extract profileIdentifier from bookmark account if not in URL (for timeline)
+  let profileIdentifier = urlProfileIdentifier;
+  if (!profileIdentifier) {
+    const account = (bookmark as any).account;
+    if (account) {
+      const username = account.username;
+      const instance = account.instance || (bookmark as any).instance;
+      if (username && instance) {
+        profileIdentifier = `${username}@${instance}`;
+      } else if (username) {
+        profileIdentifier = username;
+      }
+    }
   }
 
   // Get current selected tags from URL
@@ -22,7 +37,7 @@ export const BookmarkImage = ({ bookmark, imageRef }: BookmarkImageProps) => {
 
   // Build URL with tags preserved
   const basePath = profileIdentifier
-    ? `/profile/${profileIdentifier}/bookmarks/${bookmark.id}`
+    ? `/social/${profileIdentifier}/bookmarks/${bookmark.id}`
     : `/me/bookmarks/${bookmark.id}`;
 
   const params = updateTagParams(selectedTagSlugs, new URLSearchParams());

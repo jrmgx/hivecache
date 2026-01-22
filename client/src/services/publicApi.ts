@@ -104,7 +104,7 @@ function extractApiBaseUrl(webfingerResponse: WebfingerResponse): string {
     throw new Error('Invalid webfinger response: no profile URL found in links');
   }
 
-  // Extract base URL from profile URL (e.g., https://bookmarkhive.test/profile/username -> https://bookmarkhive.test)
+  // Extract base URL from profile URL (e.g., https://hivecache.test/profile/username -> https://hivecache.test)
   try {
     const url = new URL(profileUrl);
     return `${url.protocol}//${url.host}`;
@@ -115,7 +115,7 @@ function extractApiBaseUrl(webfingerResponse: WebfingerResponse): string {
 
 /**
  * Query webfinger endpoint on a specific instance
- * @param instanceHost - The instance host (e.g., bookmarkhive.test)
+ * @param instanceHost - The instance host (e.g., hivecache.test)
  * @param acct - Account identifier (e.g., username@instance.host)
  * @returns WebFinger JSON response
  */

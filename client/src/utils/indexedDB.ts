@@ -4,7 +4,7 @@
  * which has much larger quotas than localStorage (especially important for Safari)
  */
 
-const DB_NAME = 'bookmarkhive';
+const DB_NAME = 'hivecache';
 const DB_VERSION = 1;
 const STORE_NAME = 'bookmarks';
 

@@ -1,6 +1,6 @@
 {
-  "name": "BookmarkHive",
-  "short_name": "BookmarkHive",
+  "name": "HiveCache",
+  "short_name": "HiveCache",
   "description": "Decentralized social bookmarking service",
   "start_url": "/",
   "display": "standalone",

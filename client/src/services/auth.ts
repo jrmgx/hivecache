@@ -5,7 +5,7 @@
 
 import { createLocalStorageAdapter } from '@shared';
 
-const adapter = createLocalStorageAdapter(import.meta.env.VITE_API_BASE_URL || undefined);
+const adapter = createLocalStorageAdapter();
 
 /**
  * Set authentication token

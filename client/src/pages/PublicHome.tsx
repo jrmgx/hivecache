@@ -137,7 +137,7 @@ export const PublicHome = () => {
 
   const handleShow = (id: string) => {
     const params = updateTagParams(selectedTagSlugs, new URLSearchParams());
-    navigate(`/profile/${profileIdentifier}/bookmarks/${id}${params.toString() ? `?${params.toString()}` : ''}`);
+    navigate(`/social/${profileIdentifier}/bookmarks/${id}${params.toString() ? `?${params.toString()}` : ''}`);
   };
 
   // Show profile context errors

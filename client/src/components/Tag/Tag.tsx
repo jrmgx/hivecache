@@ -17,7 +17,7 @@ export const Tag = ({
   className
 }: TagProps) => {
   const location = useLocation();
-  const isProfileMode = location.pathname.startsWith('/profile/');
+  const isProfileMode = location.pathname.startsWith('/social/') && location.pathname !== '/social/timeline';
   const isSelected = selectedTagSlugs.includes(tag.slug);
 
   const handleClick = (e: React.MouseEvent) => {

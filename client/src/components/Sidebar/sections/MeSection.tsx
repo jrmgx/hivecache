@@ -1,3 +1,4 @@
+import { useLocation } from 'react-router-dom';
 import { TagList } from '../../TagList/TagList';
 import { SidebarSection } from '../SidebarSection';
 import { SidebarAction } from '../SidebarAction';
@@ -20,8 +21,12 @@ export const MeSection = ({
   onClearTags,
   isTagsPage = false,
 }: MeSectionProps) => {
+  const location = useLocation();
   const pinnedTags = tags.filter((tag) => tag.pinned);
-  const isHomepageActive = selectedTagSlugs.length === 0 && !isTagsPage;
+  const isTimelinePage = location.pathname === '/social/timeline';
+  const isSocialTagPage = location.pathname.startsWith('/social/tag/');
+  const isInstancePage = location.pathname === '/social/instance/this' || location.pathname === '/social/instance/other';
+  const isHomepageActive = selectedTagSlugs.length === 0 && !isTagsPage && !isTimelinePage && !isSocialTagPage && !isInstancePage;
 
   return (
     <SidebarSection

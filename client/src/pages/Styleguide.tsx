@@ -25,7 +25,7 @@ const getRandomMasonryImageUrl = (): string => {
 
 const mockTags: TagType[] = [
   {
-    '@iri': 'https://bookmarkhive.test/users/me/tags/web-dev',
+    '@iri': 'https://hivecache.test/users/me/tags/web-dev',
     slug: 'web-dev',
     name: 'Web Development',
     isPublic: false,
@@ -34,7 +34,7 @@ const mockTags: TagType[] = [
     icon: '🌐',
   },
   {
-    '@iri': 'https://bookmarkhive.test/users/me/tags/design',
+    '@iri': 'https://hivecache.test/users/me/tags/design',
     slug: 'design',
     name: 'Design',
     isPublic: false,
@@ -43,7 +43,7 @@ const mockTags: TagType[] = [
     icon: '🎨',
   },
   {
-    '@iri': 'https://bookmarkhive.test/users/me/tags/react',
+    '@iri': 'https://hivecache.test/users/me/tags/react',
     slug: 'react',
     name: 'React',
     isPublic: false,
@@ -52,7 +52,7 @@ const mockTags: TagType[] = [
     icon: null,
   },
   {
-    '@iri': 'https://bookmarkhive.test/users/me/tags/typescript',
+    '@iri': 'https://hivecache.test/users/me/tags/typescript',
     slug: 'typescript',
     name: 'TypeScript',
     isPublic: false,
@@ -61,7 +61,7 @@ const mockTags: TagType[] = [
     icon: null,
   },
   {
-    '@iri': 'https://bookmarkhive.test/users/me/tags/embedded',
+    '@iri': 'https://hivecache.test/users/me/tags/embedded',
     slug: 'embedded',
     name: 'Videos',
     isPublic: false,
@@ -70,7 +70,7 @@ const mockTags: TagType[] = [
     icon: '▶️',
   },
   {
-    '@iri': 'https://bookmarkhive.test/users/me/tags/images',
+    '@iri': 'https://hivecache.test/users/me/tags/images',
     slug: 'images',
     name: 'Images',
     isPublic: false,
@@ -82,16 +82,16 @@ const mockTags: TagType[] = [
 
 const mockBookmarks: BookmarkType[] = [
   {
-    '@iri': 'https://bookmarkhive.test/users/me/bookmarks/1',
+    '@iri': 'https://hivecache.test/users/me/bookmarks/1',
     id: '1',
     createdAt: new Date().toISOString(),
     title: 'React Documentation',
     url: 'https://react.dev',
     domain: 'react.dev',
     tags: [mockTags[0], mockTags[2]],
-    owner: { '@iri': 'https://bookmarkhive.test/users/profile/user1', username: 'user1', isPublic: false },
+    owner: { '@iri': 'https://hivecache.test/users/profile/user1', username: 'user1', isPublic: false },
     mainImage: {
-      '@iri': 'https://bookmarkhive.test/users/me/files/1',
+      '@iri': 'https://hivecache.test/users/me/files/1',
       id: '1',
       contentUrl: getRandomImageUrl(),
       size: 50000,
@@ -101,16 +101,16 @@ const mockBookmarks: BookmarkType[] = [
     isPublic: false,
   },
   {
-    '@iri': 'https://bookmarkhive.test/users/me/bookmarks/5',
+    '@iri': 'https://hivecache.test/users/me/bookmarks/5',
     id: '5',
     createdAt: new Date(Date.now() - 345600000).toISOString(),
     title: 'Example YouTube Video',
     url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
     domain: 'youtube.com',
     tags: [mockTags[4]],
-    owner: { '@iri': 'https://bookmarkhive.test/users/profile/user1', username: 'user1', isPublic: false },
+    owner: { '@iri': 'https://hivecache.test/users/profile/user1', username: 'user1', isPublic: false },
     mainImage: {
-      '@iri': 'https://bookmarkhive.test/users/me/files/5',
+      '@iri': 'https://hivecache.test/users/me/files/5',
       id: '5',
       contentUrl: getRandomImageUrl(),
       size: 50000,
@@ -120,16 +120,16 @@ const mockBookmarks: BookmarkType[] = [
     isPublic: false,
   },
   {
-    '@iri': 'https://bookmarkhive.test/users/me/bookmarks/6',
+    '@iri': 'https://hivecache.test/users/me/bookmarks/6',
     id: '6',
     createdAt: new Date(Date.now() - 400000000).toISOString(),
     title: 'This is a very long bookmark title that contains multiple words and will be truncated after three lines to ensure it does not break the layout of the bookmark card component',
     url: 'https://example.com/very-long-title',
     domain: 'example.com',
     tags: [mockTags[0], mockTags[2]],
-    owner: { '@iri': 'https://bookmarkhive.test/users/profile/user1', username: 'user1', isPublic: false },
+    owner: { '@iri': 'https://hivecache.test/users/profile/user1', username: 'user1', isPublic: false },
     mainImage: {
-      '@iri': 'https://bookmarkhive.test/users/me/files/6',
+      '@iri': 'https://hivecache.test/users/me/files/6',
       id: '6',
       contentUrl: getRandomImageUrl(),
       size: 80000,
@@ -139,16 +139,16 @@ const mockBookmarks: BookmarkType[] = [
     isPublic: false,
   },
   {
-    '@iri': 'https://bookmarkhive.test/users/me/bookmarks/7',
+    '@iri': 'https://hivecache.test/users/me/bookmarks/7',
     id: '7',
     createdAt: new Date(Date.now() - 450000000).toISOString(),
     title: 'averylongtitleforabookmmarkthatwillbeproblematicifnothandledcorrectlybutimsureitwillbenice',
     url: 'https://example.com/no-spaces-title',
     domain: 'example.com',
     tags: [mockTags[1]],
-    owner: { '@iri': 'https://bookmarkhive.test/users/profile/user1', username: 'user1', isPublic: false },
+    owner: { '@iri': 'https://hivecache.test/users/profile/user1', username: 'user1', isPublic: false },
     mainImage: {
-      '@iri': 'https://bookmarkhive.test/users/me/files/7',
+      '@iri': 'https://hivecache.test/users/me/files/7',
       id: '7',
       contentUrl: getRandomImageUrl(),
       size: 90000,
@@ -158,16 +158,16 @@ const mockBookmarks: BookmarkType[] = [
     isPublic: false,
   },
   {
-    '@iri': 'https://bookmarkhive.test/users/me/bookmarks/2',
+    '@iri': 'https://hivecache.test/users/me/bookmarks/2',
     id: '2',
     createdAt: new Date(Date.now() - 86400000).toISOString(),
     title: 'TypeScript Handbook',
     url: 'https://www.typescriptlang.org/docs/',
     domain: 'typescriptlang.org',
     tags: [mockTags[0], mockTags[3]],
-    owner: { '@iri': 'https://bookmarkhive.test/users/profile/user1', username: 'user1', isPublic: false },
+    owner: { '@iri': 'https://hivecache.test/users/profile/user1', username: 'user1', isPublic: false },
     mainImage: {
-      '@iri': 'https://bookmarkhive.test/users/me/files/2',
+      '@iri': 'https://hivecache.test/users/me/files/2',
       id: '2',
       contentUrl: getRandomImageUrl(),
       size: 60000,
@@ -177,16 +177,16 @@ const mockBookmarks: BookmarkType[] = [
     isPublic: false,
   },
   {
-    '@iri': 'https://bookmarkhive.test/users/me/bookmarks/3',
+    '@iri': 'https://hivecache.test/users/me/bookmarks/3',
     id: '3',
     createdAt: new Date(Date.now() - 172800000).toISOString(),
     title: 'Design System Examples',
     url: 'https://example.com/design',
     domain: 'example.com',
     tags: [mockTags[1]],
-    owner: { '@iri': 'https://bookmarkhive.test/users/profile/user1', username: 'user1', isPublic: false },
+    owner: { '@iri': 'https://hivecache.test/users/profile/user1', username: 'user1', isPublic: false },
     mainImage: {
-      '@iri': 'https://bookmarkhive.test/users/me/files/3',
+      '@iri': 'https://hivecache.test/users/me/files/3',
       id: '3',
       contentUrl: getRandomImageUrl(),
       size: 70000,
@@ -196,16 +196,16 @@ const mockBookmarks: BookmarkType[] = [
     isPublic: false,
   },
   {
-    '@iri': 'https://bookmarkhive.test/users/me/bookmarks/4',
+    '@iri': 'https://hivecache.test/users/me/bookmarks/4',
     id: '4',
     createdAt: new Date(Date.now() - 259200000).toISOString(),
     title: 'Beautiful Image Gallery',
     url: 'https://example.com/gallery',
     domain: 'example.com',
     tags: [mockTags[5]],
-    owner: { '@iri': 'https://bookmarkhive.test/users/profile/user1', username: 'user1', isPublic: false },
+    owner: { '@iri': 'https://hivecache.test/users/profile/user1', username: 'user1', isPublic: false },
     mainImage: {
-      '@iri': 'https://bookmarkhive.test/users/me/files/4',
+      '@iri': 'https://hivecache.test/users/me/files/4',
       id: '4',
       contentUrl: getRandomImageUrl(),
       size: 120000,
@@ -225,9 +225,9 @@ const masonryBookmarks: BookmarkType[] = Array.from({ length: 20 }, (_, i) => ({
   url: `https://example.com/masonry-${i + 1}`,
   domain: 'example.com',
   tags: [mockTags[i % mockTags.length]],
-  owner: { '@iri': 'https://bookmarkhive.test/users/profile/user1', username: 'user1', isPublic: false },
+  owner: { '@iri': 'https://hivecache.test/users/profile/user1', username: 'user1', isPublic: false },
   mainImage: {
-    '@iri': `https://bookmarkhive.test/users/me/files/masonry-${i + 1}`,
+    '@iri': `https://hivecache.test/users/me/files/masonry-${i + 1}`,
     id: `masonry-${i + 1}`,
     contentUrl: getRandomMasonryImageUrl(),
     size: 50000 + i * 1000,
@@ -269,7 +269,7 @@ export const Styleguide = () => {
       <nav className="navbar navbar-expand-md navbar-dark fixed-top bg-primary navbar-height">
         <div className="container-fluid">
           <a className="text-white navbar-brand" href="/me">
-            BookmarkHive
+            HiveCache
           </a>
           <button
             className="navbar-toggler bookmark-navbar-toggler"
@@ -294,7 +294,7 @@ export const Styleguide = () => {
           >
             <div className="offcanvas-header">
               <h5 className="offcanvas-title" id="offcanvasStyleguideLabel">
-                BookmarkHive
+                HiveCache
               </h5>
               <button
                 type="button"

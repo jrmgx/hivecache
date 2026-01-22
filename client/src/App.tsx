@@ -2,6 +2,9 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Home } from './pages/Home';
+import { Timeline } from './pages/Timeline';
+import { SocialTag } from './pages/SocialTag';
+import { InstanceBookmarks } from './pages/InstanceBookmarks';
 import { Tags } from './pages/Tags';
 import { ShowBookmark } from './pages/ShowBookmark';
 import { PublicHome } from './pages/PublicHome';
@@ -40,9 +43,9 @@ function App() {
         <Route path="/styleguide" element={<Styleguide />} />
         {/* Public routes - no authentication required */}
         <Route element={<Layout />}>
-          <Route path="/profile/:profileIdentifier/tags" element={<PublicTags />} />
-          <Route path="/profile/:profileIdentifier/bookmarks/:id" element={<PublicShowBookmark />} />
-          <Route path="/profile/:profileIdentifier" element={<PublicHome />} />
+          <Route path="/social/:profileIdentifier/tags" element={<PublicTags />} />
+          <Route path="/social/:profileIdentifier/bookmarks/:id" element={<PublicShowBookmark />} />
+          <Route path="/social/:profileIdentifier" element={<PublicHome />} />
         </Route>
         {/* Protected routes - authentication required */}
         <Route
@@ -54,6 +57,9 @@ function App() {
         >
           <Route path="/me/tags" element={<Tags />} />
           <Route path="/me/bookmarks/:id" element={<ShowBookmark />} />
+          <Route path="/social/timeline" element={<Timeline />} />
+          <Route path="/social/tag/:slug" element={<SocialTag />} />
+          <Route path="/social/instance/:type" element={<InstanceBookmarks />} />
           <Route path="/me" element={<Home />} />
           <Route path="/" element={<Navigate to="/me" replace />} />
         </Route>

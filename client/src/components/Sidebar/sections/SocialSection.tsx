@@ -1,9 +1,13 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { SidebarSection } from '../SidebarSection';
 import { SidebarAction } from '../SidebarAction';
 
 export const SocialSection = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isTimelineActive = location.pathname === '/social/timeline';
+  const isInstanceThisActive = location.pathname === '/social/instance/this';
+  const isInstanceOtherActive = location.pathname === '/social/instance/other';
 
   return (
     <SidebarSection
@@ -11,40 +15,50 @@ export const SocialSection = () => {
       storageKey="sidebar-section-social-collapsed"
     >
       <SidebarAction
-        label="Your Timeline (may be removed while you don't follow any)"
+        label="Your Timeline"
         onClick={() => {
-          // TODO: Implement timeline navigation
+          navigate('/social/timeline');
         }}
+        active={isTimelineActive}
       />
+      {/* <SidebarAction
+        label="@one"
+        onClick={() => {
+          navigate('/social/one@hivecache.test');
+        }}
+      /> */}
+      {/* <SidebarAction
+        label="#php"
+        onClick={() => {
+          navigate('/social/tag/php');
+        }}
+        active={isPhpTagActive}
+      /> */}
       <SidebarAction
-        label="@jrmgx"
+        label="This Server"
         onClick={() => {
-          navigate('/profile/jrmgx@bookmarkhive.test');
+          navigate('/social/instance/this');
         }}
+        active={isInstanceThisActive}
       />
-      <SidebarAction
-        label="PHP"
+      {/* <SidebarAction
+        label="Tags"
         onClick={() => {
-          // TODO: Implement tag navigation
+          // TODO: Implement
         }}
-      />
-      <SidebarAction
-        label="This Server (could also show last tags)"
+      /> */}
+      {/* <SidebarAction
+        label="Trending"
         onClick={() => {
-          // TODO: Implement server navigation
+          // TODO: Implement
         }}
-      />
-      <SidebarAction
-        label="Trending (same)"
-        onClick={() => {
-          // TODO: Implement trending navigation
-        }}
-      />
+      /> */}
       <SidebarAction
         label="Other Server"
         onClick={() => {
-          // TODO: Implement external server navigation
+          navigate('/social/instance/other');
         }}
+        active={isInstanceOtherActive}
       />
     </SidebarSection>
   );

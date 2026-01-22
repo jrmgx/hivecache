@@ -1,5 +1,5 @@
 /**
- * Type definitions for BookmarkHive client
+ * Type definitions for HiveCache client
  * Re-exports all types from shared package
  */
 

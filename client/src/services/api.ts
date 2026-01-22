@@ -1,11 +1,11 @@
 /**
- * API service for BookmarkHive client
+ * API service for HiveCache client
  * Uses shared API client with localStorage adapter
  */
 
 import { createApiClient, createLocalStorageAdapter, getCursorFromUrl, type ApiClient, type BookmarksResponse, type Bookmark, type Tag, type UserOwner } from '@shared';
 
-const storageAdapter = createLocalStorageAdapter(import.meta.env.VITE_API_BASE_URL || undefined);
+const storageAdapter = createLocalStorageAdapter();
 
 // Cache for the API client instance
 let apiClientCache: ApiClient | null = null;
@@ -109,6 +109,33 @@ export const getBookmark = async (id: string): Promise<Bookmark | null> => {
 export const getBookmarkHistory = async (id: string): Promise<BookmarksResponse> => {
   const client = await getOrCreateApiClient();
   return client.getBookmarkHistory(id);
+};
+
+/**
+ * Get social timeline bookmarks
+ * Returns public bookmarks from users you follow and your instance
+ */
+export const getSocialTimeline = async (after?: string): Promise<BookmarksResponse> => {
+  const client = await getOrCreateApiClient();
+  return client.getSocialTimeline(after);
+};
+
+/**
+ * Get social tag bookmarks
+ * Returns public bookmarks filtered by an instance tag
+ */
+export const getSocialTagBookmarks = async (slug: string, after?: string): Promise<BookmarksResponse> => {
+  const client = await getOrCreateApiClient();
+  return client.getSocialTagBookmarks(slug, after);
+};
+
+/**
+ * Get instance bookmarks
+ * Returns public bookmarks from the current instance (type: 'this') or other instances (type: 'other')
+ */
+export const getInstanceBookmarks = async (type: 'this' | 'other', after?: string): Promise<BookmarksResponse> => {
+  const client = await getOrCreateApiClient();
+  return client.getInstanceBookmarks(type, after);
 };
 
 /**

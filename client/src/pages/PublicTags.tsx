@@ -68,7 +68,7 @@ export const PublicTags = () => {
   const handleTagToggle = (slug: string) => {
     const newSelectedSlugs = toggleTag(slug, selectedTagSlugs);
     const newParams = updateTagParams(newSelectedSlugs, searchParams);
-    navigate(`/profile/${profileIdentifier}?${newParams.toString()}`);
+    navigate(`/social/${profileIdentifier}?${newParams.toString()}`);
   };
 
   // Show profile context errors
