@@ -112,7 +112,7 @@ export const SocialTag = () => {
   };
 
   // Use default layout for timeline (no tag filtering)
-  const layout = LAYOUT_DEFAULT;
+  const layout: string = LAYOUT_DEFAULT;
   const isLayoutImage = layout === LAYOUT_IMAGE;
 
   return (
