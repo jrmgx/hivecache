@@ -77,7 +77,7 @@ services:
     swagger:
         image: swaggerapi/swagger-ui:latest
         environment:
-            - URL=https://bookmarkhive.test/docs
+            - URL=https://hivecache.test/docs
         profiles:
             - default
         labels:
@@ -115,6 +115,8 @@ services:
             - "./.home:/home/app:cached"
         depends_on:
             - postgres
+        ports:
+            - "3000:3000"
         profiles:
             - builder
 

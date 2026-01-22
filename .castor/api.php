@@ -20,7 +20,7 @@ use function docker\up;
  */
 function create_default_variables(): array
 {
-    $projectName = 'bookmarkhive';
+    $projectName = 'hivecache';
     $tld = 'test';
 
     return [
@@ -98,7 +98,7 @@ function fixtures(): void
     docker_compose_run('bin/console foundry:load-stories -n --append');
 }
 
-#[AsTask(description: 'Start all messenger consumers', aliases: ['consume'])]
+#[AsTask(namespace: 'api:dev', description: 'Start all messenger consumers', aliases: ['dev:consume'])]
 function consume_messages(#[AsOption] int $limit = 100): void
 {
     docker_compose_run("bin/console messenger:consume async -vvv --memory-limit=512M --time-limit=3600 --limit=$limit");
@@ -111,7 +111,7 @@ function openapi(): void
 }
 
 #[AsTask(description: 'Start a local tunnel to have this instance exposed', aliases: ['tunnel'])]
-function tunnel(string $domain, string $host = 'bookmarkhive.test'): void
+function tunnel(string $domain, string $host = 'hivecache.test'): void
 {
     run("ngrok http --host-header=$host 443 --domain=$domain");
 }

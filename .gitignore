@@ -12,3 +12,4 @@
 /client/.env
 *.afdesign
 /shared/node_modules
+/extension/hivecache-extension.zip
