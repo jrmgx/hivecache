@@ -6,7 +6,7 @@ import type { StorageAdapter } from '../storage/adapter';
 
 export interface ApiConfig {
   /**
-   * Base URL for the API (e.g., 'https://bookmarkhive.test')
+   * Base URL for the API (e.g., 'https://hivecache.test')
    */
   baseUrl: string;
 

@@ -38,10 +38,9 @@ export function getCursorFromUrl(url: string | null): string | undefined {
       }
     }
 
-    // Fallback to environment variable or window.location.origin
-    if (!baseUrl) {
-      const envBaseUrl = (import.meta as any)?.env?.VITE_API_BASE_URL;
-      baseUrl = envBaseUrl || (typeof window !== 'undefined' ? window.location.origin : undefined);
+    // Fallback to window.location.origin
+    if (!baseUrl && typeof window !== 'undefined') {
+      baseUrl = window.location.origin;
     }
 
     if (!baseUrl) {

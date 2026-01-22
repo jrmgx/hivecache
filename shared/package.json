@@ -1,7 +1,7 @@
 {
-  "name": "@bookmarkhive/shared",
+  "name": "@hivecache/shared",
   "version": "0.0.1",
-  "description": "Shared code for BookmarkHive extension and client",
+  "description": "Shared code for HiveCache extension and client",
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",

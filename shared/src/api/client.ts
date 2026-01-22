@@ -1,5 +1,5 @@
 /**
- * Unified API client for BookmarkHive
+ * Unified API client for HiveCache
  * Supports both browser extension and web client via storage adapters
  */
 
@@ -17,6 +17,7 @@ import type {
   ApiTag,
   FileObject,
   BookmarkIndexDiffResponse,
+  Account,
 } from '../types';
 import { ApiError } from './error';
 import type { ApiConfig } from './config';
@@ -36,6 +37,9 @@ export interface ApiClient {
   getBookmarkIndexDiff(before?: string): Promise<BookmarkIndexDiffResponse>;
   getBookmark(id: string): Promise<Bookmark | null>;
   getBookmarkHistory(id: string): Promise<BookmarksResponse>;
+  getSocialTimeline(after?: string): Promise<BookmarksResponse>;
+  getSocialTagBookmarks(slug: string, after?: string): Promise<BookmarksResponse>;
+  getInstanceBookmarks(type: 'this' | 'other', after?: string): Promise<BookmarksResponse>;
   createBookmark(payload: BookmarkCreate): Promise<BookmarkOwner>;
   updateBookmark(id: string, payload: BookmarkUpdate): Promise<Bookmark>;
   updateBookmarkTags(id: string, tagSlugs: string[]): Promise<Bookmark>;
@@ -314,6 +318,276 @@ export function createApiClient(config: ApiConfig): ApiClient {
         nextPage: null,
         prevPage: null,
         total: null,
+      };
+    },
+
+    /**
+     * Gets social timeline bookmarks
+     * Returns public bookmarks from users you follow and your instance
+     */
+    async getSocialTimeline(after?: string): Promise<BookmarksResponse> {
+      let url = `${baseUrl}/users/me/bookmarks/social/timeline`;
+      if (after) {
+        url += `?after=${encodeURIComponent(after)}`;
+      }
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: await getAuthHeaders(),
+      });
+
+      const data = await handleResponse<{
+        collection: Array<{
+          id: string;
+          createdAt: string;
+          title: string;
+          url: string;
+          domain: string;
+          account?: Account;
+          tags: Array<{
+            '@iri': string;
+            name: string;
+            slug: string;
+          }>;
+          mainImage: FileObject | null;
+          archive: FileObject | null;
+          instance: string;
+          '@iri': string;
+        }>;
+        nextPage: string | null;
+        prevPage: string | null;
+        total: number | null;
+      }>(response);
+
+      if (!data.collection) {
+        throw new ApiError('Bookmarks collection not found.', 500);
+      }
+
+      // Transform public bookmarks to internal Bookmark format
+      const bookmarks: Bookmark[] = data.collection.map((bookmark) => {
+        const transformed: Bookmark & { account?: { username: string; instance?: string; '@iri': string } } = {
+          ...bookmark,
+          isPublic: true, // Timeline bookmarks are always public
+          tags: bookmark.tags
+            ? bookmark.tags.map((tag) => ({
+                '@iri': tag['@iri'],
+                name: tag.name,
+                slug: tag.slug,
+                isPublic: true, // Public tags are always public
+                pinned: false, // Public tags don't have pinned info
+                layout: 'default', // Public tags don't have layout info
+                icon: null, // Public tags don't have icon info
+              }))
+            : [],
+          // Transform account to owner format
+          owner: bookmark.account
+            ? {
+                '@iri': bookmark.account['@iri'],
+                username: bookmark.account.username,
+                isPublic: true, // Timeline accounts are public
+              }
+            : {
+                '@iri': bookmark['@iri'],
+                username: 'unknown',
+                isPublic: true,
+              },
+        };
+        // Preserve account field with instance for profile navigation
+        if (bookmark.account) {
+          (transformed as any).account = {
+            username: bookmark.account.username,
+            instance: bookmark.instance,
+            '@iri': bookmark.account['@iri'],
+          };
+        }
+        return transformed;
+      });
+
+      return {
+        collection: bookmarks,
+        nextPage: data.nextPage,
+        prevPage: data.prevPage,
+        total: data.total,
+      };
+    },
+
+    /**
+     * Gets social tag bookmarks
+     * Returns public bookmarks filtered by an instance tag
+     */
+    async getSocialTagBookmarks(slug: string, after?: string): Promise<BookmarksResponse> {
+      let url = `${baseUrl}/users/me/bookmarks/social/tag/${encodeURIComponent(slug)}`;
+      if (after) {
+        url += `?after=${encodeURIComponent(after)}`;
+      }
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: await getAuthHeaders(),
+      });
+
+      const data = await handleResponse<{
+        collection: Array<{
+          id: string;
+          createdAt: string;
+          title: string;
+          url: string;
+          domain: string;
+          account?: Account;
+          tags: Array<{
+            '@iri': string;
+            name: string;
+            slug: string;
+          }>;
+          mainImage: FileObject | null;
+          archive: FileObject | null;
+          instance: string;
+          '@iri': string;
+        }>;
+        nextPage: string | null;
+        prevPage: string | null;
+        total: number | null;
+      }>(response);
+
+      if (!data.collection) {
+        throw new ApiError('Bookmarks collection not found.', 500);
+      }
+
+      // Transform public bookmarks to internal Bookmark format
+      const bookmarks: Bookmark[] = data.collection.map((bookmark) => {
+        const transformed: Bookmark & { account?: { username: string; instance?: string; '@iri': string } } = {
+          ...bookmark,
+          isPublic: true, // Social tag bookmarks are always public
+          tags: bookmark.tags
+            ? bookmark.tags.map((tag) => ({
+                '@iri': tag['@iri'],
+                name: tag.name,
+                slug: tag.slug,
+                isPublic: true, // Public tags are always public
+                pinned: false, // Public tags don't have pinned info
+                layout: 'default', // Public tags don't have layout info
+                icon: null, // Public tags don't have icon info
+              }))
+            : [],
+          // Transform account to owner format
+          owner: bookmark.account
+            ? {
+                '@iri': bookmark.account['@iri'],
+                username: bookmark.account.username,
+                isPublic: true, // Social tag accounts are public
+              }
+            : {
+                '@iri': bookmark['@iri'],
+                username: 'unknown',
+                isPublic: true,
+              },
+        };
+        // Preserve account field with instance for profile navigation
+        if (bookmark.account) {
+          (transformed as any).account = {
+            username: bookmark.account.username,
+            instance: bookmark.instance,
+            '@iri': bookmark.account['@iri'],
+          };
+        }
+        return transformed;
+      });
+
+      return {
+        collection: bookmarks,
+        nextPage: data.nextPage,
+        prevPage: data.prevPage,
+        total: data.total,
+      };
+    },
+
+    /**
+     * Gets instance bookmarks
+     * Returns public bookmarks from the current instance (type: 'this') or other instances (type: 'other')
+     */
+    async getInstanceBookmarks(type: 'this' | 'other', after?: string): Promise<BookmarksResponse> {
+      let url = `${baseUrl}/instance/${type}`;
+      if (after) {
+        url += `?after=${encodeURIComponent(after)}`;
+      }
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: await getAuthHeaders(),
+      });
+
+      const data = await handleResponse<{
+        collection: Array<{
+          id: string;
+          createdAt: string;
+          title: string;
+          url: string;
+          domain: string;
+          account?: Account;
+          tags: Array<{
+            '@iri': string;
+            name: string;
+            slug: string;
+          }>;
+          mainImage: FileObject | null;
+          archive: FileObject | null;
+          instance: string;
+          '@iri': string;
+        }>;
+        nextPage: string | null;
+        prevPage: string | null;
+        total: number | null;
+      }>(response);
+
+      if (!data.collection) {
+        throw new ApiError('Bookmarks collection not found.', 500);
+      }
+
+      // Transform public bookmarks to internal Bookmark format
+      const bookmarks: Bookmark[] = data.collection.map((bookmark) => {
+        const transformed: Bookmark & { account?: { username: string; instance?: string; '@iri': string } } = {
+          ...bookmark,
+          isPublic: true, // Instance bookmarks are always public
+          tags: bookmark.tags
+            ? bookmark.tags.map((tag) => ({
+                '@iri': tag['@iri'],
+                name: tag.name,
+                slug: tag.slug,
+                isPublic: true, // Public tags are always public
+                pinned: false, // Public tags don't have pinned info
+                layout: 'default', // Public tags don't have layout info
+                icon: null, // Public tags don't have icon info
+              }))
+            : [],
+          // Transform account to owner format
+          owner: bookmark.account
+            ? {
+                '@iri': bookmark.account['@iri'],
+                username: bookmark.account.username,
+                isPublic: true, // Instance accounts are public
+              }
+            : {
+                '@iri': bookmark['@iri'],
+                username: 'unknown',
+                isPublic: true,
+              },
+        };
+        // Preserve account field with instance for profile navigation
+        if (bookmark.account) {
+          (transformed as any).account = {
+            username: bookmark.account.username,
+            instance: bookmark.instance,
+            '@iri': bookmark.account['@iri'],
+          };
+        }
+        return transformed;
+      });
+
+      return {
+        collection: bookmarks,
+        nextPage: data.nextPage,
+        prevPage: data.prevPage,
+        total: data.total,
       };
     },
 

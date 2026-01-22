@@ -10,9 +10,8 @@ const BASE_URL_KEY = 'api_base_url';
 
 /**
  * Creates a localStorage-based storage adapter
- * @param defaultBaseUrl Optional default base URL if not found in storage
  */
-export function createLocalStorageAdapter(defaultBaseUrl?: string): StorageAdapter {
+export function createLocalStorageAdapter(): StorageAdapter {
   return {
     async getToken(): Promise<string | null> {
       return localStorage.getItem(TOKEN_KEY);
@@ -27,11 +26,7 @@ export function createLocalStorageAdapter(defaultBaseUrl?: string): StorageAdapt
     },
 
     async getBaseUrl(): Promise<string | null> {
-      const stored = localStorage.getItem(BASE_URL_KEY);
-      if (stored) {
-        return stored;
-      }
-      return defaultBaseUrl || null;
+      return localStorage.getItem(BASE_URL_KEY);
     },
 
     async setBaseUrl(baseUrl: string): Promise<void> {
