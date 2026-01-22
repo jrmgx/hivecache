@@ -147,6 +147,13 @@ RUN phpenmod app-default \
 RUN curl -L --output /usr/local/bin/pie https://github.com/php/pie/releases/download/1.0.0/pie.phar \
     && chmod +x /usr/local/bin/pie
 
+# Rust and mdBook (build from source)
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
+    && . "$HOME/.cargo/env" \
+    && cargo install mdbook \
+    && mv "$HOME/.cargo/bin/mdbook" /usr/local/bin/mdbook \
+    && rm -rf "$HOME/.cargo/registry" "$HOME/.cargo/git" "$HOME/.rustup"
+
 # Autocompletion
 ADD https://raw.githubusercontent.com/symfony/symfony/refs/heads/7.3/src/Symfony/Component/Console/Resources/completion.bash /tmp/completion.bash
 

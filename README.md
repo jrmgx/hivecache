@@ -1,36 +1,77 @@
-# BookmarkHive
+# HiveCache
 
-## Pitch 
+<img src="./images/icon.svg" alt="HiveCache" style="max-width: 128px;" />
 
-It's a decentralized social bookmarking service based on the Activity Pub protocol.
+A decentralized social bookmarking service based on the ActivityPub protocol.
 
-Each bookmark is also a snapshot of the page at a specific point in time, 
-similar to how the Internet Archive works.
+**Bookmark** and **Save/Preserve** that's important to you.
+Decentralized and encrypted*. (*wip)
 
-The goal is twofold: to save bookmarks and archive the given page, 
-all in a decentralized manner for greater resilience.
+## Overview
 
-## Development steps
+HiveCache is a decentralized social bookmarking service that combines bookmarking with web archiving.
+Each bookmark includes a snapshot of the page at a specific point in time,
+ensuring you'll always have access to the version you bookmarked even if the original disappears.
 
-- Simple API with a browser extension **(current step)**
-- Implementation of the Activity Pub protocol (including an administration interface for managing reports)
-- Addition of end-to-end encryption for private bookmarks
+Key features: automatic page archiving, privacy controls, flexible tagging, and ActivityPub-based federation.
+See the [User Guide](./docs/src/UserGuide.md) for details.
+
+## Development Roadmap
+
+### Current Status
+
+- ✅ Simple API with browser extension and web client
+- ✅ ActivityPub protocol minimal implementation
+- Version history view for bookmarks
+- Server administration and moderation tools
+
+### Future Features
+
+- End-to-end encryption for private bookmarks
+- Enhanced archiving (videos and other media)
 
 ## Documentation
 
-- User documentation
-- [API](./documentation/API.md)
-- [Web Extension](./documentation/WebExtension.md)
-- [ActivityPub](./documentation/ActivityPub.md)
-- [Client](./documentation/Client.md)
-- Limitations
-- 🛠️ [Development](./documentation/Development.md)
-- [Deploy in production](./documentation/Deploy.md)
+### User Documentation
+
+Learn how to use HiveCache:
+
+- [User Guide](./docs/src/UserGuide.md) - Comprehensive guide covering what HiveCache is, how it works, and basic concepts
+- [Limitations](./docs/src/Limitations.md) - Important limitations and known issues
+- [Web Extension](./docs/src/WebExtension.md) - How to install and use the browser extension
+- [Web Client](./docs/src/Client.md) - How to use the web interface
+
+### Developer Documentation
+
+Technical documentation and development guides:
+
+- [Development Setup](./docs/src/Development/Setup.md) - Setting up your local development environment
+- [API Development](./docs/src/Development/API.md) - API architecture, IRI normalization, and technical details
+- [Client Development](./docs/src/Development/Client.md) - Web client development guide (React, Vite, TypeScript)
+- [Extension Development](./docs/src/Development/Extension.md) - Browser extension development guide
+- [ActivityPub Implementation](./docs/src/Development/ActivityPub.md) - How ActivityPub is implemented in HiveCache
+- [Production Deployment](./docs/src/Development/Deployment.md) - Guide for deploying to production
+
+## Quick Start
+
+### For Users
+
+1. Set up an account on a HiveCache instance (or run your own)
+2. Install the [browser extension](./docs/src/WebExtension.md)
+3. Configure the extension with your instance URL and credentials
+4. Start bookmarking!
+
+### For Developers
+
+1. Follow the [Development Setup](./docs/src/Development/Setup.md) guide
+2. Run `castor start` to launch the local environment
+3. Access the application at `https://hivecache.test`
+4. Discover all the developer commands by running `castor`
+
+## License
+
+MIT
 
 ## Attributions
 
-<a href="https://www.flaticon.com/free-icons/bee" title="bee icons">Bee icons created by Eucalyp - Flaticon</a>
-
-## Licence
-
-MIT
+-
