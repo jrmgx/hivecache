@@ -1,4 +1,16 @@
 [book]
 title = "HiveCache"
-authors = ["Jérôme Gangneux"]
+authors = ["HiveCache Contributors"]
 language = "en"
+description = "HiveCache is a decentralized social bookmarking service based on ActivityPub."
+
+[output.html]
+theme = "theme"
+default-theme = "light"
+preferred-dark-theme = "coal"
+
+[output.html.print]
+enable = false
+
+[output.html.search]
+enable = false

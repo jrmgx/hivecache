@@ -85,12 +85,11 @@ final class AppController extends AbstractController
     ) {
     }
 
-    /** @return array<mixed> */
     #[Route(path: '/', name: 'index', methods: ['GET'])]
     #[Template('base.html.twig')]
     public function index(): RedirectResponse
     {
-        return $this->redirect('https://app.hivecache.net');
+        return $this->redirect('https://docs.hivecache.net');
     }
 
     #[Route(path: '/docs', name: 'docs')]
@@ -113,8 +112,5 @@ final class AppController extends AbstractController
         }
 
         return new JsonResponse($json, json: true);
-        //        $response->headers->set('Access-Control-Allow-Origin', '*');
-        //        $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-        //        $response->headers->set('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept, Authorization');
     }
 }

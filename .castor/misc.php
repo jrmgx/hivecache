@@ -16,10 +16,11 @@ function copy_assets(): void
     $context = context()->withWorkingDirectory('./images');
     run("cp -rf icon.svg ../api/public/icon.svg", context: $context);
     run("cp -rf icon.svg ../extension/icons/icon.svg", context: $context);
+    run("cp -rf icon.svg ../docs/theme/favicon.svg", context: $context);
 
     $projectRoot = dirname(__DIR__);
     $svgFilePath = $projectRoot . '/images/icon.svg';
-    $docsIconPath = $projectRoot . '/docs/src/assets/icon.svg';
+    $docsIconPath = $projectRoot . '/docs/src/assets/banner-icon.svg';
 
     $svgContent = file_get_contents($svgFilePath);
     if ($svgContent === false) {

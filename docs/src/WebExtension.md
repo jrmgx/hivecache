@@ -5,7 +5,11 @@ See the [User Guide](./UserGuide.md) for general concepts.
 
 ## Installation
 
-Get the official extensions from your browser store or from https://hivecache.net
+Get the official extensions from your browser store:
+
+ - For Firefox, at [addons.mozilla.org/addon/hivecache](https://addons.mozilla.org/en-GB/firefox/addon/hivecache/)
+ - For Google Chrome (and Chrome based), at __pending review__
+ - From source, at [github.com/hivecache/extension](https://github.com/jrmgx/hivecache/tree/main/extension)
 
 ## Configuration
 

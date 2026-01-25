@@ -3,8 +3,10 @@
 namespace docs;
 
 use Castor\Attribute\AsArgument;
+use Castor\Attribute\AsOption;
 use Castor\Attribute\AsTask;
 
+use function api\openapi;
 use function Castor\io;
 use function Castor\run;
 use function docker\docker_compose_run;
@@ -18,7 +20,7 @@ function watch(): void
 }
 
 #[AsTask(description: 'Build the mdbook documentation')]
-function build(#[AsArgument] $toDirectory = '../docs'): void
+function build(#[AsArgument] $toDirectory = '../docs', #[AsOption] $withSwager = true): void
 {
     io()->title('Building mdbook documentation');
 
@@ -27,4 +29,9 @@ function build(#[AsArgument] $toDirectory = '../docs'): void
     $toDirectory = rtrim($toDirectory, '/');
     run("rm -rfv $toDirectory/*");
     run("cp -rfv ./docs/book/* $toDirectory/");
+
+    if ($withSwager) {
+        openapi();
+        run("mkdir $toDirectory/swagger && cp -rfv ./docs/swagger/* $toDirectory/swagger/");
+    }
 }

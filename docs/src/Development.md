@@ -25,3 +25,6 @@ Learn about the following flow, bookmark capturing flow, re-capturing flow, and 
 ### [Deployment](./Development/Deployment.md)
 Deploy HiveCache to production.
 Covers Docker-based deployment, database setup, building production images, JWT key pair generation, environment variables, and infrastructure considerations.
+
+### [Swagger](./swagger)
+The API is exposed with OpenAPI and a Swagger interface is live so you can play with it.

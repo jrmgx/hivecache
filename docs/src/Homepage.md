@@ -1,7 +1,5 @@
 ## What is HiveCache?
 
-<img src="./assets/icon.svg" alt="HiveCache Logo" style="width: 100%" />
-
 HiveCache is a decentralized social bookmarking service based on ActivityPub.
 Each bookmark includes a snapshot of the page at a specific point in time, ensuring you'll always have access to the version you bookmarked even if the original disappears.
 
