@@ -202,7 +202,7 @@ export function createApiClient(config: ApiConfig): ApiClient {
       // Transform tags within each bookmark
       const bookmarks: Bookmark[] = data.collection.map((bookmark) => ({
         ...bookmark,
-        tags: bookmark.tags ? bookmark.tags.map(transformTagFromApi) : [],
+        tags: Array.isArray(bookmark.tags) ? bookmark.tags.map(transformTagFromApi) : [],
       }));
 
       return {
@@ -242,7 +242,7 @@ export function createApiClient(config: ApiConfig): ApiClient {
       // Transform tags within each bookmark
       const bookmarks: Bookmark[] = data.collection.map((bookmark) => ({
         ...bookmark,
-        tags: bookmark.tags ? bookmark.tags.map(transformTagFromApi) : [],
+        tags: Array.isArray(bookmark.tags) ? bookmark.tags.map(transformTagFromApi) : [],
       }));
 
       return {
@@ -285,7 +285,7 @@ export function createApiClient(config: ApiConfig): ApiClient {
       // Transform tags within the bookmark
       return {
         ...bookmark,
-        tags: bookmark.tags ? bookmark.tags.map(transformTagFromApi) : [],
+        tags: Array.isArray(bookmark.tags) ? bookmark.tags.map(transformTagFromApi) : [],
       };
     },
 
@@ -310,7 +310,7 @@ export function createApiClient(config: ApiConfig): ApiClient {
       // Transform tags within each bookmark
       const bookmarks: Bookmark[] = data.collection.map((bookmark) => ({
         ...bookmark,
-        tags: bookmark.tags ? bookmark.tags.map(transformTagFromApi) : [],
+        tags: Array.isArray(bookmark.tags) ? bookmark.tags.map(transformTagFromApi) : [],
       }));
 
       return {
@@ -368,7 +368,7 @@ export function createApiClient(config: ApiConfig): ApiClient {
         const transformed: Bookmark & { account?: { username: string; instance?: string; '@iri': string } } = {
           ...bookmark,
           isPublic: true, // Timeline bookmarks are always public
-          tags: bookmark.tags
+          tags: Array.isArray(bookmark.tags)
             ? bookmark.tags.map((tag) => ({
                 '@iri': tag['@iri'],
                 name: tag.name,
@@ -458,7 +458,7 @@ export function createApiClient(config: ApiConfig): ApiClient {
         const transformed: Bookmark & { account?: { username: string; instance?: string; '@iri': string } } = {
           ...bookmark,
           isPublic: true, // Social tag bookmarks are always public
-          tags: bookmark.tags
+          tags: Array.isArray(bookmark.tags)
             ? bookmark.tags.map((tag) => ({
                 '@iri': tag['@iri'],
                 name: tag.name,
@@ -545,20 +545,55 @@ export function createApiClient(config: ApiConfig): ApiClient {
 
       // Transform public bookmarks to internal Bookmark format
       const bookmarks: Bookmark[] = data.collection.map((bookmark) => {
+        // Extract tags before spreading bookmark to avoid any conflicts
+        // Handle various possible formats: array, object with numeric keys, null, undefined
+        let rawTags: Array<{
+          '@iri': string;
+          name: string;
+          slug: string;
+        }> = [];
+        
+        if (bookmark.tags) {
+          if (Array.isArray(bookmark.tags)) {
+            rawTags = bookmark.tags;
+          } else if (typeof bookmark.tags === 'object' && bookmark.tags !== null) {
+            // If tags is an object, try to convert it to an array
+            const tagsArray = Object.values(bookmark.tags) as Array<{
+              '@iri'?: string;
+              name?: string;
+              slug?: string;
+            }>;
+            // Filter and map to ensure we have valid tag objects
+            rawTags = tagsArray
+              .filter((tag) => 
+                typeof tag === 'object' && 
+                tag !== null && 
+                typeof tag.name === 'string' && 
+                typeof tag.slug === 'string'
+              )
+              .map((tag) => {
+                const tagWithIri = tag as { '@iri'?: string; name: string; slug: string };
+                return {
+                  '@iri': tagWithIri['@iri'] || '',
+                  name: tagWithIri.name,
+                  slug: tagWithIri.slug,
+                };
+              });
+          }
+        }
+        
         const transformed: Bookmark & { account?: { username: string; instance?: string; '@iri': string } } = {
           ...bookmark,
           isPublic: true, // Instance bookmarks are always public
-          tags: bookmark.tags
-            ? bookmark.tags.map((tag) => ({
-                '@iri': tag['@iri'],
-                name: tag.name,
-                slug: tag.slug,
-                isPublic: true, // Public tags are always public
-                pinned: false, // Public tags don't have pinned info
-                layout: 'default', // Public tags don't have layout info
-                icon: null, // Public tags don't have icon info
-              }))
-            : [],
+          tags: rawTags.map((tag) => ({
+            '@iri': tag['@iri'],
+            name: tag.name,
+            slug: tag.slug,
+            isPublic: true, // Public tags are always public
+            pinned: false, // Public tags don't have pinned info
+            layout: 'default', // Public tags don't have layout info
+            icon: null, // Public tags don't have icon info
+          })),
           // Transform account to owner format
           owner: bookmark.account
             ? {
@@ -618,7 +653,7 @@ export function createApiClient(config: ApiConfig): ApiClient {
       // Transform tags within the bookmark
       return {
         ...bookmark,
-        tags: bookmark.tags ? bookmark.tags.map(transformTagFromApi) : [],
+        tags: Array.isArray(bookmark.tags) ? bookmark.tags.map(transformTagFromApi) : [],
       };
     },
 

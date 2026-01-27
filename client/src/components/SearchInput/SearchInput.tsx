@@ -23,30 +23,48 @@ export const SearchInput = ({
   selectedTagSlugs = [],
   onTagToggle,
 }: SearchInputProps) => {
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value);
   };
 
-  const handleClear = (e: React.MouseEvent) => {
+  const handleSearchToggle = (e: React.MouseEvent) => {
     e.preventDefault();
     onClear();
   };
 
+  const isSearchActive = value.length > 0;
+
   return (
     <div className="d-flex align-items-center flex-wrap gap-2 mb-2 mt-3">
-      {/* Display selected tags on the same line before the search input */}
-      {selectedTags.length > 0 && (
+      {/* Display selected tags and search button on the same line before the search input */}
+      {(selectedTags.length > 0 || isSearchActive) && (
         <div className="d-flex align-items-center gap-2" style={{ flexShrink: 0 }}>
-          {selectedTags.map((tag) => (
-            <div key={tag.slug} style={{ flexShrink: 0 }}>
-              <Tag
-                tag={tag}
-                selectedTagSlugs={selectedTagSlugs}
-                onToggle={onTagToggle}
-                className="flex-grow-0"
-              />
+          {selectedTags.length > 0 && (
+            <>
+              {selectedTags.map((tag) => (
+                <div key={tag.slug} style={{ flexShrink: 0 }}>
+                  <Tag
+                    tag={tag}
+                    selectedTagSlugs={selectedTagSlugs}
+                    onToggle={onTagToggle}
+                    className="flex-grow-0"
+                  />
+                </div>
+              ))}
+            </>
+          )}
+          {isSearchActive && (
+            <div className="d-flex align-items-center position-relative flex-grow-0" style={{ flexShrink: 0 }}>
+              <button
+                type="button"
+                className="btn btn-outline-secondary text-start flex-grow-0 active border-0"
+                onClick={handleSearchToggle}
+              >
+                Search
+              </button>
             </div>
-          ))}
+          )}
         </div>
       )}
       <div className="position-relative" style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: '200px' }}>
@@ -59,26 +77,6 @@ export const SearchInput = ({
           disabled={disabled}
           aria-label="Search bookmarks"
         />
-        {value && !disabled && (
-          <button
-            type="button"
-            className="btn btn-link position-absolute end-0 top-50"
-            onClick={handleClear}
-            style={{
-              padding: '0.375rem 0.75rem',
-              textDecoration: 'none',
-              color: 'inherit',
-              border: 'none',
-              background: 'none',
-              cursor: 'pointer',
-              zIndex: 10,
-              transform: 'translateY(calc(-50% - 2px))',
-            }}
-            aria-label="Clear search"
-          >
-            ×
-          </button>
-        )}
       </div>
     </div>
   );

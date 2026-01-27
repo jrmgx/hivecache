@@ -1,1 +1,8 @@
 /* App-specific styles */
+body {
+    /* This is to counter Boostrap modal that are a bit wild */
+    min-height: 100%;
+    position: relative;
+    height: auto !important;
+    padding-right: 0 !important;
+}
