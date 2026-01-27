@@ -9,19 +9,17 @@ use App\Config\RouteType;
 use App\Dto\UserTagApiDto;
 use App\Entity\User;
 use App\Entity\UserTag;
-use App\Security\Voter\UserTagVoter;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\ORMInvalidArgumentException;
 use OpenApi\Attributes as OA;
-use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route(path: '/users/me/tags', name: RouteType::MeTags->value)]
 final class MeTagController extends TagController
@@ -78,19 +76,19 @@ final class MeTagController extends TagController
         return $this->collectionCommon($user, ['tag:show:private'], onlyPublic: false);
     }
 
-//    #[Route(path: '', name: RouteAction::A->value, methods: ['GET'])]
-//    public function a(
-//        #[CurrentUser] User $user,
-//    ): JsonResponse {
-//        $tags = $this->instanceTagService->findByOwner($user, onlyPublic: $onlyPublic)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//
-//        return $this->jsonResponseBuilder->collection(
-//            $tags, $groups, ['total' => \count($tags)]
-//        );
-//    }
+    //    #[Route(path: '', name: RouteAction::A->value, methods: ['GET'])]
+    //    public function a(
+    //        #[CurrentUser] User $user,
+    //    ): JsonResponse {
+    //        $tags = $this->instanceTagService->findByOwner($user, onlyPublic: $onlyPublic)
+    //            ->getQuery()
+    //            ->getResult()
+    //        ;
+    //
+    //        return $this->jsonResponseBuilder->collection(
+    //            $tags, $groups, ['total' => \count($tags)]
+    //        );
+    //    }
 
     #[OA\Get(
         path: '/users/me/tags/{slug}',
@@ -125,11 +123,15 @@ final class MeTagController extends TagController
         ]
     )]
     #[Route(path: '/{slug}', name: RouteAction::Get->value, methods: ['GET'])]
-    #[IsGranted(attribute: UserTagVoter::OWNER, subject: 'userTag', statusCode: Response::HTTP_NOT_FOUND)]
     public function get(
         #[CurrentUser] User $user,
-        #[MapEntity(mapping: ['slug' => 'slug'])] UserTag $userTag,
+        string $slug,
     ): JsonResponse {
+        $userTag = $this->userTagRepository->findOneByOwnerAndSlug($user, $slug, onlyPublic: false)
+            ->getQuery()
+            ->getOneOrNullResult() ?? throw new NotFoundHttpException()
+        ;
+
         return $this->jsonResponseBuilder->single($userTag, ['tag:show:private']);
     }
 
@@ -289,20 +291,27 @@ final class MeTagController extends TagController
         ]
     )]
     #[Route(path: '/{slug}', name: RouteAction::Patch->value, methods: ['PATCH'])]
-    #[IsGranted(attribute: UserTagVoter::OWNER, subject: 'userTag', statusCode: Response::HTTP_NOT_FOUND)]
     public function patch(
         #[CurrentUser] User $user,
-        #[MapEntity(mapping: ['slug' => 'slug'])] UserTag $userTag,
+        string $slug,
         #[MapRequestPayload(
             serializationContext: ['groups' => ['tag:update']],
             validationGroups: ['Default', 'tag:update'],
         )]
         UserTagApiDto $tagPayload,
     ): JsonResponse {
+        $userTag = $this->userTagRepository->findOneByOwnerAndSlug($user, $slug, onlyPublic: false)
+            ->getQuery()
+            ->getOneOrNullResult() ?? throw new NotFoundHttpException()
+        ;
+
         if (isset($tagPayload->name) && $userTag->name !== $tagPayload->name) {
-            if ($this->userTagRepository->findOneByOwnerAndSlug($user, $tagPayload->slug, onlyPublic: false)
+            $existingTag = $this->userTagRepository->findOneByOwnerAndSlug($user, $tagPayload->slug, onlyPublic: false)
                 ->getQuery()
-                ->getOneOrNullResult()) {
+                ->getOneOrNullResult()
+            ;
+
+            if ($existingTag && $existingTag->id !== $userTag->id) {
                 throw new ConflictHttpException();
             }
 
@@ -356,11 +365,15 @@ final class MeTagController extends TagController
         ]
     )]
     #[Route(path: '/{slug}', name: RouteAction::Delete->value, methods: ['DELETE'])]
-    #[IsGranted(attribute: UserTagVoter::OWNER, subject: 'userTag', statusCode: Response::HTTP_NOT_FOUND)]
     public function delete(
         #[CurrentUser] User $user,
-        #[MapEntity(mapping: ['slug' => 'slug'])] UserTag $userTag,
+        string $slug,
     ): JsonResponse {
+        $userTag = $this->userTagRepository->findOneByOwnerAndSlug($user, $slug, onlyPublic: false)
+            ->getQuery()
+            ->getOneOrNullResult() ?? throw new NotFoundHttpException()
+        ;
+
         $this->entityManager->remove($userTag);
         $this->entityManager->flush();
 

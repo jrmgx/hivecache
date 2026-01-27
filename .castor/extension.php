@@ -2,7 +2,6 @@
 
 namespace extension;
 
-use Castor\Attribute\AsArgument;
 use Castor\Attribute\AsTask;
 
 use function Castor\context;
@@ -16,7 +15,6 @@ function install(): void
 
     run('yarn install', context: context()->withWorkingDirectory('./extension'));
 }
-
 
 #[AsTask(description: 'Build the production artifact')]
 function build(): void
@@ -33,7 +31,7 @@ function build(): void
     $zipPath = $extensionDir . '/hivecache-extension.zip';
     $zip = new \ZipArchive();
 
-    if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+    if (true !== $zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE)) {
         throw new \RuntimeException("Cannot create zip file: {$zipPath}");
     }
 
@@ -54,6 +52,7 @@ function build(): void
         $filePath = $extensionDir . '/' . $file;
         if (!file_exists($filePath)) {
             io()->error("File not found: {$file}");
+
             return;
         }
         $zip->addFile($filePath, $file);

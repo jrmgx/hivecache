@@ -1,4 +1,6 @@
-<?php /** @noinspection PhpUnused */
+<?php
+
+/** @noinspection PhpUnused */
 
 namespace docs;
 
@@ -26,12 +28,12 @@ function build(#[AsArgument] $toDirectory = '../docs', #[AsOption] $withSwager =
 
     docker_compose_run('mdbook build', workDir: '/var/www/docs');
 
-    $toDirectory = rtrim($toDirectory, '/');
-    run("rm -rfv $toDirectory/*");
-    run("cp -rfv ./docs/book/* $toDirectory/");
+    $toDirectory = mb_rtrim($toDirectory, '/');
+    run("rm -rfv {$toDirectory}/*");
+    run("cp -rfv ./docs/book/* {$toDirectory}/");
 
     if ($withSwager) {
         openapi();
-        run("mkdir $toDirectory/swagger && cp -rfv ./docs/swagger/* $toDirectory/swagger/");
+        run("mkdir {$toDirectory}/swagger && cp -rfv ./docs/swagger/* {$toDirectory}/swagger/");
     }
 }

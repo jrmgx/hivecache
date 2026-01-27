@@ -446,6 +446,68 @@ class TagTest extends BaseApiTestCase
         $this->assertEquals('Tag To Delete', $json['name'], 'Tag should still exist after failed deletion attempt');
     }
 
+    public function testUpdateTagConflictScenarios(): void
+    {
+        [$user, $token] = $this->createAuthenticatedUserAccount('testuser', 'test');
+
+        $tagOne = UserTagFactory::createOne(['owner' => $user, 'name' => 'one']);
+        $tagTwo = UserTagFactory::createOne(['owner' => $user, 'name' => 'two']);
+
+        // Scenario 1: Renaming "one" to "One" should not conflict (case change only)
+        $this->request('PATCH', "/users/me/tags/{$tagOne->slug}", [
+            'headers' => ['Content-Type' => 'application/json'],
+            'auth_bearer' => $token,
+            'json' => ['name' => 'One'],
+        ]);
+        $this->assertResponseIsSuccessful();
+        $json = $this->getResponseArray();
+        $this->assertEquals('One', $json['name']);
+        $this->assertEquals('one', $json['slug'], 'Slug should remain lowercase');
+
+        // Scenario 2: Renaming "two" to "one" should conflict (different tag, same slug)
+        $this->request('PATCH', "/users/me/tags/{$tagTwo->slug}", [
+            'headers' => ['Content-Type' => 'application/json'],
+            'auth_bearer' => $token,
+            'json' => ['name' => 'one'],
+        ]);
+        $this->assertResponseStatusCodeSame(409, 'Should conflict when renaming to a name that creates a slug already used by another tag');
+    }
+
+    public function testUpdateTagSameNameDifferentUsers(): void
+    {
+        [$user1, $token1] = $this->createAuthenticatedUserAccount('user1', 'test');
+        [$user2, $token2] = $this->createAuthenticatedUserAccount('user2', 'test');
+
+        $tag1 = UserTagFactory::createOne(['owner' => $user1, 'name' => 'one']);
+        $tag2 = UserTagFactory::createOne(['owner' => $user2, 'name' => 'one']);
+
+        $this->request('PATCH', "/users/me/tags/{$tag1->slug}", [
+            'headers' => ['Content-Type' => 'application/json'],
+            'auth_bearer' => $token1,
+            'json' => ['name' => 'two'],
+        ]);
+        $this->assertResponseIsSuccessful();
+        $json1 = $this->getResponseArray();
+        $this->assertEquals('two', $json1['name']);
+        $this->assertEquals('two', $json1['slug']);
+
+        // Should succeed tags are user-scoped
+        $this->request('PATCH', "/users/me/tags/{$tag2->slug}", [
+            'headers' => ['Content-Type' => 'application/json'],
+            'auth_bearer' => $token2,
+            'json' => ['name' => 'two'],
+        ]);
+        $this->assertResponseIsSuccessful();
+        $json2 = $this->getResponseArray();
+        $this->assertEquals('two', $json2['name']);
+        $this->assertEquals('two', $json2['slug']);
+
+        $this->request('GET', "/users/me/tags/{$json1['slug']}", ['auth_bearer' => $token1]);
+        $this->assertResponseIsSuccessful();
+        $this->request('GET', "/users/me/tags/{$json2['slug']}", ['auth_bearer' => $token2]);
+        $this->assertResponseIsSuccessful();
+    }
+
     public function testGetPublicTagWithHtmlAcceptRedirects(): void
     {
         $user = UserFactory::createOne(['username' => 'testuser', 'isPublic' => true]);

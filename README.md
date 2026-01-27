@@ -1,7 +1,5 @@
 # HiveCache
 
-<img src="./images/icon.svg" alt="HiveCache" style="max-width: 128px;" />
-
 A decentralized social bookmarking service based on the ActivityPub protocol.
 
 **Bookmark** and **Save/Preserve** that's important to you.
@@ -37,9 +35,9 @@ See the [User Guide](./docs/src/UserGuide.md) for details.
 Learn how to use HiveCache:
 
 - [User Guide](./docs/src/UserGuide.md) - Comprehensive guide covering what HiveCache is, how it works, and basic concepts
-- [Limitations](./docs/src/Limitations.md) - Important limitations and known issues
-- [Web Extension](./docs/src/WebExtension.md) - How to install and use the browser extension
 - [Web Client](./docs/src/Client.md) - How to use the web interface
+- [Web Extension](./docs/src/WebExtension.md) - How to install and use the browser extension
+- [Limitations](./docs/src/Limitations.md) - Important limitations and known issues
 
 ### Developer Documentation
 

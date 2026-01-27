@@ -17,7 +17,6 @@ use function Castor\context;
 use function Castor\finder;
 use function Castor\fs;
 use function Castor\io;
-use function Castor\open;
 use function Castor\run;
 use function Castor\variable;
 

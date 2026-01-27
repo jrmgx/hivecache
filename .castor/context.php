@@ -31,7 +31,7 @@ function create_default_context(): Context
         $data['docker_compose_files'][] = 'docker-compose.override.yml';
     }
 
-    $platform = strtolower(php_uname('s'));
+    $platform = mb_strtolower(php_uname('s'));
     if (str_contains($platform, 'darwin')) {
         $data['macos'] = true;
     } elseif (\in_array($platform, ['win32', 'win64', 'windows nt'])) {

@@ -83,7 +83,7 @@ class BookmarkRepository extends ServiceEntityRepository
             ->addOrderBy('o.id', 'DESC')
             ->andWhere('o.outdated = false')
             ->andWhere('o.isPublic = true')
-            ;
+        ;
     }
 
     public function findOneByAccountAndId(Account $account, string $id, bool $onlyPublic): QueryBuilder

@@ -4,6 +4,7 @@ $finder = PhpCsFixer\Finder::create()
     ->ignoreVCSIgnored(true)
     ->ignoreDotFiles(false)
     ->in(__DIR__)
+    ->in(__DIR__ . '/../.castor')
     ->append([
         __FILE__,
     ])

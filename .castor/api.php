@@ -1,10 +1,12 @@
-<?php /** @noinspection PhpUnused */
+<?php
+
+/** @noinspection PhpUnused */
 
 namespace api;
 
+use Castor\Attribute\AsOption;
 use Castor\Attribute\AsRawTokens;
 use Castor\Attribute\AsTask;
-use Castor\Attribute\AsOption;
 
 use function Castor\context;
 use function Castor\io;
@@ -49,9 +51,9 @@ function start(): void
 #[AsTask(description: 'Installs the api (composer, yarn, ...)')]
 function install(): void
 {
-    io()->title("Installing the API");
+    io()->title('Installing the API');
 
-    $basePath = sprintf("%s/api", variable('root_dir'));
+    $basePath = \sprintf('%s/api', variable('root_dir'));
 
     if (is_file("{$basePath}/composer.json")) {
         io()->section('Installing PHP dependencies');
@@ -88,11 +90,12 @@ function migrate(): void
     docker_compose_run('bin/console doctrine:migration:migrate -n --allow-no-migration --all-or-nothing');
 }
 
-#[AsTask(description: 'Loads fixtures', namespace: 'api:db', aliases: ['fixtures'])]
+#[AsTask(description: 'Loads fixtures', aliases: ['fixtures'])]
 function fixtures(): void
 {
     io()->title('Loads fixtures');
 
+    docker_compose_run('bin/console doctrine:database:create --if-not-exists');
     docker_compose_run('bin/console doctrine:database:drop --force');
     migrate();
     docker_compose_run('bin/console foundry:load-stories -n --append');
@@ -101,19 +104,19 @@ function fixtures(): void
 #[AsTask(namespace: 'api:dev', description: 'Start all messenger consumers', aliases: ['dev:consume'])]
 function consume_messages(#[AsOption] int $limit = 100): void
 {
-    docker_compose_run("bin/console messenger:consume async -vvv --memory-limit=512M --time-limit=3600 --limit=$limit");
+    docker_compose_run("bin/console messenger:consume async -vvv --memory-limit=512M --time-limit=3600 --limit={$limit}");
 }
 
 #[AsTask(description: 'Update the openapi definition file', aliases: ['openapi'])]
 function openapi(): void
 {
-    docker_compose_run("./vendor/bin/openapi src/Entity src/Controller src/Dto --format json --output openapi.json");
+    docker_compose_run('./vendor/bin/openapi src/Entity src/Controller src/Dto --format json --output openapi.json');
 }
 
 #[AsTask(description: 'Start a local tunnel to have this instance exposed', aliases: ['tunnel'])]
 function tunnel(string $domain, string $host = 'hivecache.test'): void
 {
-    run("ngrok http --host-header=$host 443 --domain=$domain");
+    run("ngrok http --host-header={$host} 443 --domain={$domain}");
 }
 
 /**
@@ -122,12 +125,12 @@ function tunnel(string $domain, string $host = 'hivecache.test'): void
 #[AsTask(description: 'Opens a shell (bash) into a builder container', aliases: ['builder'])]
 function builder(#[AsRawTokens] array $params = ['bash']): void
 {
-    if (0 === count($params)) {
+    if (0 === \count($params)) {
         $params = ['bash'];
     }
 
     $c = context();
-    if ($params[0] === '--no-it') {
+    if ('--no-it' === $params[0]) {
         array_shift($params);
     } else {
         $c = $c->toInteractive();

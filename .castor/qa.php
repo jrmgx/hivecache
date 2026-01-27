@@ -2,7 +2,6 @@
 
 namespace qa;
 
-use Castor\Attribute\AsArgument;
 use Castor\Attribute\AsOption;
 use Castor\Attribute\AsRawTokens;
 use Castor\Attribute\AsTask;
@@ -50,6 +49,7 @@ function update(): void
 function phpunit(#[AsRawTokens] array $rawTokens = []): int
 {
     io()->section('Running PHPUnit...');
+    io()->info('You may need to run `castor api:fixtures --context test`');
 
     return docker_exit_code('bin/phpunit ' . implode(' ', $rawTokens));
 }

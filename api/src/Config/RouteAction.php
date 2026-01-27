@@ -3,7 +3,7 @@
 namespace App\Config;
 
 /**
- * RouteAction string must NOT contain lowdash "_"
+ * RouteAction string must NOT contain lowdash "_".
  */
 enum RouteAction: string
 {

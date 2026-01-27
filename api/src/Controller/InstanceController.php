@@ -4,23 +4,11 @@ namespace App\Controller;
 
 use App\Config\RouteAction;
 use App\Config\RouteType;
-use App\Entity\Account;
 use App\Entity\Bookmark;
-use App\Helper\RequestHelper;
-use App\Repository\UserTagRepository;
-use App\Response\JsonResponseBuilder;
-use App\Service\InstanceTagService;
-use App\Service\UrlGenerator;
-use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
-use Symfony\Bridge\Doctrine\Attribute\MapEntity;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 
 // TODO add tests
@@ -79,6 +67,7 @@ final class InstanceController extends BookmarkController
         #[MapQueryParameter(name: 'after')] ?string $afterQueryString = null,
     ): JsonResponse {
         $qb = $this->bookmarkRepository->findByThisInstance($this->instanceHost);
+
         return $this->responseFromQueryBuilder(
             $qb, $afterQueryString,
             ['bookmark:show:public', 'tag:show:public'],
@@ -138,6 +127,7 @@ final class InstanceController extends BookmarkController
         #[MapQueryParameter(name: 'after')] ?string $afterQueryString = null,
     ): Response {
         $qb = $this->bookmarkRepository->findByOtherInstance($this->instanceHost);
+
         return $this->responseFromQueryBuilder(
             $qb, $afterQueryString,
             ['bookmark:show:public', 'tag:show:public'],

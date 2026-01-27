@@ -32,18 +32,18 @@ function build(#[AsArgument] $toDirectory = '../client'): void
 
     $styleGuideFile = './client/src/pages/Styleguide.tsx';
 
-    rename($styleGuideFile, $styleGuideFile.'_skip');
+    rename($styleGuideFile, $styleGuideFile . '_skip');
     file_put_contents($styleGuideFile, 'export const Styleguide = () => null;');
     $exitCode = run('yarn run tsc -b && yarn run vite build', context: context()->withWorkingDirectory('./client')->withAllowFailure(true))->getExitCode();
-    rename($styleGuideFile.'_skip', $styleGuideFile);
+    rename($styleGuideFile . '_skip', $styleGuideFile);
 
-    if ($exitCode !== 0) {
+    if (0 !== $exitCode) {
         throw new \RuntimeException('Build Failed.');
     }
 
-    $toDirectory = rtrim($toDirectory, '/');
-    run("rm -rfv $toDirectory/*");
-    run("cp -rfv ./client/dist/* $toDirectory/");
+    $toDirectory = mb_rtrim($toDirectory, '/');
+    run("rm -rfv {$toDirectory}/*");
+    run("cp -rfv ./client/dist/* {$toDirectory}/");
 }
 
 #[AsTask(description: 'Lint code')]

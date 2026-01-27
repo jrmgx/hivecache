@@ -1,4 +1,6 @@
-<?php /** @noinspection PhpUnused */
+<?php
+
+/** @noinspection PhpUnused */
 
 namespace misc;
 
@@ -14,59 +16,61 @@ function copy_assets(): void
     io()->title('Copying global assets to each project');
 
     $context = context()->withWorkingDirectory('./images');
-    run("cp -rf icon.svg ../api/public/icon.svg", context: $context);
-    run("cp -rf icon.svg ../extension/icons/icon.svg", context: $context);
-    run("cp -rf icon.svg ../docs/theme/favicon.svg", context: $context);
+    run('cp -rf icon.svg ../api/public/icon.svg', context: $context);
+    run('cp -rf icon.svg ../extension/icons/icon.svg', context: $context);
+    run('cp -rf icon.svg ../docs/theme/favicon.svg', context: $context);
 
-    $projectRoot = dirname(__DIR__);
+    $projectRoot = \dirname(__DIR__);
     $svgFilePath = $projectRoot . '/images/icon.svg';
     $docsIconPath = $projectRoot . '/docs/src/assets/banner-icon.svg';
 
     $svgContent = file_get_contents($svgFilePath);
-    if ($svgContent === false) {
+    if (false === $svgContent) {
         throw new \RuntimeException("Failed to read {$svgFilePath}");
     }
 
     $svgCentered = centerSvgOnCanvas($svgContent, 750, 148);
 
-    if (file_put_contents($docsIconPath, $svgCentered) === false) {
+    if (false === file_put_contents($docsIconPath, $svgCentered)) {
         throw new \RuntimeException("Failed to write {$docsIconPath}");
     }
 
-    $projectRoot = dirname(__DIR__);
+    $projectRoot = \dirname(__DIR__);
     $svgFilePath = $projectRoot . '/images/icon.svg';
     $clientIconPath = $projectRoot . '/client/public/icon.svg';
 
     $svgContent = file_get_contents($svgFilePath);
-    if ($svgContent === false) {
+    if (false === $svgContent) {
         throw new \RuntimeException("Failed to read {$svgFilePath}");
     }
 
     $svgWithPadding = addSvgPadding($svgContent, 0.1);
 
-    if (file_put_contents($clientIconPath, $svgWithPadding) === false) {
+    if (false === file_put_contents($clientIconPath, $svgWithPadding)) {
         throw new \RuntimeException("Failed to write {$clientIconPath}");
     }
 }
 
 /**
- * Parses and validates the viewBox from SVG content
+ * Parses and validates the viewBox from SVG content.
  *
  * @param string $svgContent The SVG content as a string
+ *
  * @return array{x: float, y: float, width: float, height: float} The parsed viewBox values
+ *
  * @throws \RuntimeException If viewBox is not found or invalid
  */
 function parseViewBox(string $svgContent): array
 {
     if (!preg_match('/viewBox=["\']([^"\']+)["\']/', $svgContent, $matches)) {
-        throw new \RuntimeException("No viewBox found");
+        throw new \RuntimeException('No viewBox found');
     }
 
     $viewBox = $matches[1];
-    $viewBoxParts = array_map('floatval', preg_split('/\s+/', trim($viewBox)));
+    $viewBoxParts = array_map('floatval', preg_split('/\s+/', mb_trim($viewBox)));
 
-    if (count($viewBoxParts) !== 4) {
-        throw new \RuntimeException("Invalid viewBox");
+    if (4 !== \count($viewBoxParts)) {
+        throw new \RuntimeException('Invalid viewBox');
     }
 
     [$x, $y, $width, $height] = $viewBoxParts;
@@ -75,26 +79,29 @@ function parseViewBox(string $svgContent): array
 }
 
 /**
- * Replaces the viewBox in SVG content
+ * Replaces the viewBox in SVG content.
  *
  * @param string $svgContent The SVG content as a string
- * @param float $x The new viewBox x coordinate
- * @param float $y The new viewBox y coordinate
- * @param float $width The new viewBox width
- * @param float $height The new viewBox height
+ * @param float  $x          The new viewBox x coordinate
+ * @param float  $y          The new viewBox y coordinate
+ * @param float  $width      The new viewBox width
+ * @param float  $height     The new viewBox height
+ *
  * @return string The modified SVG content
  */
 function replaceViewBox(string $svgContent, float $x, float $y, float $width, float $height): string
 {
-    $newViewBox = sprintf('%.6g %.6g %.6g %.6g', $x, $y, $width, $height);
+    $newViewBox = \sprintf('%.6g %.6g %.6g %.6g', $x, $y, $width, $height);
+
     return preg_replace('/viewBox=["\']([^"\']+)["\']/', "viewBox=\"{$newViewBox}\"", $svgContent);
 }
 
 /**
- * Adds padding to an SVG by adjusting the viewBox
+ * Adds padding to an SVG by adjusting the viewBox.
  *
- * @param string $svgContent The SVG content as a string
- * @param float $paddingRatio The padding ratio (e.g., 0.1 for 10%)
+ * @param string $svgContent   The SVG content as a string
+ * @param float  $paddingRatio The padding ratio (e.g., 0.1 for 10%)
+ *
  * @return string The modified SVG content
  */
 function addSvgPadding(string $svgContent, float $paddingRatio): string
@@ -113,11 +120,12 @@ function addSvgPadding(string $svgContent, float $paddingRatio): string
 }
 
 /**
- * Centers an SVG on a canvas of specified dimensions by adjusting the viewBox
+ * Centers an SVG on a canvas of specified dimensions by adjusting the viewBox.
  *
- * @param string $svgContent The SVG content as a string
- * @param float $canvasWidth The target canvas width in pixels
- * @param float $canvasHeight The target canvas height in pixels
+ * @param string $svgContent   The SVG content as a string
+ * @param float  $canvasWidth  The target canvas width in pixels
+ * @param float  $canvasHeight The target canvas height in pixels
+ *
  * @return string The modified SVG content
  */
 function centerSvgOnCanvas(string $svgContent, float $canvasWidth, float $canvasHeight): string
@@ -150,7 +158,6 @@ function centerSvgOnCanvas(string $svgContent, float $canvasWidth, float $canvas
     $modifiedSvg = replaceViewBox($svgContent, $newX, $newY, $newWidth, $newHeight);
 
     $modifiedSvg = preg_replace('/width=["\'][^"\']+["\']/', "width=\"{$canvasWidth}\"", $modifiedSvg);
-    $modifiedSvg = preg_replace('/height=["\'][^"\']+["\']/', "height=\"{$canvasHeight}\"", $modifiedSvg);
 
-    return $modifiedSvg;
+    return preg_replace('/height=["\'][^"\']+["\']/', "height=\"{$canvasHeight}\"", $modifiedSvg);
 }
