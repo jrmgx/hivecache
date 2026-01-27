@@ -1,0 +1,9 @@
+---
+description: Documentation standards
+globs: docs/**/*.md
+alwaysApply: false
+---
+
+# Docs rules
+
+- This project use mdBook

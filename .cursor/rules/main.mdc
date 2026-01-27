@@ -1,3 +1,8 @@
+---
+description: Base rules and project structure for HiveCache
+alwaysApply: true
+---
+
 # Base rules
 
 Those projects are already in advanced development stage; please explore the code and try to use existing Classes, methods, components.
@@ -8,6 +13,12 @@ IMPORTANT:
  - Do not be too verbose
  - Do not add comment everywhere
  - Prefer good naming over commenting
+ - Find the root cause of bugs, do not try workarounds
+ - Do not implement defensive code by default
+
+## API is documented via OpenAPI
+
+See api/openapi.json for the whole documentation
 
 ## Project structure
 
@@ -29,3 +40,8 @@ Some other parts are:
 
 Those project use docker: it is driven via Castor scripts, so when you need to execute a project command, you can not do it on the host.
 As an example; given: `bin/console clear:cache` you must prefix it with `castor --no-it`; it gives `castor --no-it bin/console clear:cache` and will run as expected.
+
+## Importer client
+
+The importer client is a PHP Castor command line, the file is in `.castor/importer.php`
+See documentation about what is possible with castor here: https://castor.jolicode.com/ (it is basically a nice wrapper around Symfony Command).

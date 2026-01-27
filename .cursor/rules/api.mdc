@@ -1,3 +1,9 @@
+---
+description: PHP/Symfony API coding standards
+globs: api/**/*.php
+alwaysApply: false
+---
+
 # API Rules
 
 - Use PHP 8.4 syntax

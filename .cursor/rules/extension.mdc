@@ -1,3 +1,9 @@
+---
+description: Browser extension coding standards
+globs: extension/**/*.ts
+alwaysApply: false
+---
+
 # Extension rules
 
 - Don't forget about the shared code in `/shared` directory for API call and common
