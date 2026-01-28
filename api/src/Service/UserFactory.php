@@ -53,9 +53,11 @@ final readonly class UserFactory
         );
         $account->publicKey = $key['public'];
         $account->privateKey = $key['private'];
+        $account->sharedInboxUrl = $this->urlGenerator->generate(
+            RouteType::ActivityPub, RouteAction::SharedInbox,
+        );
         $account->inboxUrl = $activityPubRoute(RouteAction::Inbox);
         $account->outboxUrl = $activityPubRoute(RouteAction::Outbox);
-        $account->sharedInboxUrl = $activityPubRoute(RouteAction::SharedInbox);
         $account->followerUrl = $activityPubRoute(RouteAction::Follower);
         $account->followingUrl = $activityPubRoute(RouteAction::Following);
         $this->entityManager->persist($account);

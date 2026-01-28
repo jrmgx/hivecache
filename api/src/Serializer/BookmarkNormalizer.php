@@ -5,6 +5,7 @@ namespace App\Serializer;
 use App\Config\RouteContext;
 use App\Entity\Bookmark;
 use App\Entity\UserTag;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
@@ -25,7 +26,7 @@ readonly class BookmarkNormalizer implements NormalizerInterface
         if (!$this->routeContext->getType()->isMe()) {
             // Remove non-public tags
             /* @phpstan-ignore-next-line */
-            $data->userTags = $data->userTags->filter(fn (UserTag $tag) => $tag->isPublic);
+            $data->userTags = new ArrayCollection(array_values($data->userTags->filter(fn (UserTag $tag) => $tag->isPublic)->toArray()));
         }
 
         return $this->normalizer->normalize($data, $format, $context);
