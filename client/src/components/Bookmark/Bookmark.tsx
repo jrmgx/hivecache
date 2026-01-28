@@ -7,8 +7,8 @@ import { TagName } from '../TagName/TagName';
 import type { Bookmark as BookmarkType } from '../../types';
 import { LAYOUT_EMBEDDED } from '../../types';
 import { findEmbed, findThumbnail } from '@shared';
-import { shareBookmark } from '../../utils/share';
 import { formatDate } from '../../utils/date';
+import { useBookmarkLogic } from './useBookmarkLogic';
 
 interface BookmarkProps {
   bookmark: BookmarkType;
@@ -44,27 +44,24 @@ export const Bookmark = ({
   const embedResult = isEmbedded ? findEmbed(bookmark.url) : null;
   const [embedLoaded, setEmbedLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
-  const [showEditTagsModal, setShowEditTagsModal] = useState(false);
   const [isSmallImage, setIsSmallImage] = useState(false);
   const imageUrl = bookmark.mainImage?.contentUrl || findThumbnail(bookmark.url);
 
-  const handleTagClick = (slug: string) => {
-    if (onTagToggle) {
-      onTagToggle(slug);
-    }
-  };
-
-  const handleShow = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (onShow) {
-      onShow(bookmark.id);
-    }
-  };
-
-  const handleShare = (e: React.MouseEvent) => {
-    e.preventDefault();
-    shareBookmark(bookmark);
-  };
+  const {
+    sortedTags,
+    showEditTagsModal,
+    handleTagClick,
+    handleShow,
+    handleShare,
+    handleEditTags,
+    handleTagsSave,
+    handleTagsClose,
+  } = useBookmarkLogic({
+    bookmark,
+    onTagToggle,
+    onShow,
+    onTagsSave,
+  });
 
   const handleEmbedClick = () => {
     setEmbedLoaded(true);
@@ -84,26 +81,6 @@ export const Bookmark = ({
   useEffect(() => {
     setIsSmallImage(false);
   }, [imageUrl]);
-
-  const handleEditTags = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setShowEditTagsModal(true);
-  };
-
-  const handleTagsSave = () => {
-    setShowEditTagsModal(false);
-    if (onTagsSave) {
-      onTagsSave();
-    }
-  };
-
-  const handleTagsClose = () => {
-    setShowEditTagsModal(false);
-  };
-
-  const sortedTags = (Array.isArray(bookmark.tags) ? bookmark.tags : []).sort((a, b) => {
-    return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
-  });
 
   // Determine background image style for normal bookmarks
   const normalBookmarkStyle = !isEmbedded && imageUrl && !imageError

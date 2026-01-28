@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { ErrorAlert } from '../ErrorAlert/ErrorAlert';
 import { updateTag, deleteTag, ApiError } from '../../services/api';
 import type { Tag as TagType } from '../../types';
-import { LAYOUT_DEFAULT, LAYOUT_EMBEDDED, LAYOUT_IMAGE } from '../../types';
+import { LAYOUT_DEFAULT, LAYOUT_EMBEDDED, LAYOUT_IMAGE, LAYOUT_LISTING } from '../../types';
 
 interface EditTagProps {
   tag: TagType | null;
@@ -251,6 +251,7 @@ export const EditTag = ({ tag, onSave, onClose }: EditTagProps) => {
                   <option value={LAYOUT_DEFAULT}>Default</option>
                   <option value={LAYOUT_EMBEDDED}>Embedded</option>
                   <option value={LAYOUT_IMAGE}>Image</option>
+                  <option value={LAYOUT_LISTING}>Listing</option>
                 </select>
                 <div className="form-text">
                   Choose how bookmarks with this tag are displayed

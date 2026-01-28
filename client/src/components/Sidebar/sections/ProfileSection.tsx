@@ -34,7 +34,15 @@ export const ProfileSection = ({
   const isHomepageActive = selectedTagSlugs.length === 0;
 
   const handleNavigateToMe = () => {
-    navigate('/me');
+    navigate(-1);
+  };
+
+  const handleProfileClick = () => {
+    if (isBookmarkPage && onNavigateBack) {
+      onNavigateBack();
+    } else if (onClearTags) {
+      onClearTags();
+    }
   };
 
   return (
@@ -42,47 +50,38 @@ export const ProfileSection = ({
       title={`@${profileUsername}`}
       storageKey={`sidebar-section-profile-${profileUsername}-collapsed`}
     >
-      {/* Bookmark page: show back button */}
-      {isBookmarkPage && onNavigateBack && (
-        <SidebarAction icon="arrow-left" label="Back" onClick={onNavigateBack} />
+      {/* Show profile and tags navigation for home, tags, and bookmark pages */}
+      {(onClearTags || (isBookmarkPage && onNavigateBack)) && (
+        <SidebarAction
+          label="Profile"
+          onClick={handleProfileClick}
+          active={isHomepageActive && !isTagsPage && !isBookmarkPage}
+        />
       )}
-
-      {/* Show profile and tags navigation for both home and tags pages */}
-      {!isBookmarkPage && (
-        <>
-          {onClearTags && (
-            <SidebarAction
-              label="Profile"
-              onClick={onClearTags}
-              active={isHomepageActive && !isTagsPage}
-            />
-          )}
-          <TagList
-            tags={tags}
-            selectedTagSlugs={selectedTagSlugs}
-            pinnedTags={pinnedTags}
-            onTagToggle={onTagToggle}
-          />
-          {onNavigateToTags && (
-            <SidebarAction
-              label="Tags"
-              onClick={onNavigateToTags}
-              active={isTagsPage}
-            />
-          )}
-          <SidebarAction
-            label={`Follow @${profileUsername}`}
-            onClick={() => {
-              // TODO
-            }}
-          />
-          <SidebarAction
-            icon="arrow-left"
-            label="Back to me"
-            onClick={handleNavigateToMe}
-          />
-        </>
+      <TagList
+        tags={tags}
+        selectedTagSlugs={selectedTagSlugs}
+        pinnedTags={pinnedTags}
+        onTagToggle={onTagToggle}
+      />
+      {onNavigateToTags && (
+        <SidebarAction
+          label="Tags"
+          onClick={onNavigateToTags}
+          active={isTagsPage}
+        />
       )}
+      <SidebarAction
+        label={`Follow @${profileUsername}`}
+        onClick={() => {
+          // TODO
+        }}
+      />
+      <SidebarAction
+        icon="arrow-left"
+        label="Back"
+        onClick={handleNavigateToMe}
+      />
     </SidebarSection>
   );
 };

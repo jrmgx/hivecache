@@ -101,6 +101,9 @@ export const Layout = () => {
     } else {
       if (isTagsPage) {
         navigate(`/me?${newParams.toString()}`);
+      } else if (isTimelinePage || isSocialTagPage || isInstancePage) {
+        // On timeline, social tag, or instance pages, navigate to /me with tag filter
+        navigate(`/me?${newParams.toString()}`);
       } else {
         setSearchParams(newParams);
       }

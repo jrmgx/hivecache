@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Tag } from '../components/Tag/Tag';
 import { Bookmark } from '../components/Bookmark/Bookmark';
+import { BookmarkListing } from '../components/Bookmark/BookmarkListing';
 import { Masonry } from '../components/Masonry/Masonry';
 import { ErrorAlert } from '../components/ErrorAlert/ErrorAlert';
 import { SearchInput } from '../components/SearchInput/SearchInput';
@@ -10,7 +11,7 @@ import { indexAllBookmarks, getIndexedBookmarks, syncBookmarkIndex, isSearchAvai
 import { searchBookmarks } from '../services/search';
 import { toggleTag, updateTagParams } from '../utils/tags';
 import type { Bookmark as BookmarkType, Tag as TagType } from '../types';
-import { LAYOUT_DEFAULT, LAYOUT_IMAGE } from '../types';
+import { LAYOUT_DEFAULT, LAYOUT_IMAGE, LAYOUT_LISTING } from '../types';
 
 const layoutForTags = (selectedTags: TagType[]): string => {
   for (const tag of selectedTags) {
@@ -56,6 +57,7 @@ export const Home = () => {
   const selectedTags = tags.filter((tag) => selectedTagSlugs.includes(tag.slug));
   const layout = layoutForTags(selectedTags);
   const isLayoutImage = layout === LAYOUT_IMAGE;
+  const isLayoutListing = layout === LAYOUT_LISTING;
 
   // Sync search query with URL params (e.g., when navigating back)
   useEffect(() => {
@@ -441,6 +443,18 @@ export const Home = () => {
             <>
               {isLayoutImage ? (
                 <Masonry bookmarks={displayBookmarks} />
+              ) : isLayoutListing ? (
+                <div>
+                  {displayBookmarks.map((bookmark) => (
+                    <BookmarkListing
+                      key={bookmark.id}
+                      bookmark={bookmark}
+                      selectedTagSlugs={selectedTagSlugs}
+                      onTagToggle={handleTagToggle}
+                      onShow={handleShow}
+                    />
+                  ))}
+                </div>
               ) : (
                 <div className="row gx-3">
                   {displayBookmarks.map((bookmark) => (

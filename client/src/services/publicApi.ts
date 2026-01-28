@@ -4,7 +4,7 @@
  */
 
 import { ApiError } from '@shared';
-import type { BookmarksResponse, Bookmark, Tag, UserProfile } from '@shared';
+import type { BookmarksResponse, Bookmark, Tag, UserProfile, FileObject } from '@shared';
 
 // Webfinger cache structure
 interface WebfingerCacheEntry {
@@ -48,11 +48,17 @@ interface ApiBookmarkProfile {
     isPublic: boolean;
   };
   archive?: {
-    contentUrl: string;
-  };
+    '@iri': string;
+    contentUrl: string | null;
+    size: number;
+    mime: string;
+  } | null;
   mainImage?: {
-    contentUrl: string;
-  };
+    '@iri': string;
+    contentUrl: string | null;
+    size: number;
+    mime: string;
+  } | null;
 }
 
 const WEBFINGER_CACHE_TTL = 24 * 60 * 60 * 1000; // 1 day in milliseconds
@@ -229,7 +235,6 @@ export async function getPublicBookmarks(
       'Accept': 'application/json',
     },
   });
-
   if (!response.ok) {
     const errorText = await response.text();
     throw new ApiError(errorText || `HTTP error! status: ${response.status}`, response.status);
@@ -241,34 +246,63 @@ export async function getPublicBookmarks(
     throw new ApiError('Bookmarks collection not found.', 500);
   }
 
+  const transformFileObject = (file: { '@iri': string; contentUrl: string | null; size: number; mime: string } | null): FileObject | null => {
+    if (!file) return null;
+    try {
+      const path = new URL(file['@iri']).pathname;
+      const id = path.split('/').pop() || '';
+      return {
+        '@iri': file['@iri'],
+        id,
+        contentUrl: file.contentUrl,
+        size: file.size,
+        mime: file.mime,
+      };
+    } catch {
+      // Fallback: extract ID from IRI path if it's not a valid URL
+      const path = file['@iri'].includes('/') ? file['@iri'].split('/').pop() || '' : file['@iri'];
+      return {
+        '@iri': file['@iri'],
+        id: path,
+        contentUrl: file.contentUrl,
+        size: file.size,
+        mime: file.mime,
+      };
+    }
+  };
+
   // Transform tags within each bookmark
   // Public bookmarks use ApiTagProfile which has simpler structure (no isPublic, no meta)
-  const bookmarks: Bookmark[] = data.collection.map((bookmark: ApiBookmarkProfile) => ({
-    ...bookmark,
-    tags: Array.isArray(bookmark.tags)
-      ? bookmark.tags.map((tag: ApiTagProfile) => {
-          // ApiTagProfile doesn't have isPublic or meta, so we need to transform it manually
-          return {
-            '@iri': tag['@iri'],
-            name: tag.name,
-            slug: tag.slug,
-            isPublic: true, // Public tags are always public
-            pinned: false, // Public tags don't have pinned info
-            layout: 'default', // Public tags don't have layout info
-            icon: null, // Public tags don't have icon info
-          };
-        })
-      : [],
-    // Public bookmarks don't have domain or isPublic fields, set defaults
-    domain: bookmark.domain || new URL(bookmark.url).hostname,
-    isPublic: true,
-    // Owner is simplified in public bookmarks
-    owner: bookmark.owner || { '@iri': bookmark['@iri'], username, isPublic: true },
-    // Transform mainImage from partial object to null (public API doesn't return full FileObject)
-    mainImage: null,
-    // Transform archive from partial object to null (public API doesn't return full FileObject)
-    archive: bookmark.archive ? null : null,
-  }));
+  const bookmarks: Bookmark[] = data.collection.map((bookmark: ApiBookmarkProfile) => {
+    const { tags: rawTags, ...bookmarkWithoutTags } = bookmark;
+    const transformedTags = Array.isArray(rawTags)
+    ? rawTags.map((tag: ApiTagProfile) => {
+      // ApiTagProfile doesn't have isPublic or meta, so we need to transform it manually
+      return {
+        '@iri': tag['@iri'],
+        name: tag.name,
+        slug: tag.slug,
+        isPublic: true, // Public tags are always public
+        pinned: false, // Public tags don't have pinned info
+        layout: 'default', // Public tags don't have layout info
+        icon: null, // Public tags don't have icon info
+      };
+    })
+    : [];
+
+    return {
+      ...bookmarkWithoutTags,
+      tags: transformedTags,
+      // Public bookmarks don't have domain or isPublic fields, set defaults
+      domain: bookmark.domain || new URL(bookmark.url).hostname,
+      isPublic: true,
+      // Owner is simplified in public bookmarks
+      owner: bookmark.owner || { '@iri': bookmark['@iri'], username, isPublic: true },
+      // Transform mainImage and archive to include id field
+      mainImage: transformFileObject(bookmark.mainImage || null),
+      archive: transformFileObject(bookmark.archive || null),
+    };
+  });
 
   return {
     collection: bookmarks,
@@ -343,30 +377,57 @@ export async function getPublicBookmark(baseUrl: string, username: string, id: s
 
   const bookmark: ApiBookmarkProfile = await response.json();
 
+  const transformFileObject = (file: { '@iri': string; contentUrl: string | null; size: number; mime: string } | null): FileObject | null => {
+    if (!file) return null;
+    try {
+      const path = new URL(file['@iri']).pathname;
+      const id = path.split('/').pop() || '';
+      return {
+        '@iri': file['@iri'],
+        id,
+        contentUrl: file.contentUrl,
+        size: file.size,
+        mime: file.mime,
+      };
+    } catch {
+      // Fallback: extract ID from IRI path if it's not a valid URL
+      const path = file['@iri'].includes('/') ? file['@iri'].split('/').pop() || '' : file['@iri'];
+      return {
+        '@iri': file['@iri'],
+        id: path,
+        contentUrl: file.contentUrl,
+        size: file.size,
+        mime: file.mime,
+      };
+    }
+  };
+
   // Transform tags within the bookmark
   // Public bookmarks use ApiTagProfile which has simpler structure
+  const { tags: rawTags, ...bookmarkWithoutTags } = bookmark;
+  const transformedTags = Array.isArray(rawTags)
+    ? rawTags.map((tag: ApiTagProfile) => ({
+        '@iri': tag['@iri'],
+        name: tag.name,
+        slug: tag.slug,
+        isPublic: true, // Public tags are always public
+        pinned: false, // Public tags don't have pinned info
+        layout: 'default', // Public tags don't have layout info
+        icon: null, // Public tags don't have icon info
+      }))
+    : [];
+
   return {
-    ...bookmark,
-    tags: Array.isArray(bookmark.tags)
-      ? bookmark.tags.map((tag: ApiTagProfile) => ({
-          '@iri': tag['@iri'],
-          name: tag.name,
-          slug: tag.slug,
-          isPublic: true, // Public tags are always public
-          pinned: false, // Public tags don't have pinned info
-          layout: 'default', // Public tags don't have layout info
-          icon: null, // Public tags don't have icon info
-        }))
-      : [],
+    ...bookmarkWithoutTags,
+    tags: transformedTags,
     // Public bookmarks don't have domain or isPublic fields, set defaults
     domain: bookmark.domain || new URL(bookmark.url).hostname,
     isPublic: true,
     // Owner is simplified in public bookmarks
     owner: bookmark.owner || { '@iri': bookmark['@iri'], username, isPublic: true },
-    // Transform mainImage from partial object to null (public API doesn't return full FileObject)
-    mainImage: null,
-    // Transform archive from partial object to null (public API doesn't return full FileObject)
-    archive: bookmark.archive ? null : null,
+    // Transform mainImage and archive to include id field
+    mainImage: transformFileObject(bookmark.mainImage || null),
+    archive: transformFileObject(bookmark.archive || null),
   };
 }
 

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { Tag } from '../components/Tag/Tag';
 import { Bookmark } from '../components/Bookmark/Bookmark';
+import { BookmarkListing } from '../components/Bookmark/BookmarkListing';
 import { Masonry } from '../components/Masonry/Masonry';
 import { ErrorAlert } from '../components/ErrorAlert/ErrorAlert';
 import { getPublicBookmarks, getPublicTags } from '../services/publicApi';
@@ -10,7 +11,7 @@ import { ApiError } from '../services/api';
 import { useProfileContext } from '../hooks/useProfileContext';
 import { toggleTag, updateTagParams } from '../utils/tags';
 import type { Bookmark as BookmarkType, Tag as TagType } from '../types';
-import { LAYOUT_DEFAULT, LAYOUT_IMAGE } from '../types';
+import { LAYOUT_DEFAULT, LAYOUT_IMAGE, LAYOUT_LISTING } from '../types';
 
 const layoutForTags = (selectedTags: TagType[]): string => {
   for (const tag of selectedTags) {
@@ -41,6 +42,7 @@ export const PublicHome = () => {
   const selectedTags = tags.filter((tag) => selectedTagSlugs.includes(tag.slug));
   const layout = layoutForTags(selectedTags);
   const isLayoutImage = layout === LAYOUT_IMAGE;
+  const isLayoutListing = layout === LAYOUT_LISTING;
 
   // Load initial data
   const loadData = useCallback(async () => {
@@ -166,6 +168,20 @@ export const PublicHome = () => {
             <>
               {isLayoutImage ? (
                 <Masonry bookmarks={bookmarks} />
+              ) : isLayoutListing ? (
+                <div>
+                  {bookmarks.map((bookmark) => (
+                    <BookmarkListing
+                      key={bookmark.id}
+                      bookmark={bookmark}
+                      selectedTagSlugs={selectedTagSlugs}
+                      onTagToggle={handleTagToggle}
+                      onShow={handleShow}
+                      hideAddTagButton={true}
+                      isProfileMode={true}
+                    />
+                  ))}
+                </div>
               ) : (
                 <div className="row gx-3">
                   {bookmarks.map((bookmark) => (

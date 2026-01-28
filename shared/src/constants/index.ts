@@ -2,7 +2,7 @@
  * Shared constants used across the application
  */
 
-import { LAYOUT_DEFAULT, LAYOUT_EMBEDDED, LAYOUT_IMAGE } from '../types';
+import { LAYOUT_DEFAULT, LAYOUT_EMBEDDED, LAYOUT_IMAGE, LAYOUT_LISTING } from '../types';
 
 /**
  * Prefix for client-specific metadata stored in tag/user meta objects
@@ -10,5 +10,5 @@ import { LAYOUT_DEFAULT, LAYOUT_EMBEDDED, LAYOUT_IMAGE } from '../types';
 export const META_PREFIX = 'client-o-';
 
 // Re-export layout constants
-export { LAYOUT_DEFAULT, LAYOUT_EMBEDDED, LAYOUT_IMAGE };
+export { LAYOUT_DEFAULT, LAYOUT_EMBEDDED, LAYOUT_IMAGE, LAYOUT_LISTING };
 

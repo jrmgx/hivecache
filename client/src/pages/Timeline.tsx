@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bookmark } from '../components/Bookmark/Bookmark';
+import { BookmarkListing } from '../components/Bookmark/BookmarkListing';
 import { Masonry } from '../components/Masonry/Masonry';
 import { ErrorAlert } from '../components/ErrorAlert/ErrorAlert';
 import { getSocialTimeline, getCursorFromUrl, ApiError } from '../services/api';
 import type { Bookmark as BookmarkType } from '../types';
-import { LAYOUT_DEFAULT, LAYOUT_IMAGE } from '../types';
+import { LAYOUT_DEFAULT, LAYOUT_IMAGE, LAYOUT_LISTING } from '../types';
 
 export const Timeline = () => {
   const navigate = useNavigate();
@@ -111,6 +112,7 @@ export const Timeline = () => {
   // Use default layout for timeline (no tag filtering)
   const layout: string = LAYOUT_DEFAULT;
   const isLayoutImage = layout === LAYOUT_IMAGE;
+  const isLayoutListing = layout === LAYOUT_LISTING;
 
   return (
     <>
@@ -129,6 +131,22 @@ export const Timeline = () => {
             <>
               {isLayoutImage ? (
                 <Masonry bookmarks={bookmarks} />
+              ) : isLayoutListing ? (
+                <div>
+                  {bookmarks.map((bookmark) => (
+                    <BookmarkListing
+                      key={bookmark.id}
+                      bookmark={bookmark}
+                      selectedTagSlugs={[]}
+                      onTagToggle={() => {
+                        // Timeline doesn't support tag filtering
+                      }}
+                      onShow={() => handleShow(bookmark.id, bookmark)}
+                      hideAddTagButton={true}
+                      isProfileMode={true}
+                    />
+                  ))}
+                </div>
               ) : (
                 <div className="row gx-3">
                   {bookmarks.map((bookmark) => (

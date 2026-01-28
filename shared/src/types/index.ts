@@ -288,6 +288,7 @@ export interface AuthResponse {
 export const LAYOUT_DEFAULT = 'default';
 export const LAYOUT_EMBEDDED = 'embedded';
 export const LAYOUT_IMAGE = 'image';
+export const LAYOUT_LISTING = 'listing';
 
 // ============================================================================
 // Bookmark Index Action Types
