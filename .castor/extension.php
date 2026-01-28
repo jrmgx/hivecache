@@ -5,6 +5,7 @@ namespace extension;
 use Castor\Attribute\AsTask;
 
 use function Castor\context;
+use function Castor\fs;
 use function Castor\io;
 use function Castor\run;
 
@@ -35,6 +36,8 @@ function build(): void
         throw new \RuntimeException("Cannot create zip file: {$zipPath}");
     }
 
+    fs()->copy($extensionDir . '/manifest-prod.json', $extensionDir . '/manifest.json');
+
     $files = [
         'manifest.json',
         'popup.html',
@@ -60,6 +63,8 @@ function build(): void
     }
 
     $zip->close();
+
+    fs()->copy($extensionDir . '/manifest-dev.json', $extensionDir . '/manifest.json');
 
     io()->success("Web extension zip created: {$zipPath}");
 }
