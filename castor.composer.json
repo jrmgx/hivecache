@@ -1,0 +1,30 @@
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "name": "shaarli/netscape-bookmark-parser",
+                "version": "dev-master",
+                "source": {
+                    "type": "git",
+                    "url": "https://github.com/rokde/netscape-bookmark-parser.git",
+                    "reference": "master"
+                },
+                "autoload": {
+                    "psr-4": {
+                        "Shaarli\\NetscapeBookmarkParser\\": "src/"
+                    }
+                },
+                "require": {
+                    "php": ">=7.1",
+                    "psr/log": "^1.1 || ^2.0 || ^3.0"
+                }
+            }
+        }
+    ],
+    "require": {
+        "shaarli/netscape-bookmark-parser": "dev-master"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": false
+}
