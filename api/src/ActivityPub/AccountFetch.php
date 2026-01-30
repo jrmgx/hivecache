@@ -60,6 +60,11 @@ final readonly class AccountFetch
         return $account;
     }
 
+    public function fetchFromUriOrNull(string $uri): ?Account
+    {
+        return $this->accountRepository->findOneByUri($uri);
+    }
+
     /**
      * @param string $usernameWithInstance even if the variable name has `withHost` it is not mandatory
      */

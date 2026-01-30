@@ -2,13 +2,11 @@
 
 namespace App\ActivityPub\Dto;
 
+/**
+ * @see NoteObject.json
+ */
 final class HashtagObject
 {
-    /* {
-        "type":"Hashtag",
-        "href":"https://activitypub.academy/tags/start",
-        "name":"#start"
-    } */
     public string $type = 'Hashtag';
     public string $href;
     public string $name;

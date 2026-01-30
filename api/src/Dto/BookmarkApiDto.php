@@ -50,9 +50,12 @@ class BookmarkApiDto
     #[Assert\NotBlank(groups: ['bookmark:create'])]
     public ?string $title = null;
 
+    /**
+     * Assert\Url is too restrictive.
+     */
     #[Groups(['bookmark:create'])]
     #[Assert\NotBlank(groups: ['bookmark:create'])]
-    #[Assert\Url(groups: ['bookmark:create'], requireTld: true)]
+    #[Assert\Regex(pattern: '`^[[:alnum:]]+://[[:alnum:]]+\.[[:alnum:]]`', groups: ['bookmark:create'])]
     public ?string $url = null;
 
     #[Groups(['bookmark:create', 'bookmark:update'])]
