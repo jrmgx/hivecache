@@ -246,13 +246,18 @@ export async function getPublicBookmarks(
     throw new ApiError('Bookmarks collection not found.', 500);
   }
 
-  const transformFileObject = (file: { '@iri': string; contentUrl: string | null; size: number; mime: string } | null): FileObject | null => {
+  const transformFileObject = (file: { '@iri'?: string; contentUrl: string | null; size: number; mime: string } | null): FileObject | null => {
     if (!file) return null;
+    
+    // Use @iri if available, otherwise fallback to contentUrl
+    const iri = file['@iri'] || file.contentUrl;
+    if (!iri) return null;
+    
     try {
-      const path = new URL(file['@iri']).pathname;
+      const path = new URL(iri).pathname;
       const id = path.split('/').pop() || '';
       return {
-        '@iri': file['@iri'],
+        '@iri': iri,
         id,
         contentUrl: file.contentUrl,
         size: file.size,
@@ -260,9 +265,9 @@ export async function getPublicBookmarks(
       };
     } catch {
       // Fallback: extract ID from IRI path if it's not a valid URL
-      const path = file['@iri'].includes('/') ? file['@iri'].split('/').pop() || '' : file['@iri'];
+      const path = iri.includes('/') ? iri.split('/').pop() || '' : iri;
       return {
-        '@iri': file['@iri'],
+        '@iri': iri,
         id: path,
         contentUrl: file.contentUrl,
         size: file.size,
@@ -377,13 +382,18 @@ export async function getPublicBookmark(baseUrl: string, username: string, id: s
 
   const bookmark: ApiBookmarkProfile = await response.json();
 
-  const transformFileObject = (file: { '@iri': string; contentUrl: string | null; size: number; mime: string } | null): FileObject | null => {
+  const transformFileObject = (file: { '@iri'?: string; contentUrl: string | null; size: number; mime: string } | null): FileObject | null => {
     if (!file) return null;
+    
+    // Use @iri if available, otherwise fallback to contentUrl
+    const iri = file['@iri'] || file.contentUrl;
+    if (!iri) return null;
+    
     try {
-      const path = new URL(file['@iri']).pathname;
+      const path = new URL(iri).pathname;
       const id = path.split('/').pop() || '';
       return {
-        '@iri': file['@iri'],
+        '@iri': iri,
         id,
         contentUrl: file.contentUrl,
         size: file.size,
@@ -391,9 +401,9 @@ export async function getPublicBookmark(baseUrl: string, username: string, id: s
       };
     } catch {
       // Fallback: extract ID from IRI path if it's not a valid URL
-      const path = file['@iri'].includes('/') ? file['@iri'].split('/').pop() || '' : file['@iri'];
+      const path = iri.includes('/') ? iri.split('/').pop() || '' : iri;
       return {
-        '@iri': file['@iri'],
+        '@iri': iri,
         id: path,
         contentUrl: file.contentUrl,
         size: file.size,

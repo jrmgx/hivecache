@@ -19,19 +19,19 @@ export const EditBookmarkSidebarSection = ({
       title="Bookmark"
       storageKey="sidebar-section-bookmark-collapsed"
     >
-      {onNavigateBack && (
-        <SidebarAction icon="arrow-left" label="Back" onClick={onNavigateBack} />
-      )}
       {onNavigateToEdit && (
         <SidebarAction icon="pencil" label="Edit" onClick={onNavigateToEdit} />
       )}
       {onDeleteBookmark && (
         <SidebarAction
-          icon="trash"
-          label={isDeleting ? 'Deleting...' : 'Delete'}
-          onClick={onDeleteBookmark}
-          disabled={isDeleting}
+        icon="trash"
+        label={isDeleting ? 'Deleting...' : 'Delete'}
+        onClick={onDeleteBookmark}
+        disabled={isDeleting}
         />
+      )}
+      {onNavigateBack && (
+        <SidebarAction icon="arrow-left" label="Back" onClick={onNavigateBack} />
       )}
     </SidebarSection>
   );
