@@ -248,11 +248,11 @@ export async function getPublicBookmarks(
 
   const transformFileObject = (file: { '@iri'?: string; contentUrl: string | null; size: number; mime: string } | null): FileObject | null => {
     if (!file) return null;
-    
+
     // Use @iri if available, otherwise fallback to contentUrl
     const iri = file['@iri'] || file.contentUrl;
     if (!iri) return null;
-    
+
     try {
       const path = new URL(iri).pathname;
       const id = path.split('/').pop() || '';
@@ -384,11 +384,11 @@ export async function getPublicBookmark(baseUrl: string, username: string, id: s
 
   const transformFileObject = (file: { '@iri'?: string; contentUrl: string | null; size: number; mime: string } | null): FileObject | null => {
     if (!file) return null;
-    
+
     // Use @iri if available, otherwise fallback to contentUrl
     const iri = file['@iri'] || file.contentUrl;
     if (!iri) return null;
-    
+
     try {
       const path = new URL(iri).pathname;
       const id = path.split('/').pop() || '';
