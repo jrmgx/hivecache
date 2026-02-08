@@ -31,6 +31,7 @@ function create_default_variables(): array
         'extra_domains' => [],
         'php_version' => '8.4',
         'registry' => $_SERVER['DS_REGISTRY'] ?? null,
+        'fixture_story' => 'main',
     ];
 }
 
@@ -98,7 +99,7 @@ function fixtures(): void
     docker_compose_run('bin/console doctrine:database:create --if-not-exists');
     docker_compose_run('bin/console doctrine:database:drop --force');
     migrate();
-    docker_compose_run('bin/console foundry:load-stories -n --append');
+    docker_compose_run('bin/console foundry:load-story . ' . variable('fixture_story') . ' -n --append');
 }
 
 #[AsTask(namespace: 'api:dev', description: 'Start all messenger consumers', aliases: ['dev:consume'])]

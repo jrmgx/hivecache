@@ -38,7 +38,6 @@ function create_default_context(): Context
         $data['power_shell'] = true;
     }
 
-    //                                                   2³² - 1
     if (false === $data['user_id'] || $data['user_id'] > 4294967295) {
         $data['user_id'] = 1000;
     }
@@ -74,6 +73,21 @@ function create_test_context(): Context
         ->withData([
             'docker_compose_run_environment' => [
                 'APP_ENV' => 'test',
+            ],
+        ])
+    ;
+}
+
+#[AsContext(name: 'test_ap_server')]
+function create_test_ap_server_context(): Context
+{
+    $c = create_default_context();
+
+    return $c
+        ->withData([
+            'fixture_story' => 'ap_server',
+            'docker_compose_run_environment' => [
+                'APP_ENV' => 'test_ap_server',
             ],
         ])
     ;

@@ -49,7 +49,9 @@ function update(): void
 function phpunit(#[AsRawTokens] array $rawTokens = []): int
 {
     io()->section('Running PHPUnit...');
+    // TODO this should be automated
     io()->info('You may need to run `castor api:fixtures --context test`');
+    io()->info('You may need to run `castor api:fixtures --context test_ap_server`');
 
     return docker_exit_code('bin/phpunit ' . implode(' ', $rawTokens));
 }

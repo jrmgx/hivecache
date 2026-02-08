@@ -106,5 +106,5 @@ Esbuild resolves these imports automatically when bundling.
 The extension uses Manifest V3. Key features:
 - `activeTab` permission for accessing current tab
 - `storage` permission for saving configuration
-- `scripting` permission for content script injection
+- `tabs` permission for communicating with content scripts
 - Content scripts run on all pages (`<all_urls>`)

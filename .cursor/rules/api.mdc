@@ -9,3 +9,12 @@ alwaysApply: false
 - Use PHP 8.4 syntax
 - Use last Symfony version
 - Use attributes when possible, prefer attribute over config files
+- Do not remove debug code unless asked to:
+  - `$this->client->enableProfiler();` is to be considered as debug code
+  - `dump` and `dd` as well
+
+# Testing
+
+In test mode we have we have two servers:
+ - First: the current code (we should use httpkernel requests), this is what we want to run our assertions against
+ - Second: `external_ap_server.test` that is a black box, still it runs the same code but we can not access its database or anything (we must use api endpoint with a real httpclient). It is used to test ActivityPub endpoint when we need for our tests a second source (used for server to server interactions)

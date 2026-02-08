@@ -36,35 +36,39 @@ function build(): void
         throw new \RuntimeException("Cannot create zip file: {$zipPath}");
     }
 
-    fs()->copy($extensionDir . '/manifest-prod.json', $extensionDir . '/manifest.json');
+    try {
+        fs()->copy($extensionDir . '/manifest-prod.json', $extensionDir . '/manifest.json', overwriteNewerFiles: true);
 
-    $files = [
-        'manifest.json',
-        'popup.html',
-        'options.html',
-        'background.js',
-        'content.js',
-        'popup.js',
-        'options.js',
-        'icons/icon.svg',
-        'lib/tom-select.complete.min.js',
-        'lib/tom-select.css',
-    ];
+        $files = [
+            'manifest.json',
+            'popup.html',
+            'options.html',
+            'background.js',
+            'content.js',
+            'popup.js',
+            'options.js',
+            'icons/icon.svg',
+            'lib/tom-select.complete.min.js',
+            'lib/tom-select.css',
+        ];
 
-    foreach ($files as $file) {
-        $filePath = $extensionDir . '/' . $file;
-        if (!file_exists($filePath)) {
-            io()->error("File not found: {$file}");
+        foreach ($files as $file) {
+            $filePath = $extensionDir . '/' . $file;
+            if (!file_exists($filePath)) {
+                io()->error("File not found: {$file}");
 
-            return;
+                return;
+            }
+            $zip->addFile($filePath, $file);
+            io()->writeln("Added: {$file}");
         }
-        $zip->addFile($filePath, $file);
-        io()->writeln("Added: {$file}");
+
+        $zip->close();
+    } catch (\Exception $e) {
+        io()->error($e->getMessage());
+    } finally {
+        fs()->copy($extensionDir . '/manifest-dev.json', $extensionDir . '/manifest.json');
     }
-
-    $zip->close();
-
-    fs()->copy($extensionDir . '/manifest-dev.json', $extensionDir . '/manifest.json');
 
     io()->success("Web extension zip created: {$zipPath}");
 }

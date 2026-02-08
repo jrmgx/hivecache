@@ -129,15 +129,6 @@ RUN apt-get update \
     && corepack enable \
     && yarn set version stable
 
-# Install a fake sudo command
-# This is commented out by default because it exposes a security risk if you use this image in production, but it may be useful for development
-# Use it at your own risk
-# COPY base/sudo.sh /usr/local/bin/sudo
-# RUN curl -L https://github.com/tianon/gosu/releases/download/1.16/gosu-amd64 -o /usr/local/bin/gosu && \
-#    chmod u+s /usr/local/bin/gosu && \
-#    chmod +x /usr/local/bin/gosu && \
-#    chmod +x /usr/local/bin/sudo
-
 # Config
 COPY infrastructure/docker/services/php/builder/php-configuration /etc/php/${PHP_VERSION}
 RUN phpenmod app-default \
@@ -154,20 +145,9 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
     && mv "$HOME/.cargo/bin/mdbook" /usr/local/bin/mdbook \
     && rm -rf "$HOME/.cargo/registry" "$HOME/.cargo/git" "$HOME/.rustup"
 
-# Autocompletion
-ADD https://raw.githubusercontent.com/symfony/symfony/refs/heads/7.3/src/Symfony/Component/Console/Resources/completion.bash /tmp/completion.bash
-
-# Composer symfony/console version is too old, and doest not support "API version feature", so we remove it
-# Hey, while we are at it, let's add some more completion
-RUN sed /tmp/completion.bash \
-        -e "s/{{ COMMAND_NAME }}/composer/g" \
-        -e 's/"-a{{ VERSION }}"//g' \
-        -e "s/{{ VERSION }}/1/g"  \
-        > /etc/bash_completion.d/composer \
-    && sed /tmp/completion.bash \
-        -e "s/{{ COMMAND_NAME }}/console/g" \
-        -e "s/{{ VERSION }}/1/g"  \
-        > /etc/bash_completion.d/console
+# Symfony command for Symfony server in test mode
+RUN curl -sS https://get.symfony.com/cli/installer | bash \
+    && mv /home/app/.symfony5/bin/symfony /usr/local/bin/symfony
 
 # Third party tools
 ENV PATH="$PATH:/var/www/tools/bin"
