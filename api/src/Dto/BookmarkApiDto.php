@@ -55,7 +55,7 @@ class BookmarkApiDto
      */
     #[Groups(['bookmark:create'])]
     #[Assert\NotBlank(groups: ['bookmark:create'])]
-    #[Assert\Regex(pattern: '`^[[:alnum:]]+://[[:alnum:]]+\.[[:alnum:]]`', groups: ['bookmark:create'])]
+    #[Assert\Regex(pattern: '`^[[:alnum:]-]+://.*\..*`', groups: ['bookmark:create'])]
     public ?string $url = null;
 
     #[Groups(['bookmark:create', 'bookmark:update'])]
