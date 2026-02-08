@@ -12,7 +12,7 @@ use Doctrine\Persistence\ManagerRegistry;
 /**
  * @extends ServiceEntityRepository<Following>
  */
-class FollowingRepository extends ServiceEntityRepository
+class FollowingRepository extends ServiceEntityRepository implements FollowRepositoryInterface
 {
     public function __construct(ManagerRegistry $registry)
     {

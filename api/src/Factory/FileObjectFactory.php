@@ -19,6 +19,7 @@ final class FileObjectFactory extends PersistentObjectFactory
     {
         return [
             'owner' => UserFactory::new(),
+            'size' => 42,
         ];
     }
 }

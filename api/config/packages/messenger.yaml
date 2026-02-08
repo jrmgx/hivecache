@@ -18,8 +18,18 @@ when@dev:
 when@test:
     framework:
         messenger:
+            routing:
+                'App\ActivityPub\Message\*': sync # So we can inspect test the workflow
             transports:
                 # replace with your transport name here (e.g., my_transport: 'in-memory://')
                 # For more Messenger testing tools, see https://github.com/zenstruck/messenger-test
+                sync: 'sync://'
+                async: 'in-memory://' # By doing that those messages will be discarded during the test
+
+when@test_ap_server:
+    framework:
+        messenger:
+            transports:
+                # By doing that those messages will be discarded during the test
+                sync: 'in-memory://'
                 async: 'in-memory://'
-                sync: 'in-memory://' # By doing that those messages will be discarded during the test

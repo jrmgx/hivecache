@@ -1740,6 +1740,24 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *         monolog?: MonologConfig,
  *         lexik_jwt_authentication?: LexikJwtAuthenticationConfig,
  *     },
+ *     "when@test_ap_server"?: array{
+ *         imports?: ImportsConfig,
+ *         parameters?: ParametersConfig,
+ *         services?: ServicesConfig,
+ *         framework?: FrameworkConfig,
+ *         twig?: TwigConfig,
+ *         security?: SecurityConfig,
+ *         doctrine?: DoctrineConfig,
+ *         doctrine_migrations?: DoctrineMigrationsConfig,
+ *         zenstruck_foundry?: ZenstruckFoundryConfig,
+ *         nelmio_alice?: NelmioAliceConfig,
+ *         fidry_alice_data_fixtures?: FidryAliceDataFixturesConfig,
+ *         flysystem?: FlysystemConfig,
+ *         twig_extra?: TwigExtraConfig,
+ *         web_profiler?: WebProfilerConfig,
+ *         monolog?: MonologConfig,
+ *         lexik_jwt_authentication?: LexikJwtAuthenticationConfig,
+ *     },
  *     ...<string, ExtensionType|array{ // extra keys must follow the when@%env% pattern or match an extension alias
  *         imports?: ImportsConfig,
  *         parameters?: ParametersConfig,
@@ -1822,6 +1840,7 @@ namespace Symfony\Component\Routing\Loader\Configurator;
  *     "when@dev"?: array<string, RouteConfig|ImportConfig|AliasConfig>,
  *     "when@prod"?: array<string, RouteConfig|ImportConfig|AliasConfig>,
  *     "when@test"?: array<string, RouteConfig|ImportConfig|AliasConfig>,
+ *     "when@test_ap_server"?: array<string, RouteConfig|ImportConfig|AliasConfig>,
  *     ...<string, RouteConfig|ImportConfig|AliasConfig>
  * }
  */

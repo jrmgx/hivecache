@@ -6,10 +6,20 @@ when@dev:
         profiler:
             collect_serializer_data: true
 
-when@test:
-    framework:
-        profiler:
-            enabled: true
-            collect_serializer_data: true
-            collect: false
-            dsn: 'file:%kernel.project_dir%/var/cache/dev/profiler'
+# This will ease test debuging but slows it down drastically so off by default
+#when@test:
+#    framework:
+#        profiler:
+#            enabled: true
+#            collect_serializer_data: true
+#            collect: true
+#            dsn: 'file:%kernel.project_dir%/var/cache/dev/profiler'
+
+# This will ease test debuging but slows it down drastically so off by default
+#when@test_ap_server:
+#    framework:
+#        profiler:
+#            enabled: true
+#            collect_serializer_data: true
+#            collect: true
+#            dsn: 'file:%kernel.project_dir%/var/cache/dev/profiler'

@@ -14,7 +14,7 @@ final readonly class CreateActivityBundler
     }
 
     /**
-     * @param array<int, Follower> $followers
+     * @param array<int, Follower|string> $followers
      */
     public function bundleFromBookmark(Bookmark $bookmark, array $followers): CreateNoteActivity
     {

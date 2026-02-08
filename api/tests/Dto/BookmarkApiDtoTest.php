@@ -17,7 +17,8 @@ class BookmarkApiDtoTest extends TestCase
         parent::setUp();
         $this->validator = Validation::createValidatorBuilder()
             ->enableAttributeMapping()
-            ->getValidator();
+            ->getValidator()
+        ;
     }
 
     #[DataProvider('validUrlProvider')]
@@ -31,47 +32,11 @@ class BookmarkApiDtoTest extends TestCase
 
         $urlViolations = [];
         foreach ($violations as $violation) {
-            if ($violation->getPropertyPath() === 'url') {
+            if ('url' === $violation->getPropertyPath()) {
                 $urlViolations[] = $violation;
             }
         }
-        $this->assertCount(0, $urlViolations, sprintf('URL "%s" should be valid', $url));
-    }
-
-    #[DataProvider('invalidUrlProvider')]
-    public function testUrlValidationWithInvalidUrls(string $url, string $expectedMessage): void
-    {
-        $dto = new BookmarkApiDto();
-        $dto->title = 'Test Bookmark';
-        $dto->url = $url;
-
-        $violations = $this->validator->validate($dto, groups: ['bookmark:create']);
-
-        $urlViolations = [];
-        foreach ($violations as $violation) {
-            if ($violation->getPropertyPath() === 'url') {
-                $urlViolations[] = $violation;
-            }
-        }
-        $this->assertGreaterThan(0, count($urlViolations), sprintf('URL "%s" should be invalid: %s', $url, $expectedMessage));
-    }
-
-    public function testUrlValidationWithNull(): void
-    {
-        $dto = new BookmarkApiDto();
-        $dto->title = 'Test Bookmark';
-        $dto->url = null;
-
-        $violations = $this->validator->validate($dto, groups: ['bookmark:create']);
-
-        $hasUrlViolation = false;
-        foreach ($violations as $violation) {
-            if ($violation->getPropertyPath() === 'url') {
-                $hasUrlViolation = true;
-                break;
-            }
-        }
-        $this->assertTrue($hasUrlViolation, 'Should have a violation for url property');
+        $this->assertCount(0, $urlViolations, \sprintf('URL "%s" should be valid', $url));
     }
 
     /**
@@ -94,6 +59,24 @@ class BookmarkApiDtoTest extends TestCase
         ];
     }
 
+    #[DataProvider('invalidUrlProvider')]
+    public function testUrlValidationWithInvalidUrls(string $url, string $expectedMessage): void
+    {
+        $dto = new BookmarkApiDto();
+        $dto->title = 'Test Bookmark';
+        $dto->url = $url;
+
+        $violations = $this->validator->validate($dto, groups: ['bookmark:create']);
+
+        $urlViolations = [];
+        foreach ($violations as $violation) {
+            if ('url' === $violation->getPropertyPath()) {
+                $urlViolations[] = $violation;
+            }
+        }
+        $this->assertGreaterThan(0, \count($urlViolations), \sprintf('URL "%s" should be invalid: %s', $url, $expectedMessage));
+    }
+
     /**
      * @return array<string, array{0: string, 1: string}>
      */
@@ -106,5 +89,24 @@ class BookmarkApiDtoTest extends TestCase
             'missing protocol separator' => ['http:example.com', 'regex'],
             'empty string' => ['', 'not blank'],
         ];
+    }
+
+    public function testUrlValidationWithNull(): void
+    {
+        $dto = new BookmarkApiDto();
+        $dto->title = 'Test Bookmark';
+        $dto->url = null;
+
+        $violations = $this->validator->validate($dto, groups: ['bookmark:create']);
+
+        $hasUrlViolation = false;
+        foreach ($violations as $violation) {
+            if ('url' === $violation->getPropertyPath()) {
+                $hasUrlViolation = true;
+
+                break;
+            }
+        }
+        $this->assertTrue($hasUrlViolation, 'Should have a violation for url property');
     }
 }

@@ -164,7 +164,10 @@ final class MeFollowingController extends AbstractController
     ): JsonResponse {
         $account = $this->accountFetch->fetchFromUsernameInstance($usernameWithInstance);
 
-        if ($this->followingRepository->findOneByOwnerAndAccount($user, $account)) {
+        if (
+            $this->followingRepository->findOneByOwnerAndAccount($user, $account)
+            || $user->account === $account
+        ) {
             throw new ConflictHttpException('Follow request already exist.');
         }
 

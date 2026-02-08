@@ -2,6 +2,8 @@
 
 namespace App\Response;
 
+use App\ActivityPub\Dto\OrderedCollection;
+use App\ActivityPub\Dto\OrderedCollectionPage;
 use App\ActivityPub\Dto\PersonActor;
 use App\ActivityPub\Dto\PersonActorEndpoints;
 use App\ActivityPub\Dto\PersonActorPublicKey;
@@ -102,6 +104,108 @@ final readonly class ActivityPubResponseBuilder
         $webfinger->links[] = $webfingerLink;
 
         return $this->jsonJrd($this->serializer->serialize($webfinger, 'json'));
+    }
+
+    public function orderedCollection(
+        RouteAction $routeAction,
+        Account $account,
+        int $totalItems,
+    ): JsonResponse {
+        $collectionId = $this->urlGenerator->generate(
+            RouteType::ActivityPub,
+            $routeAction,
+            ['username' => $account->username]
+        );
+
+        $firstUrl = $this->urlGenerator->generate(
+            RouteType::ActivityPub,
+            $routeAction,
+            ['username' => $account->username, 'after' => OrderedCollection::FIRST_KEY]
+        );
+
+        $collection = new OrderedCollection();
+        $collection->id = $collectionId;
+        $collection->totalItems = $totalItems;
+        $collection->first = $firstUrl;
+
+        return $this->jsonActivity($this->serializer->serialize($collection, 'json'));
+    }
+
+    /**
+     * @param array<string> $accountUris
+     */
+    public function orderedCollectionPage(
+        RouteAction $routeAction,
+        Account $account,
+        array $accountUris,
+        int $totalItems,
+        ?string $after = null,
+        ?string $nextPageUrl = null,
+    ): JsonResponse {
+        [$pageUrl, $collectionUrl] = $this->getCollectionBaseUrls($routeAction, $account, $after);
+
+        $page = new OrderedCollectionPage();
+        $page->id = $pageUrl;
+        $page->totalItems = $totalItems;
+        $page->next = $nextPageUrl;
+        $page->partOf = $collectionUrl;
+        $page->orderedItems = $accountUris;
+
+        return $this->jsonActivity($this->serializer->serialize($page, 'json'));
+    }
+
+    /**
+     * @param array<object> $activities
+     */
+    public function orderedCollectionPageWithActivities(
+        RouteAction $routeAction,
+        Account $account,
+        array $activities,
+        int $totalItems,
+        ?string $after = null,
+        ?string $nextPageUrl = null,
+    ): JsonResponse {
+        [$pageUrl, $collectionUrl] = $this->getCollectionBaseUrls($routeAction, $account, $after);
+
+        $serializedActivities = [];
+        foreach ($activities as $activity) {
+            $serializedActivities[] = json_decode($this->serializer->serialize($activity, 'json'), true);
+        }
+
+        $page = new OrderedCollectionPage();
+        $page->id = $pageUrl;
+        $page->totalItems = $totalItems;
+        $page->next = $nextPageUrl;
+        $page->partOf = $collectionUrl;
+        $page->orderedItems = $serializedActivities;
+
+        return $this->jsonActivity($this->serializer->serialize($page, 'json'));
+    }
+
+    /**
+     * @return array{0: string, 1: string}
+     */
+    private function getCollectionBaseUrls(RouteAction $routeAction, Account $account, ?string $after): array
+    {
+        $collectionUrl = $this->urlGenerator->generate(
+            RouteType::ActivityPub,
+            $routeAction,
+            ['username' => $account->username]
+        );
+
+        $pageUrl = $collectionUrl;
+        if ($after) {
+            if (OrderedCollection::FIRST_VALUE === $after) {
+                $after = OrderedCollection::FIRST_KEY;
+            }
+            $pageUrl = $this->urlGenerator->generate(
+                RouteType::ActivityPub,
+                $routeAction,
+                ['username' => $account->username, 'after' => $after]
+            );
+        }
+
+        return [$pageUrl, $collectionUrl];
     }
 
     private function jsonActivity(mixed $data = null): JsonResponse

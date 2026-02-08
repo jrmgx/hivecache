@@ -13,7 +13,7 @@ use Zenstruck\Foundry\Attribute\AsFixture;
 use Zenstruck\Foundry\Story;
 
 #[AsFixture(name: 'main')]
-final class AppStory extends Story
+final class MainStory extends Story
 {
     public function build(): void
     {

@@ -36,6 +36,8 @@ Page capturing is best-effort. Known limitations:
 HiveCache implements a limited subset of the ActivityPub protocol,
 focused on enabling communication between multiple HiveCache instances.
 
+For example, POST to Outbox is not, and won't be, implemented.
+
 ### Limited Implementation Scope
 
 The goal of this implementation is not to be fully compatible with all the fediverse

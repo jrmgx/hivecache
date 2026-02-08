@@ -11,7 +11,7 @@ use Doctrine\Persistence\ManagerRegistry;
 /**
  * @extends ServiceEntityRepository<Follower>
  */
-class FollowerRepository extends ServiceEntityRepository
+class FollowerRepository extends ServiceEntityRepository implements FollowRepositoryInterface
 {
     public function __construct(ManagerRegistry $registry)
     {

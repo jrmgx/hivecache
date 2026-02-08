@@ -24,7 +24,7 @@ final class NoteObject
     /** @var array<string, string> */
     public array $contentMap { get => ['en' => $this->content]; }
     /** @var array<int, DocumentObject> */
-    public array $attachment;
+    public array $attachment = [];
     /** @var array<int, HashtagObject> */
     public array $tag = [];
     public ?Collection $replies = null;
