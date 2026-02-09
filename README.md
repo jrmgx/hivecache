@@ -2,7 +2,7 @@
 
 A decentralized social bookmarking service based on the ActivityPub protocol.
 
-**Bookmark** and **Save/Preserve** that's important to you.
+**Bookmark** and **Save/Preserve** what's important to you.
 Decentralized and encrypted*. (*wip)
 
 ## Overview

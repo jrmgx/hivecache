@@ -2,6 +2,21 @@
 
 Before starting, see [Limitations](../Limitations.md) to know more about the limit of the ActivityPub implementation.
 
+## URLs
+
+Those are the urls implemented by the underlying ActivityPub server: 
+
+- instance.ltd/ap/u/{username}/followers
+- instance.ltd/ap/u/{username}/following
+- instance.ltd/ap/u/{username}/inbox
+- instance.ltd/ap/u/{username}/outbox
+- instance.ltd/profile/{username}
+- instance.ltd/ap/inbox
+- instance.ltd/.well-known/webfinger
+
+where `username` can be either the current instance username, like: `janedoe`<br>
+— or — the full username@instance version, like: `janedoe@instance.ltd`
+
 ## Flow and Related Code
 
 HiveCache does not have a very complicated flow, nor all the features of a full social network.
