@@ -1,0 +1,37 @@
+framework:
+    messenger:
+        failure_transport: failed
+        transports:
+            sync: 'sync://'
+            async: '%env(MESSENGER_TRANSPORT_DSN)%'
+            failed: 'doctrine://default?queue_name=failed'
+
+        routing:
+            'App\ActivityPub\Message\*': async
+
+when@dev:
+    framework:
+        messenger:
+            routing:
+                'App\ActivityPub\Message\*': sync # So we can inspect those in the profiler
+
+when@test:
+    framework:
+        messenger:
+            routing:
+                'App\ActivityPub\Message\*': transport_debug
+                # 'App\ActivityPub\Message\SendMessage': transport_null
+            transports:
+                # For more Messenger testing tools, see https://github.com/zenstruck/messenger-test
+                transport_debug: 'sync://' # So we can inspect test the workflow
+                transport_null: 'in-memory://' # By doing that those messages will be discarded during the test
+
+when@test_ap_server:
+    framework:
+        messenger:
+            routing:
+                'App\ActivityPub\Message\*': transport_debug
+                'App\ActivityPub\Message\SendMessage': transport_null
+            transports:
+                transport_debug: 'sync://'
+                transport_null: 'in-memory://'

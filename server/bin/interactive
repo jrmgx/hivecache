@@ -1,0 +1,25 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * This file is meant to be copied to the %kernel.project_dir%/bin directory of a Symfony install.
+ * This is done through a Symfony recipe
+ */
+
+use App\Kernel;
+use Symfony\Bundle\FrameworkBundle\Console\Application;
+
+if (!is_file(dirname(__DIR__).'/vendor/autoload_runtime.php')) {
+    throw new LogicException('Symfony Runtime is missing. Try running "composer require symfony/runtime".');
+}
+
+require_once dirname(__DIR__).'/vendor/autoload_runtime.php';
+
+return function (array $context) {
+    $kernel = new Kernel($context['APP_ENV'], (bool) $context['APP_DEBUG']);
+
+    $application = new Application($kernel);
+    $application->setDefaultCommand('interactive');
+
+    return $application;
+};

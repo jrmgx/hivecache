@@ -8,10 +8,10 @@ use Castor\Attribute\AsArgument;
 use Castor\Attribute\AsOption;
 use Castor\Attribute\AsTask;
 
-use function api\openapi;
 use function Castor\io;
 use function Castor\run;
 use function docker\docker_compose_run;
+use function server\openapi;
 
 #[AsTask(description: 'Serve and watch the mdbook documentation', aliases: ['docs:start'])]
 function watch(): void

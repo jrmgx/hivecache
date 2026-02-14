@@ -7,6 +7,7 @@ use Castor\Attribute\AsRawTokens;
 use Castor\Attribute\AsTask;
 
 use function Castor\io;
+use function Castor\run;
 use function Castor\variable;
 use function docker\docker_compose_run;
 use function docker\docker_exit_code;
@@ -49,11 +50,17 @@ function update(): void
 function phpunit(#[AsRawTokens] array $rawTokens = []): int
 {
     io()->section('Running PHPUnit...');
-    // TODO this should be automated
-    io()->info('You may need to run `castor api:fixtures --context test`');
-    io()->info('You may need to run `castor api:fixtures --context test_ap_server`');
+
+    fixtures();
 
     return docker_exit_code('bin/phpunit ' . implode(' ', $rawTokens));
+}
+
+#[AsTask(description: 'Loads test related fixtures')]
+function fixtures(): void
+{
+    run('castor server:fixtures --context test');
+    run('castor server:fixtures --context test_ap_server');
 }
 
 #[AsTask(description: 'Runs PHPStan', aliases: ['phpstan'])]

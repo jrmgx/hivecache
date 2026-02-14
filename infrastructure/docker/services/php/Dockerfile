@@ -68,12 +68,12 @@ RUN apt-get update \
 
 RUN useradd -s /bin/false nginx
 
-FROM common AS api
+FROM common AS server
 
-COPY infrastructure/docker/services/php/api/php-configuration /etc/php/${PHP_VERSION}
-COPY infrastructure/docker/services/php/api/etc/nginx/. /etc/nginx/
+COPY infrastructure/docker/services/php/server/php-configuration /etc/php/${PHP_VERSION}
+COPY infrastructure/docker/services/php/server/etc/nginx/. /etc/nginx/
 RUN rm -rf /etc/service/
-COPY infrastructure/docker/services/php/api/etc/service/. /etc/service/
+COPY infrastructure/docker/services/php/server/etc/service/. /etc/service/
 RUN chmod 777 /etc/service/*/supervise/
 
 RUN phpenmod app-default \
@@ -83,7 +83,7 @@ EXPOSE 80
 
 CMD ["runsvdir", "-P", "/etc/service"]
 
-FROM api AS api-build
+FROM server AS server-build
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -91,14 +91,14 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
 
-COPY infrastructure/docker/services/php/api/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY infrastructure/docker/services/php/server/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Copy project source
-COPY api api
+COPY server server
 
 # Build
-RUN cd api && composer install --no-dev --optimize-autoloader
+RUN cd server && composer install --no-dev --optimize-autoloader
 
 ENTRYPOINT ["entrypoint.sh"]
 
@@ -159,4 +159,4 @@ RUN cat >> /etc/bash.bashrc <<EOF
 PS1='\[\e[01;33m\]\u \[\e[00;32m\]\w\[\e[0m\] '
 EOF
 
-WORKDIR /var/www/api
+WORKDIR /var/www/server

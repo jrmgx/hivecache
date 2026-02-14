@@ -16,7 +16,7 @@ function copy_assets(): void
     io()->title('Copying global assets to each project');
 
     $context = context()->withWorkingDirectory('./images');
-    run('cp -rf icon.svg ../api/public/icon.svg', context: $context);
+    run('cp -rf icon.svg ../server/public/icon.svg', context: $context);
     run('cp -rf icon.svg ../extension/icons/icon.svg', context: $context);
     run('cp -rf icon.svg ../docs/theme/favicon.svg', context: $context);
 

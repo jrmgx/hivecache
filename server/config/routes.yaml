@@ -1,0 +1,21 @@
+api_controllers:
+    resource:
+        path: ../src/Api/Controller/
+        namespace: App\Api\Controller
+    type: attribute
+
+activitypub_controllers:
+    resource:
+        path: ../src/ActivityPub/Controller/
+        namespace: App\ActivityPub\Controller
+    type: attribute
+
+admin_controllers:
+    resource:
+        path: ../src/Admin/Controller/
+        namespace: App\Admin\Controller
+    type: attribute
+
+auth:
+    path: /auth
+    methods: ['POST']

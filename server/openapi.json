@@ -1,0 +1,3070 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "HiveCache API",
+        "description": "Decentralized social bookmarking service based on the Activity Pub protocol.",
+        "version": "0.1"
+    },
+    "servers": [
+        {
+            "url": "https://hivecache.test",
+            "description": "API Dev Server"
+        },
+        {
+            "url": "https://server2.hivecache.test",
+            "description": "A second server for testing"
+        }
+    ],
+    "paths": {
+        "/auth": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Authenticate user",
+                "description": "Authenticates a user with username and password, returns a JWT token for subsequent API requests.",
+                "operationId": "authenticate",
+                "requestBody": {
+                    "description": "Authentication credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "username",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "username": {
+                                        "description": "Username",
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "description": "Password",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            },
+                            "example": {
+                                "username": "janedoe",
+                                "password": "password"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Authentication successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "token"
+                                    ],
+                                    "properties": {
+                                        "token": {
+                                            "description": "JWT bearer token",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "examples": {
+                                    "success": {
+                                        "summary": "Authentication token",
+                                        "value": {
+                                            "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication failed - invalid credentials"
+                    }
+                }
+            }
+        },
+        "/instance/this": {
+            "get": {
+                "tags": [
+                    "Instance"
+                ],
+                "summary": "List bookmarks from this instance",
+                "description": "Returns a paginated collection of public bookmarks from this instance. Supports cursor-based pagination. Default page size is 24 items, ordered by creation date (newest first).",
+                "operationId": "listThisInstanceBookmarks",
+                "parameters": [
+                    {
+                        "name": "after",
+                        "in": "query",
+                        "description": "Cursor for pagination - bookmark ID to fetch results after",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of public bookmarks from this instance",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "collection": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/BookmarkShowPublic"
+                                            }
+                                        },
+                                        "prevPage": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "nextPage": {
+                                            "description": "URL for next page if available",
+                                            "type": "string",
+                                            "nullable": true
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "examples": {
+                                    "instance_bookmarks": {
+                                        "summary": "Paginated list of bookmarks from this instance",
+                                        "value": {
+                                            "collection": [
+                                                {
+                                                    "id": "01234567-89ab-cdef-0123-456789abcdef",
+                                                    "createdAt": "2024-01-01T12:00:00+00:00",
+                                                    "title": "Example Bookmark",
+                                                    "url": "https://example.com",
+                                                    "domain": "example.com",
+                                                    "account": {
+                                                        "@iri": "https://hivecache.test/profile/janedoe",
+                                                        "username": "janedoe",
+                                                        "instance": "hivecache.test",
+                                                        "inboxUrl": "https://hivecache.test/profile/janedoe/inbox",
+                                                        "outboxUrl": "https://hivecache.test/profile/janedoe/outbox",
+                                                        "sharedInboxUrl": "https://hivecache.test/inbox",
+                                                        "followerUrl": "https://hivecache.test/profile/janedoe/followers",
+                                                        "followingUrl": "https://hivecache.test/profile/janedoe/following"
+                                                    },
+                                                    "tags": [
+                                                        {
+                                                            "name": "Bookmarking",
+                                                            "slug": "bookmarking",
+                                                            "@iri": "https://hivecache.test/users/me/tags/bookmarking"
+                                                        }
+                                                    ],
+                                                    "instance": "hivecache.test",
+                                                    "@iri": "https://hivecache.test/users/me/bookmarks/01234567-89ab-cdef-0123-456789abcdef"
+                                                }
+                                            ],
+                                            "prevPage": null,
+                                            "nextPage": "https://hivecache.test/instance/this?after=01234567-89ab-cdef-0123-456789abcdef",
+                                            "total": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/instance/other": {
+            "get": {
+                "tags": [
+                    "Instance"
+                ],
+                "summary": "List bookmarks from other instances",
+                "description": "Returns a paginated collection of public bookmarks from other instances (federated bookmarks). Supports cursor-based pagination. Default page size is 24 items, ordered by creation date (newest first).",
+                "operationId": "listOtherInstanceBookmarks",
+                "parameters": [
+                    {
+                        "name": "after",
+                        "in": "query",
+                        "description": "Cursor for pagination - bookmark ID to fetch results after",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of public bookmarks from other instances",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "collection": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/BookmarkShowPublic"
+                                            }
+                                        },
+                                        "prevPage": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "nextPage": {
+                                            "description": "URL for next page if available",
+                                            "type": "string",
+                                            "nullable": true
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "examples": {
+                                    "federated_bookmarks": {
+                                        "summary": "Paginated list of bookmarks from other instances",
+                                        "value": {
+                                            "collection": [
+                                                {
+                                                    "id": "01234567-89ab-cdef-0123-456789abcdef",
+                                                    "createdAt": "2024-01-01T12:00:00+00:00",
+                                                    "title": "Example Bookmark",
+                                                    "url": "https://example.com",
+                                                    "domain": "example.com",
+                                                    "account": {
+                                                        "@iri": "https://hivecache.test/profile/janedoe",
+                                                        "username": "janedoe",
+                                                        "instance": "hivecache.test",
+                                                        "inboxUrl": "https://hivecache.test/profile/janedoe/inbox",
+                                                        "outboxUrl": "https://hivecache.test/profile/janedoe/outbox",
+                                                        "sharedInboxUrl": "https://hivecache.test/inbox",
+                                                        "followerUrl": "https://hivecache.test/profile/janedoe/followers",
+                                                        "followingUrl": "https://hivecache.test/profile/janedoe/following"
+                                                    },
+                                                    "tags": [
+                                                        {
+                                                            "name": "Bookmarking",
+                                                            "slug": "bookmarking",
+                                                            "@iri": "https://hivecache.test/users/me/tags/bookmarking"
+                                                        }
+                                                    ],
+                                                    "instance": "hivecache.test",
+                                                    "@iri": "https://hivecache.test/users/me/bookmarks/01234567-89ab-cdef-0123-456789abcdef"
+                                                }
+                                            ],
+                                            "prevPage": null,
+                                            "nextPage": "https://hivecache.test/instance/other?after=01234567-89ab-cdef-0123-456789abcdef",
+                                            "total": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/users/me/bookmarks": {
+            "get": {
+                "tags": [
+                    "Bookmarks"
+                ],
+                "summary": "List own bookmarks",
+                "description": "Returns a paginated collection of bookmarks owned by the authenticated user. Supports filtering by tags and cursor-based pagination. Default page size is 24 items, ordered by creation date (newest first).",
+                "operationId": "listOwnBookmarks",
+                "parameters": [
+                    {
+                        "name": "tags",
+                        "in": "query",
+                        "description": "Comma-separated list of tag slugs to filter by",
+                        "schema": {
+                            "type": "string",
+                            "example": "tag-one,tag-two"
+                        }
+                    },
+                    {
+                        "name": "after",
+                        "in": "query",
+                        "description": "Cursor for pagination - bookmark ID to fetch results after",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of bookmarks",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "collection": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/BookmarkShowPrivate"
+                                            }
+                                        },
+                                        "prevPage": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "nextPage": {
+                                            "description": "URL for next page if available",
+                                            "type": "string",
+                                            "nullable": true
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "examples": {
+                                    "bookmark_list": {
+                                        "summary": "Paginated list of bookmarks",
+                                        "value": {
+                                            "collection": [
+                                                {
+                                                    "id": "01234567-89ab-cdef-0123-456789abcdef",
+                                                    "createdAt": "2024-01-01T12:00:00+00:00",
+                                                    "title": "Example Bookmark",
+                                                    "url": "https://example.com",
+                                                    "domain": "example.com",
+                                                    "account": {
+                                                        "@iri": "https://hivecache.test/profile/janedoe",
+                                                        "username": "janedoe",
+                                                        "instance": "hivecache.test",
+                                                        "inboxUrl": "https://hivecache.test/profile/janedoe/inbox",
+                                                        "outboxUrl": "https://hivecache.test/profile/janedoe/outbox",
+                                                        "sharedInboxUrl": "https://hivecache.test/inbox",
+                                                        "followerUrl": "https://hivecache.test/profile/janedoe/followers",
+                                                        "followingUrl": "https://hivecache.test/profile/janedoe/following"
+                                                    },
+                                                    "tags": [
+                                                        {
+                                                            "name": "Bookmarking",
+                                                            "slug": "bookmarking",
+                                                            "@iri": "https://hivecache.test/users/me/tags/bookmarking"
+                                                        }
+                                                    ],
+                                                    "instance": "hivecache.test",
+                                                    "@iri": "https://hivecache.test/users/me/bookmarks/01234567-89ab-cdef-0123-456789abcdef",
+                                                    "isPublic": true
+                                                }
+                                            ],
+                                            "prevPage": null,
+                                            "nextPage": "https://hivecache.test/users/me/bookmarks?after=01234567-89ab-cdef-0123-456789abcdef",
+                                            "total": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Bookmarks"
+                ],
+                "summary": "Create a new bookmark",
+                "description": "Creates a new bookmark. If a bookmark with the same URL already exists, the previous one will be marked as outdated.",
+                "operationId": "createBookmark",
+                "requestBody": {
+                    "description": "Bookmark data",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BookmarkCreate"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Bookmark created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BookmarkShowPrivate"
+                                },
+                                "examples": {
+                                    "created_bookmark": {
+                                        "summary": "Successfully created bookmark",
+                                        "value": {
+                                            "id": "01234567-89ab-cdef-0123-456789abcdef",
+                                            "createdAt": "2024-01-01T12:00:00+00:00",
+                                            "title": "Example Bookmark",
+                                            "url": "https://example.com",
+                                            "domain": "example.com",
+                                            "account": {
+                                                "@iri": "https://hivecache.test/profile/janedoe",
+                                                "username": "janedoe",
+                                                "instance": "hivecache.test",
+                                                "inboxUrl": "https://hivecache.test/profile/janedoe/inbox",
+                                                "outboxUrl": "https://hivecache.test/profile/janedoe/outbox",
+                                                "sharedInboxUrl": "https://hivecache.test/inbox",
+                                                "followerUrl": "https://hivecache.test/profile/janedoe/followers",
+                                                "followingUrl": "https://hivecache.test/profile/janedoe/following"
+                                            },
+                                            "isPublic": false,
+                                            "tags": [
+                                                {
+                                                    "name": "Bookmarking",
+                                                    "slug": "bookmarking",
+                                                    "@iri": "https://hivecache.test/users/me/tags/bookmarking"
+                                                }
+                                            ],
+                                            "instance": "hivecache.test",
+                                            "@iri": "https://hivecache.test/users/me/bookmarks/01234567-89ab-cdef-0123-456789abcdef"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    },
+                    "422": {
+                        "description": "Validation error - invalid data or invalid tag IRIs",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "invalid_tag_iri": {
+                                        "summary": "Invalid tag reference",
+                                        "value": {
+                                            "error": {
+                                                "code": 422,
+                                                "message": "Invalid tag IRI provided"
+                                            }
+                                        }
+                                    },
+                                    "tags_as_objects": {
+                                        "summary": "Tags provided as JSON objects instead of IRIs",
+                                        "value": {
+                                            "error": {
+                                                "code": 422,
+                                                "message": "Tags must be IRIs, not objects"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/users/me/bookmarks/{id}": {
+            "get": {
+                "tags": [
+                    "Bookmarks"
+                ],
+                "summary": "Get own bookmark by ID",
+                "description": "Returns a specific bookmark owned by the authenticated user.",
+                "operationId": "getOwnBookmark",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Bookmark ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Bookmark details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BookmarkShowPrivate"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    },
+                    "404": {
+                        "description": "Bookmark not found or not owned by user"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Bookmarks"
+                ],
+                "summary": "Delete a bookmark",
+                "description": "Permanently deletes a bookmark (and all its versions/history) owned by the authenticated user.",
+                "operationId": "deleteBookmark",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Bookmark ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Bookmark deleted successfully"
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    },
+                    "404": {
+                        "description": "Bookmark not found or not owned by user"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Bookmarks"
+                ],
+                "summary": "Update a bookmark",
+                "description": "Updates an existing bookmark. URL cannot be changed after creation (URL field in request body is ignored). Tags are preserved if not included in the request body.",
+                "operationId": "updateBookmark",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Bookmark ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Bookmark update data",
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BookmarkUpdate"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Bookmark updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BookmarkShowPrivate"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    },
+                    "404": {
+                        "description": "Bookmark not found or not owned by user"
+                    },
+                    "422": {
+                        "description": "Validation error - invalid data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "invalid_data": {
+                                        "summary": "Validation error",
+                                        "value": {
+                                            "error": {
+                                                "code": 422,
+                                                "message": "Unprocessable Content"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/users/me/bookmarks/{id}/history": {
+            "get": {
+                "tags": [
+                    "Bookmarks"
+                ],
+                "summary": "Get bookmark history",
+                "description": "Returns the history of outdated bookmarks with the same normalized URL as the given bookmark. The current bookmark is not included in the history. Results are ordered by creation date (newest first).",
+                "operationId": "getBookmarkHistory",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Bookmark ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of outdated bookmarks",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "collection": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/BookmarkShowPrivate"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    },
+                    "404": {
+                        "description": "Bookmark not found or not owned by user"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/users/me/bookmarks/search/index": {
+            "get": {
+                "tags": [
+                    "Bookmarks",
+                    "Search"
+                ],
+                "summary": "List own bookmarks for client side indexing",
+                "description": "Returns a paginated collection of bookmarks owned by the authenticated user. Default page size is 100 items, ordered by creation date (newest first).",
+                "operationId": "listOwnBookmarksIndex",
+                "parameters": [
+                    {
+                        "name": "after",
+                        "in": "query",
+                        "description": "Cursor for pagination - bookmark ID to fetch results after",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of bookmarks",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "collection": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/BookmarkShowPrivate"
+                                            }
+                                        },
+                                        "prevPage": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "nextPage": {
+                                            "description": "URL for next page if available",
+                                            "type": "string",
+                                            "nullable": true
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/users/me/bookmarks/search/diff": {
+            "get": {
+                "tags": [
+                    "Bookmarks",
+                    "Search"
+                ],
+                "summary": "Get bookmark index changes",
+                "description": "Returns a collection of bookmark index actions (changes) for the authenticated user. Used for syncing client-side index with server changes. Results are ordered by ID (ascending).",
+                "operationId": "getBookmarkIndexDiff",
+                "parameters": [
+                    {
+                        "name": "before",
+                        "in": "query",
+                        "description": "Cursor for pagination - index action ID to fetch results after",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of bookmark index actions",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "collection": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/BookmarkIndexAction"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/users/me/bookmarks/social/timeline": {
+            "get": {
+                "tags": [
+                    "Bookmarks"
+                ],
+                "summary": "Get social timeline",
+                "description": "Returns a paginated collection of public bookmarks from the social timeline. The timeline includes bookmarks from users you follow and public bookmarks from your instance. Supports cursor-based pagination. Default page size is 24 items, ordered by creation date (newest first).",
+                "operationId": "listSocialTimeline",
+                "parameters": [
+                    {
+                        "name": "after",
+                        "in": "query",
+                        "description": "Cursor for pagination - bookmark ID to fetch results after",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of public bookmarks from timeline",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "collection": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/BookmarkShowPublic"
+                                            }
+                                        },
+                                        "prevPage": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "nextPage": {
+                                            "description": "URL for next page if available",
+                                            "type": "string",
+                                            "nullable": true
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "examples": {
+                                    "timeline_bookmarks": {
+                                        "summary": "Paginated list of timeline bookmarks",
+                                        "value": {
+                                            "collection": [
+                                                {
+                                                    "id": "01234567-89ab-cdef-0123-456789abcdef",
+                                                    "createdAt": "2024-01-01T12:00:00+00:00",
+                                                    "title": "Example Bookmark",
+                                                    "url": "https://example.com",
+                                                    "domain": "example.com",
+                                                    "account": {
+                                                        "@iri": "https://hivecache.test/profile/janedoe",
+                                                        "username": "janedoe",
+                                                        "instance": "hivecache.test",
+                                                        "inboxUrl": "https://hivecache.test/profile/janedoe/inbox",
+                                                        "outboxUrl": "https://hivecache.test/profile/janedoe/outbox",
+                                                        "sharedInboxUrl": "https://hivecache.test/inbox",
+                                                        "followerUrl": "https://hivecache.test/profile/janedoe/followers",
+                                                        "followingUrl": "https://hivecache.test/profile/janedoe/following"
+                                                    },
+                                                    "tags": [
+                                                        {
+                                                            "name": "Bookmarking",
+                                                            "slug": "bookmarking",
+                                                            "@iri": "https://hivecache.test/users/me/tags/bookmarking"
+                                                        }
+                                                    ],
+                                                    "instance": "hivecache.test",
+                                                    "@iri": "https://hivecache.test/users/me/bookmarks/01234567-89ab-cdef-0123-456789abcdef"
+                                                }
+                                            ],
+                                            "prevPage": null,
+                                            "nextPage": "https://hivecache.test/users/me/bookmarks/timeline?after=01234567-89ab-cdef-0123-456789abcdef",
+                                            "total": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/users/me/bookmarks/social/tag/{slug}": {
+            "get": {
+                "tags": [
+                    "Bookmarks"
+                ],
+                "summary": "Get bookmarks by instance tag",
+                "description": "Returns a paginated collection of public bookmarks filtered by an instance tag. Instance tags are tags that are used across multiple users on the instance. Supports cursor-based pagination. Default page size is 24 items, ordered by creation date (newest first).",
+                "operationId": "listSocialTagBookmarks",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Instance tag slug",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "example-tag"
+                        }
+                    },
+                    {
+                        "name": "after",
+                        "in": "query",
+                        "description": "Cursor for pagination - bookmark ID to fetch results after",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of public bookmarks with the specified tag",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "collection": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/BookmarkShowPublic"
+                                            }
+                                        },
+                                        "prevPage": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "nextPage": {
+                                            "description": "URL for next page if available",
+                                            "type": "string",
+                                            "nullable": true
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "examples": {
+                                    "tagged_bookmarks": {
+                                        "summary": "Paginated list of bookmarks with tag",
+                                        "value": {
+                                            "collection": [
+                                                {
+                                                    "id": "01234567-89ab-cdef-0123-456789abcdef",
+                                                    "createdAt": "2024-01-01T12:00:00+00:00",
+                                                    "title": "Example Bookmark",
+                                                    "url": "https://example.com",
+                                                    "domain": "example.com",
+                                                    "account": {
+                                                        "@iri": "https://hivecache.test/profile/janedoe",
+                                                        "username": "janedoe",
+                                                        "instance": "hivecache.test",
+                                                        "inboxUrl": "https://hivecache.test/profile/janedoe/inbox",
+                                                        "outboxUrl": "https://hivecache.test/profile/janedoe/outbox",
+                                                        "sharedInboxUrl": "https://hivecache.test/inbox",
+                                                        "followerUrl": "https://hivecache.test/profile/janedoe/followers",
+                                                        "followingUrl": "https://hivecache.test/profile/janedoe/following"
+                                                    },
+                                                    "tags": [
+                                                        {
+                                                            "name": "Bookmarking",
+                                                            "slug": "bookmarking",
+                                                            "@iri": "https://hivecache.test/users/me/tags/bookmarking"
+                                                        }
+                                                    ],
+                                                    "instance": "hivecache.test",
+                                                    "@iri": "https://hivecache.test/users/me/bookmarks/01234567-89ab-cdef-0123-456789abcdef"
+                                                }
+                                            ],
+                                            "prevPage": null,
+                                            "nextPage": "https://hivecache.test/users/me/bookmarks/tag/example-tag?after=01234567-89ab-cdef-0123-456789abcdef",
+                                            "total": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    },
+                    "404": {
+                        "description": "Instance tag not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/users/me": {
+            "get": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get current user profile",
+                "description": "Returns the authenticated user's profile information including username, isPublic status, and meta data.",
+                "operationId": "getCurrentUser",
+                "responses": {
+                    "200": {
+                        "description": "Current user profile",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserShowPrivate"
+                                },
+                                "examples": {
+                                    "user_profile": {
+                                        "summary": "Current user profile",
+                                        "value": {
+                                            "username": "janedoe",
+                                            "isPublic": true,
+                                            "meta": {
+                                                "theme": "dark",
+                                                "language": "en"
+                                            },
+                                            "account": {
+                                                "@iri": "https://hivecache.test/profile/janedoe",
+                                                "username": "janedoe",
+                                                "instance": "hivecache.test",
+                                                "inboxUrl": "https://hivecache.test/profile/janedoe/inbox",
+                                                "outboxUrl": "https://hivecache.test/profile/janedoe/outbox",
+                                                "sharedInboxUrl": "https://hivecache.test/inbox",
+                                                "followerUrl": "https://hivecache.test/profile/janedoe/followers",
+                                                "followingUrl": "https://hivecache.test/profile/janedoe/following"
+                                            },
+                                            "@iri": "https://hivecache.test/users/me"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Delete current user account",
+                "description": "Permanently deletes the authenticated user's account and all associated data. After deletion, accessing GET /users/me will return 404.",
+                "operationId": "deleteCurrentUser",
+                "responses": {
+                    "204": {
+                        "description": "User account deleted successfully"
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Update current user profile",
+                "description": "Updates the authenticated user's profile. Username and password changes will invalidate existing JWT tokens. Meta data is merged, not replaced.",
+                "operationId": "updateCurrentUser",
+                "requestBody": {
+                    "description": "User update data",
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "username": {
+                                        "description": "New username",
+                                        "type": "string",
+                                        "maxLength": 32,
+                                        "minLength": 3
+                                    },
+                                    "password": {
+                                        "description": "New password",
+                                        "type": "string",
+                                        "minLength": 8
+                                    },
+                                    "isPublic": {
+                                        "description": "Whether the profile is public",
+                                        "type": "boolean"
+                                    },
+                                    "meta": {
+                                        "description": "Additional metadata as key-value pairs (merged with existing)",
+                                        "type": "object",
+                                        "additionalProperties": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "User profile updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserShowPrivate"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    },
+                    "422": {
+                        "description": "Validation error - invalid data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "invalid_data": {
+                                        "summary": "Validation error",
+                                        "value": {
+                                            "error": {
+                                                "code": 422,
+                                                "message": "Unprocessable Content"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/users/me/files/{id}": {
+            "get": {
+                "tags": [
+                    "Files"
+                ],
+                "summary": "Get file object (not supported)",
+                "description": "This endpoint is not supported. Use POST to upload files.",
+                "operationId": "getFileObject",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "File object ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "405": {
+                        "description": "Method not allowed - use POST to upload files"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/users/me/files": {
+            "post": {
+                "tags": [
+                    "Files"
+                ],
+                "summary": "Upload a file",
+                "description": "Uploads a file and returns a FileObject that can be referenced in bookmarks (mainImage, archive).",
+                "operationId": "uploadFile",
+                "requestBody": {
+                    "description": "File to upload",
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "file"
+                                ],
+                                "properties": {
+                                    "file": {
+                                        "description": "File to upload",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "File uploaded successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FileObject"
+                                },
+                                "examples": {
+                                    "uploaded_file": {
+                                        "summary": "Successfully uploaded file",
+                                        "value": {
+                                            "contentUrl": "https://hivecache.test/storage/files/abc123.jpg",
+                                            "size": 102400,
+                                            "mime": "image/jpeg",
+                                            "@iri": "https://hivecache.test/users/me/files/01234567-89ab-cdef-0123-456789abcdef"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    },
+                    "422": {
+                        "description": "Validation error - invalid file",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "invalid_file": {
+                                        "summary": "Invalid file validation error",
+                                        "value": {
+                                            "error": {
+                                                "code": 422,
+                                                "message": "Unprocessable Content"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/users/me/followers": {
+            "get": {
+                "tags": [
+                    "Followers"
+                ],
+                "summary": "List own followers",
+                "description": "Returns a paginated collection of accounts that follow the authenticated user. Default page size is 100 items, ordered by creation date (newest first).",
+                "operationId": "listOwnFollowers",
+                "parameters": [
+                    {
+                        "name": "after",
+                        "in": "query",
+                        "description": "Cursor for pagination - account ID to fetch results after",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of follower accounts",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "collection": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/FollowerShowPublic"
+                                            }
+                                        },
+                                        "prevPage": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "nextPage": {
+                                            "description": "URL for next page if available",
+                                            "type": "string",
+                                            "nullable": true
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "examples": {
+                                    "follower_list": {
+                                        "summary": "Paginated list of followers",
+                                        "value": {
+                                            "collection": [
+                                                {
+                                                    "id": "01234567-89ab-cdef-0123-456789abcdef",
+                                                    "account": {
+                                                        "@iri": "https://hivecache.test/profile/janedoe",
+                                                        "username": "janedoe",
+                                                        "instance": "hivecache.test",
+                                                        "inboxUrl": "https://hivecache.test/profile/janedoe/inbox",
+                                                        "outboxUrl": "https://hivecache.test/profile/janedoe/outbox",
+                                                        "sharedInboxUrl": "https://hivecache.test/inbox",
+                                                        "followerUrl": "https://hivecache.test/profile/janedoe/followers",
+                                                        "followingUrl": "https://hivecache.test/profile/janedoe/following"
+                                                    },
+                                                    "createdAt": "2024-01-01T12:00:00+00:00"
+                                                }
+                                            ],
+                                            "prevPage": null,
+                                            "nextPage": "https://hivecache.test/users/me/followers?after=01234567-89ab-cdef-0123-456789abcdef",
+                                            "total": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/users/me/following": {
+            "get": {
+                "tags": [
+                    "Following"
+                ],
+                "summary": "List accounts being followed",
+                "description": "Returns a paginated collection of accounts that the authenticated user is following. Default page size is 100 items, ordered by creation date (newest first).",
+                "operationId": "listOwnFollowing",
+                "parameters": [
+                    {
+                        "name": "after",
+                        "in": "query",
+                        "description": "Cursor for pagination - account ID to fetch results after",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of followed accounts",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "collection": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/FollowingShowPublic"
+                                            }
+                                        },
+                                        "prevPage": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "nextPage": {
+                                            "description": "URL for next page if available",
+                                            "type": "string",
+                                            "nullable": true
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "examples": {
+                                    "following_list": {
+                                        "summary": "Paginated list of followed accounts",
+                                        "value": {
+                                            "collection": [
+                                                {
+                                                    "id": "01234567-89ab-cdef-0123-456789abcdef",
+                                                    "account": {
+                                                        "@iri": "https://hivecache.test/profile/janedoe",
+                                                        "username": "janedoe",
+                                                        "instance": "hivecache.test",
+                                                        "inboxUrl": "https://hivecache.test/profile/janedoe/inbox",
+                                                        "outboxUrl": "https://hivecache.test/profile/janedoe/outbox",
+                                                        "sharedInboxUrl": "https://hivecache.test/inbox",
+                                                        "followerUrl": "https://hivecache.test/profile/janedoe/followers",
+                                                        "followingUrl": "https://hivecache.test/profile/janedoe/following"
+                                                    },
+                                                    "createdAt": "2024-01-01T12:00:00+00:00"
+                                                }
+                                            ],
+                                            "prevPage": null,
+                                            "nextPage": "https://hivecache.test/users/me/following?after=01234567-89ab-cdef-0123-456789abcdef",
+                                            "total": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/users/me/following/{usernameWithInstance}": {
+            "post": {
+                "tags": [
+                    "Following"
+                ],
+                "summary": "Follow an account",
+                "description": "Creates a follow relationship with the specified account by username.",
+                "operationId": "followAccount",
+                "parameters": [
+                    {
+                        "name": "usernameWithInstance",
+                        "in": "path",
+                        "description": "Username of the account to follow (with instance)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "janedoe@hivecache.test"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Account followed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FollowingShowPublic"
+                                },
+                                "examples": {
+                                    "followed_account": {
+                                        "summary": "Successfully followed account",
+                                        "value": {
+                                            "id": "01234567-89ab-cdef-0123-456789abcdef",
+                                            "account": {
+                                                "@iri": "https://hivecache.test/profile/janedoe",
+                                                "username": "janedoe",
+                                                "instance": "hivecache.test",
+                                                "inboxUrl": "https://hivecache.test/profile/janedoe/inbox",
+                                                "outboxUrl": "https://hivecache.test/profile/janedoe/outbox",
+                                                "sharedInboxUrl": "https://hivecache.test/inbox",
+                                                "followerUrl": "https://hivecache.test/profile/janedoe/followers",
+                                                "followingUrl": "https://hivecache.test/profile/janedoe/following"
+                                            },
+                                            "createdAt": "2024-01-01T12:00:00+00:00"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    },
+                    "404": {
+                        "description": "Account not found"
+                    },
+                    "409": {
+                        "description": "Conflict - follow request already exist"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Following"
+                ],
+                "summary": "Unfollow an account",
+                "description": "Removes the follow relationship with the specified account by username (with instance).",
+                "operationId": "unfollowAccount",
+                "parameters": [
+                    {
+                        "name": "usernameWithInstance",
+                        "in": "path",
+                        "description": "Username of the account to unfollow",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "janedoe@hivecache.test"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Account unfollowed successfully"
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    },
+                    "404": {
+                        "description": "Account not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/users/me/tags": {
+            "get": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "List own tags",
+                "description": "Returns a collection of all tags owned by the authenticated user, including both public and private tags.",
+                "operationId": "listOwnTags",
+                "responses": {
+                    "200": {
+                        "description": "List of tags",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "collection": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/TagShowPrivate"
+                                            }
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "examples": {
+                                    "tag_list": {
+                                        "summary": "List of user tags",
+                                        "value": {
+                                            "collection": [
+                                                {
+                                                    "name": "Bookmarking",
+                                                    "slug": "bookmarking",
+                                                    "@iri": "https://hivecache.test/users/me/tags/bookmarking",
+                                                    "meta": {
+                                                        "color": "blue"
+                                                    },
+                                                    "isPublic": true
+                                                }
+                                            ],
+                                            "total": 1
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "Create a new tag",
+                "description": "Creates a new tag or returns an existing tag if a tag with the same name already exists. Maximum 1000 tags per user. Slug is automatically generated from the name and cannot be forced (slug field in request body is ignored).",
+                "operationId": "createTag",
+                "requestBody": {
+                    "description": "Tag data",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TagCreate"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tag created or existing tag returned",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TagShowPrivate"
+                                },
+                                "examples": {
+                                    "created_tag": {
+                                        "summary": "Newly created tag",
+                                        "value": {
+                                            "name": "Bookmarking",
+                                            "slug": "bookmarking",
+                                            "@iri": "https://hivecache.test/users/me/tags/bookmarking",
+                                            "meta": [],
+                                            "isPublic": false
+                                        }
+                                    },
+                                    "existing_tag": {
+                                        "summary": "Existing tag returned",
+                                        "value": {
+                                            "name": "Bookmarking",
+                                            "slug": "bookmarking",
+                                            "@iri": "https://hivecache.test/users/me/tags/bookmarking",
+                                            "meta": {
+                                                "color": "blue"
+                                            },
+                                            "isPublic": true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    },
+                    "422": {
+                        "description": "Validation error - maximum 1000 tags reached or invalid data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "limit_reached": {
+                                        "summary": "Tag limit reached",
+                                        "value": {
+                                            "error": {
+                                                "code": 422,
+                                                "message": "You have reached the 1000 tags limit."
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/users/me/tags/{slug}": {
+            "get": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "Get own tag by slug",
+                "description": "Returns a specific tag owned by the authenticated user.",
+                "operationId": "getOwnTag",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Tag slug",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tag details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TagShowPrivate"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    },
+                    "404": {
+                        "description": "Tag not found or not owned by user"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "Delete a tag",
+                "description": "Permanently deletes a tag owned by the authenticated user.",
+                "operationId": "deleteTag",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Tag slug",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Tag deleted successfully"
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    },
+                    "404": {
+                        "description": "Tag not found or not owned by user"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "Update a tag",
+                "description": "Updates an existing tag. Meta data is merged, not replaced. Changing the name will update the slug.",
+                "operationId": "updateTag",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Tag slug",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Tag update data",
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TagUpdate"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tag updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TagShowPrivate"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    },
+                    "404": {
+                        "description": "Tag not found or not owned by user"
+                    },
+                    "409": {
+                        "description": "Conflict - tag with new name already exists"
+                    },
+                    "422": {
+                        "description": "Validation error - invalid data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "invalid_data": {
+                                        "summary": "Validation error",
+                                        "value": {
+                                            "error": {
+                                                "code": 422,
+                                                "message": "Unprocessable Content"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/profile/{username}/bookmarks": {
+            "get": {
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "List public bookmarks of a user",
+                "description": "Returns a paginated collection of public bookmarks owned by the specified user. Supports filtering by tags (only public tags) and cursor-based pagination. Default page size is 24 items, ordered by creation date (newest first).",
+                "operationId": "listPublicBookmarks",
+                "parameters": [
+                    {
+                        "name": "username",
+                        "in": "path",
+                        "description": "Username",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "tags",
+                        "in": "query",
+                        "description": "Comma-separated list of tag slugs to filter by (only public tags)",
+                        "schema": {
+                            "type": "string",
+                            "example": "tag-one,tag-two"
+                        }
+                    },
+                    {
+                        "name": "after",
+                        "in": "query",
+                        "description": "Cursor for pagination - bookmark ID to fetch results after",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of public bookmarks",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "collection": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/BookmarkShowPublic"
+                                            }
+                                        },
+                                        "prevPage": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "nextPage": {
+                                            "description": "URL for next page if available",
+                                            "type": "string",
+                                            "nullable": true
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "examples": {
+                                    "public_bookmarks": {
+                                        "summary": "Paginated list of public bookmarks",
+                                        "value": {
+                                            "collection": [
+                                                {
+                                                    "id": "01234567-89ab-cdef-0123-456789abcdef",
+                                                    "createdAt": "2024-01-01T12:00:00+00:00",
+                                                    "title": "Example Bookmark",
+                                                    "url": "https://example.com",
+                                                    "domain": "example.com",
+                                                    "account": {
+                                                        "@iri": "https://hivecache.test/profile/janedoe",
+                                                        "username": "janedoe",
+                                                        "instance": "hivecache.test",
+                                                        "inboxUrl": "https://hivecache.test/profile/janedoe/inbox",
+                                                        "outboxUrl": "https://hivecache.test/profile/janedoe/outbox",
+                                                        "sharedInboxUrl": "https://hivecache.test/inbox",
+                                                        "followerUrl": "https://hivecache.test/profile/janedoe/followers",
+                                                        "followingUrl": "https://hivecache.test/profile/janedoe/following"
+                                                    },
+                                                    "tags": [
+                                                        {
+                                                            "name": "Bookmarking",
+                                                            "slug": "bookmarking",
+                                                            "@iri": "https://hivecache.test/users/me/tags/bookmarking"
+                                                        }
+                                                    ],
+                                                    "instance": "hivecache.test",
+                                                    "@iri": "https://hivecache.test/users/me/bookmarks/01234567-89ab-cdef-0123-456789abcdef"
+                                                }
+                                            ],
+                                            "prevPage": null,
+                                            "nextPage": "https://hivecache.test/profile/janedoe/bookmarks?after=01234567-89ab-cdef-0123-456789abcdef",
+                                            "total": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found"
+                    }
+                }
+            }
+        },
+        "/profile/{username}/bookmarks/{id}": {
+            "get": {
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Get public bookmark by ID",
+                "description": "Returns a specific public bookmark owned by the specified user.",
+                "operationId": "getPublicBookmark",
+                "parameters": [
+                    {
+                        "name": "username",
+                        "in": "path",
+                        "description": "Username",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Bookmark ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Bookmark details. Returns JSON by default (Accept: application/json) or HTML redirect (Accept: text/html).",
+                        "headers": {
+                            "Location": {
+                                "description": "Redirect URL (when Accept: text/html)",
+                                "required": false,
+                                "schema": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "example": "https://hivecache.net/profile/username/bookmarks/id"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BookmarkShowPublic"
+                                },
+                                "examples": {
+                                    "public_bookmark": {
+                                        "summary": "Public bookmark details",
+                                        "value": {
+                                            "id": "01234567-89ab-cdef-0123-456789abcdef",
+                                            "createdAt": "2024-01-01T12:00:00+00:00",
+                                            "title": "Example Bookmark",
+                                            "url": "https://example.com",
+                                            "domain": "example.com",
+                                            "account": {
+                                                "@iri": "https://hivecache.test/profile/janedoe",
+                                                "username": "janedoe",
+                                                "instance": "hivecache.test",
+                                                "inboxUrl": "https://hivecache.test/profile/janedoe/inbox",
+                                                "outboxUrl": "https://hivecache.test/profile/janedoe/outbox",
+                                                "sharedInboxUrl": "https://hivecache.test/inbox",
+                                                "followerUrl": "https://hivecache.test/profile/janedoe/followers",
+                                                "followingUrl": "https://hivecache.test/profile/janedoe/following"
+                                            },
+                                            "tags": [
+                                                {
+                                                    "name": "Bookmarking",
+                                                    "slug": "bookmarking",
+                                                    "@iri": "https://hivecache.test/users/me/tags/bookmarking"
+                                                }
+                                            ],
+                                            "instance": "hivecache.test",
+                                            "@iri": "https://hivecache.test/users/me/bookmarks/01234567-89ab-cdef-0123-456789abcdef"
+                                        }
+                                    }
+                                }
+                            },
+                            "text/html": {
+                                "schema": {
+                                    "description": "HTML redirect response",
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "301": {
+                        "description": "Redirect response (when Accept: text/html)",
+                        "headers": {
+                            "Location": {
+                                "description": "Redirect URL",
+                                "schema": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "example": "https://hivecache.net/profile/username/bookmarks/id"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Bookmark not found, not public, or user not found"
+                    }
+                }
+            }
+        },
+        "/profile/{username}": {
+            "get": {
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Get public user profile",
+                "description": "Returns the public profile information of a user. Only works if the user has set their profile as public.",
+                "operationId": "getPublicProfile",
+                "parameters": [
+                    {
+                        "name": "username",
+                        "in": "path",
+                        "description": "Username",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Public user profile. Returns JSON by default (Accept: application/json) or HTML redirect (Accept: text/html).",
+                        "headers": {
+                            "Location": {
+                                "description": "Redirect URL (when Accept: text/html)",
+                                "required": false,
+                                "schema": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "example": "https://hivecache.net/profile/username"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AccountShowPublic"
+                                },
+                                "examples": {
+                                    "public_profile": {
+                                        "summary": "Public user profile",
+                                        "value": {
+                                            "@iri": "https://hivecache.test/profile/janedoe",
+                                            "username": "janedoe",
+                                            "instance": "hivecache.test",
+                                            "inboxUrl": "https://hivecache.test/profile/janedoe/inbox",
+                                            "outboxUrl": "https://hivecache.test/profile/janedoe/outbox",
+                                            "sharedInboxUrl": "https://hivecache.test/inbox",
+                                            "followerUrl": "https://hivecache.test/profile/janedoe/followers",
+                                            "followingUrl": "https://hivecache.test/profile/janedoe/following"
+                                        }
+                                    }
+                                }
+                            },
+                            "text/html": {
+                                "schema": {
+                                    "description": "HTML redirect response",
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "301": {
+                        "description": "Redirect response (when Accept: text/html)",
+                        "headers": {
+                            "Location": {
+                                "description": "Redirect URL",
+                                "schema": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "example": "https://hivecache.net/profile/username"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found or profile is not public"
+                    }
+                }
+            }
+        },
+        "/profile/{username}/tags": {
+            "get": {
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "List public tags of a user",
+                "description": "Returns a collection of public tags owned by the specified user.",
+                "operationId": "listPublicTags",
+                "parameters": [
+                    {
+                        "name": "username",
+                        "in": "path",
+                        "description": "Username",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of public tags",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "collection": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/TagShowPublic"
+                                            }
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found"
+                    }
+                }
+            }
+        },
+        "/profile/{username}/tags/{slug}": {
+            "get": {
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Get public tag by slug",
+                "description": "Returns a specific public tag owned by the specified user.",
+                "operationId": "getPublicTag",
+                "parameters": [
+                    {
+                        "name": "username",
+                        "in": "path",
+                        "description": "Username",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Tag slug",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Public tag details. Returns JSON by default (Accept: application/json) or HTML redirect (Accept: text/html).",
+                        "headers": {
+                            "Location": {
+                                "description": "Redirect URL (when Accept: text/html)",
+                                "required": false,
+                                "schema": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "example": "https://hivecache.net/profile/username/tags/tag-slug"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TagShowPublic"
+                                }
+                            },
+                            "text/html": {
+                                "schema": {
+                                    "description": "HTML redirect response",
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "301": {
+                        "description": "Redirect response (when Accept: text/html)",
+                        "headers": {
+                            "Location": {
+                                "description": "Redirect URL",
+                                "schema": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "example": "https://hivecache.net/profile/username/tags/tag-slug"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Tag not found, not public, or user not found"
+                    }
+                }
+            }
+        },
+        "/register": {
+            "post": {
+                "tags": [
+                    "Register"
+                ],
+                "summary": "Register a new user",
+                "description": "Creates a new user with username and password. Returns the created user object and associated account.",
+                "operationId": "createUser",
+                "requestBody": {
+                    "description": "User registration data",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserCreate"
+                            },
+                            "example": {
+                                "username": "janedoe",
+                                "password": "password"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "User account created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserShowPrivate"
+                                },
+                                "examples": {
+                                    "success": {
+                                        "summary": "Successfully created user account",
+                                        "value": {
+                                            "username": "janedoe",
+                                            "isPublic": false,
+                                            "meta": [],
+                                            "account": {
+                                                "@iri": "https://hivecache.test/profile/janedoe",
+                                                "username": "janedoe",
+                                                "instance": "hivecache.test",
+                                                "inboxUrl": "https://hivecache.test/profile/janedoe/inbox",
+                                                "outboxUrl": "https://hivecache.test/profile/janedoe/outbox",
+                                                "sharedInboxUrl": "https://hivecache.test/inbox",
+                                                "followerUrl": "https://hivecache.test/profile/janedoe/followers",
+                                                "followingUrl": "https://hivecache.test/profile/janedoe/following"
+                                            },
+                                            "@iri": "https://hivecache.test/users/me"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - username already exists or invalid data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "duplicate_username": {
+                                        "summary": "Username already taken",
+                                        "value": {
+                                            "error": {
+                                                "code": 422,
+                                                "message": "Username already exists"
+                                            }
+                                        }
+                                    },
+                                    "invalid_data": {
+                                        "summary": "Validation error",
+                                        "value": {
+                                            "error": {
+                                                "code": 422,
+                                                "message": "Username must be between 3 and 32 characters"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - instance does not allow new accounts"
+                    },
+                    "409": {
+                        "description": "Conflict - username already exist with a different set of case"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "CollectionResponse": {
+                "properties": {
+                    "collection": {
+                        "description": "Array of items",
+                        "type": "array",
+                        "items": {}
+                    },
+                    "prevPage": {
+                        "description": "URL for previous page",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "nextPage": {
+                        "description": "URL for next page",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "total": {
+                        "description": "Total number of items",
+                        "type": "integer",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "ErrorResponse": {
+                "required": [
+                    "error"
+                ],
+                "properties": {
+                    "error": {
+                        "description": "Error object",
+                        "required": [
+                            "code",
+                            "message"
+                        ],
+                        "properties": {
+                            "code": {
+                                "description": "HTTP status code",
+                                "type": "integer"
+                            },
+                            "message": {
+                                "description": "Error message",
+                                "type": "string"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "UnauthorizedResponse": {
+                "properties": {
+                    "code": {
+                        "type": "integer",
+                        "example": 401
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "JWT Token not found"
+                    }
+                },
+                "type": "object"
+            },
+            "BookmarkCreate": {
+                "description": "Bookmark creation data",
+                "required": [
+                    "title",
+                    "url"
+                ],
+                "properties": {
+                    "title": {
+                        "description": "Bookmark title",
+                        "type": "string"
+                    },
+                    "url": {
+                        "description": "Bookmark URL",
+                        "type": "string",
+                        "format": "uri"
+                    },
+                    "isPublic": {
+                        "description": "Whether the bookmark is public",
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "tags": {
+                        "description": "Array of tag IRIs (must be valid IRIs pointing to existing tags owned by the user)",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "iri",
+                            "example": "https://hivecache.test/users/me/tags/web-development"
+                        }
+                    },
+                    "mainImage": {
+                        "description": "IRI of main image FileObject",
+                        "type": "string",
+                        "format": "iri",
+                        "nullable": true
+                    },
+                    "archive": {
+                        "description": "IRI of archive FileObject",
+                        "type": "string",
+                        "format": "iri",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "BookmarkUpdate": {
+                "description": "Bookmark update data",
+                "properties": {
+                    "title": {
+                        "description": "New bookmark title",
+                        "type": "string"
+                    },
+                    "isPublic": {
+                        "description": "Whether the bookmark is public",
+                        "type": "boolean"
+                    },
+                    "tags": {
+                        "description": "Array of tag IRIs. If omitted, existing tags are preserved.",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "iri"
+                        }
+                    },
+                    "mainImage": {
+                        "description": "IRI of main image FileObject",
+                        "type": "string",
+                        "format": "iri",
+                        "nullable": true
+                    },
+                    "archive": {
+                        "description": "IRI of archive FileObject",
+                        "type": "string",
+                        "format": "iri",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "TagCreate": {
+                "description": "Tag creation data",
+                "required": [
+                    "name"
+                ],
+                "properties": {
+                    "name": {
+                        "description": "Tag name (slug is auto-generated from name)",
+                        "type": "string",
+                        "maxLength": 32
+                    },
+                    "isPublic": {
+                        "description": "Whether the tag is public",
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "meta": {
+                        "description": "Additional metadata as key-value pairs",
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                },
+                "type": "object"
+            },
+            "TagUpdate": {
+                "description": "Tag update data",
+                "properties": {
+                    "name": {
+                        "description": "New tag name",
+                        "type": "string",
+                        "maxLength": 32
+                    },
+                    "isPublic": {
+                        "description": "Whether the tag is public",
+                        "type": "boolean"
+                    },
+                    "meta": {
+                        "description": "Additional metadata as key-value pairs (merged with existing)",
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                },
+                "type": "object"
+            },
+            "AccountShowPublic": {
+                "description": "Account object representing an ActivityPub account",
+                "properties": {
+                    "@iri": {
+                        "description": "IRI of the account resource",
+                        "type": "string",
+                        "format": "iri"
+                    },
+                    "username": {
+                        "description": "Account username",
+                        "type": "string"
+                    },
+                    "instance": {
+                        "description": "Instance domain where the account is hosted",
+                        "type": "string"
+                    },
+                    "inboxUrl": {
+                        "description": "ActivityPub inbox URL",
+                        "type": "string",
+                        "format": "uri",
+                        "nullable": true
+                    },
+                    "outboxUrl": {
+                        "description": "ActivityPub outbox URL",
+                        "type": "string",
+                        "format": "uri",
+                        "nullable": true
+                    },
+                    "sharedInboxUrl": {
+                        "description": "ActivityPub shared inbox URL",
+                        "type": "string",
+                        "format": "uri",
+                        "nullable": true
+                    },
+                    "followerUrl": {
+                        "description": "ActivityPub followers collection URL",
+                        "type": "string",
+                        "format": "uri",
+                        "nullable": true
+                    },
+                    "followingUrl": {
+                        "description": "ActivityPub following collection URL",
+                        "type": "string",
+                        "format": "uri",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "BookmarkShowPrivate": {
+                "description": "Bookmark object with owner-level details",
+                "properties": {
+                    "id": {
+                        "description": "Bookmark ID",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "createdAt": {
+                        "description": "Creation timestamp",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "title": {
+                        "description": "Bookmark title",
+                        "type": "string"
+                    },
+                    "url": {
+                        "description": "Bookmark URL",
+                        "type": "string",
+                        "format": "uri"
+                    },
+                    "domain": {
+                        "description": "Extracted domain from URL",
+                        "type": "string"
+                    },
+                    "account": {
+                        "$ref": "#/components/schemas/AccountShowPublic"
+                    },
+                    "isPublic": {
+                        "description": "Whether the bookmark is public",
+                        "type": "boolean"
+                    },
+                    "tags": {
+                        "description": "Associated tags",
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "mainImage": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/FileObject"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "Main image file object",
+                        "type": "object"
+                    },
+                    "archive": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/FileObject"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "Archive file object",
+                        "type": "object"
+                    },
+                    "instance": {
+                        "description": "Instance host where the bookmark was created",
+                        "type": "string"
+                    },
+                    "@iri": {
+                        "description": "IRI of the bookmark resource",
+                        "type": "string",
+                        "format": "iri"
+                    }
+                },
+                "type": "object"
+            },
+            "BookmarkShowPublic": {
+                "description": "Public bookmark information",
+                "properties": {
+                    "id": {
+                        "description": "Bookmark ID",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "createdAt": {
+                        "description": "Creation timestamp",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "title": {
+                        "description": "Bookmark title",
+                        "type": "string"
+                    },
+                    "url": {
+                        "description": "Bookmark URL",
+                        "type": "string",
+                        "format": "uri"
+                    },
+                    "domain": {
+                        "description": "Extracted domain from URL",
+                        "type": "string"
+                    },
+                    "account": {
+                        "$ref": "#/components/schemas/AccountShowPublic"
+                    },
+                    "tags": {
+                        "description": "Associated public tags",
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "mainImage": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/FileObject"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "Main image file object",
+                        "type": "object"
+                    },
+                    "archive": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/FileObject"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "Archive file object",
+                        "type": "object"
+                    },
+                    "instance": {
+                        "description": "Instance host where the bookmark was created",
+                        "type": "string"
+                    },
+                    "@iri": {
+                        "description": "IRI of the bookmark resource",
+                        "type": "string",
+                        "format": "iri"
+                    }
+                },
+                "type": "object"
+            },
+            "BookmarkIndexAction": {
+                "description": "Bookmark index action representing a change to a bookmark",
+                "properties": {
+                    "id": {
+                        "description": "Index action ID",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "createdAt": {
+                        "description": "Creation timestamp",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "type": {
+                        "description": "Type of action performed on the bookmark",
+                        "type": "string",
+                        "enum": [
+                            "created",
+                            "updated",
+                            "deleted",
+                            "outdated"
+                        ]
+                    },
+                    "bookmark": {
+                        "description": "The bookmark id associated with this action",
+                        "type": "string",
+                        "format": "uuid"
+                    }
+                },
+                "type": "object"
+            },
+            "FileObject": {
+                "description": "File object representing an uploaded file",
+                "properties": {
+                    "contentUrl": {
+                        "description": "URL to access the file content",
+                        "type": "string",
+                        "format": "uri",
+                        "nullable": true
+                    },
+                    "size": {
+                        "description": "File size in bytes",
+                        "type": "integer"
+                    },
+                    "mime": {
+                        "description": "MIME type of the file",
+                        "type": "string"
+                    },
+                    "@iri": {
+                        "description": "IRI of the file object resource",
+                        "type": "string",
+                        "format": "iri"
+                    }
+                },
+                "type": "object"
+            },
+            "FollowerShowPublic": {
+                "description": "Follower object representing an account that follows the user",
+                "properties": {
+                    "id": {
+                        "description": "Follower relationship ID",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "account": {
+                        "$ref": "#/components/schemas/AccountShowPublic"
+                    },
+                    "createdAt": {
+                        "description": "When the follow relationship was created",
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "FollowingShowPublic": {
+                "description": "Following object representing an account that the user follows",
+                "properties": {
+                    "id": {
+                        "description": "Following relationship ID",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "account": {
+                        "$ref": "#/components/schemas/AccountShowPublic"
+                    },
+                    "createdAt": {
+                        "description": "When the follow relationship was created",
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "UserShowPrivate": {
+                "description": "User object with owner-level details",
+                "properties": {
+                    "username": {
+                        "description": "Username",
+                        "type": "string"
+                    },
+                    "isPublic": {
+                        "description": "Whether the profile is public",
+                        "type": "boolean"
+                    },
+                    "meta": {
+                        "description": "Additional metadata",
+                        "type": "object",
+                        "additionalProperties": true
+                    },
+                    "account": {
+                        "$ref": "#/components/schemas/AccountShowPublic"
+                    },
+                    "@iri": {
+                        "description": "IRI of the user resource",
+                        "type": "string",
+                        "format": "iri"
+                    }
+                },
+                "type": "object"
+            },
+            "UserCreate": {
+                "description": "User creation data",
+                "required": [
+                    "username",
+                    "password"
+                ],
+                "properties": {
+                    "username": {
+                        "description": "Username",
+                        "type": "string",
+                        "maxLength": 32,
+                        "minLength": 3
+                    },
+                    "password": {
+                        "description": "Password",
+                        "type": "string",
+                        "minLength": 8
+                    },
+                    "isPublic": {
+                        "description": "Whether the profile is public",
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "meta": {
+                        "description": "Additional metadata",
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                },
+                "type": "object"
+            },
+            "TagShowPublic": {
+                "description": "Public tag information",
+                "properties": {
+                    "name": {
+                        "description": "Tag name",
+                        "type": "string"
+                    },
+                    "slug": {
+                        "description": "Tag slug",
+                        "type": "string"
+                    },
+                    "@iri": {
+                        "description": "IRI of the tag resource",
+                        "type": "string",
+                        "format": "iri"
+                    }
+                },
+                "type": "object"
+            },
+            "TagShowPrivate": {
+                "description": "Tag object with owner-level details",
+                "properties": {
+                    "name": {
+                        "description": "Tag name",
+                        "type": "string"
+                    },
+                    "slug": {
+                        "description": "Tag slug",
+                        "type": "string"
+                    },
+                    "meta": {
+                        "description": "Additional metadata",
+                        "type": "object",
+                        "additionalProperties": true
+                    },
+                    "isPublic": {
+                        "description": "Whether the tag is public",
+                        "type": "boolean"
+                    },
+                    "@iri": {
+                        "description": "IRI of the tag resource",
+                        "type": "string",
+                        "format": "iri"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "description": "JWT token obtained from POST /auth endpoint",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Authentication",
+            "description": "Authentication"
+        },
+        {
+            "name": "Instance",
+            "description": "Instance"
+        },
+        {
+            "name": "Bookmarks",
+            "description": "Bookmarks"
+        },
+        {
+            "name": "Search",
+            "description": "Search"
+        },
+        {
+            "name": "User",
+            "description": "User"
+        },
+        {
+            "name": "Files",
+            "description": "Files"
+        },
+        {
+            "name": "Followers",
+            "description": "Followers"
+        },
+        {
+            "name": "Following",
+            "description": "Following"
+        },
+        {
+            "name": "Tags",
+            "description": "Tags"
+        },
+        {
+            "name": "Profile",
+            "description": "Profile"
+        },
+        {
+            "name": "Register",
+            "description": "Register"
+        }
+    ],
+    "x-tagGroups": [
+        {
+            "name": "Authentication & Account",
+            "tags": [
+                "Authentication",
+                "Account"
+            ]
+        },
+        {
+            "name": "User Management",
+            "tags": [
+                "User"
+            ]
+        },
+        {
+            "name": "Bookmarks",
+            "tags": [
+                "Bookmarks"
+            ]
+        },
+        {
+            "name": "Tags",
+            "tags": [
+                "Tags"
+            ]
+        },
+        {
+            "name": "Files",
+            "tags": [
+                "Files"
+            ]
+        },
+        {
+            "name": "Public Profiles",
+            "tags": [
+                "Profile"
+            ]
+        }
+    ]
+}

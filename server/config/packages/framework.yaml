@@ -1,0 +1,34 @@
+# see https://symfony.com/doc/current/reference/configuration/framework.html
+framework:
+    secret: '%env(APP_SECRET)%'
+    session: true
+    ide: '%env(SYMFONY_FRAMEWORK_IDE)%'
+
+    http_client:
+        scoped_clients:
+            activity_pub.client:
+                scope: '.*'
+                verify_peer: true
+                verify_host: true
+
+when@test:
+    framework:
+        test: true
+        session:
+            storage_factory_id: session.storage.factory.mock_file
+
+        http_client:
+            scoped_clients:
+                activity_pub.client:
+                    scope: '.*'
+                    verify_peer: false
+                    verify_host: false
+
+when@test_ap_server:
+    framework:
+        http_client:
+            scoped_clients:
+                activity_pub.client:
+                    scope: '.*'
+                    verify_peer: false
+                    verify_host: false

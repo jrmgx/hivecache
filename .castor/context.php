@@ -11,7 +11,7 @@ use function Castor\log;
 #[AsContext(default: true)]
 function create_default_context(): Context
 {
-    $data = \api\create_default_variables() + [
+    $data = \server\create_default_variables() + [
         'project_name' => 'app',
         'root_domain' => 'app.test',
         'extra_domains' => [],
@@ -56,8 +56,8 @@ function create_default_context(): Context
     );
 }
 
-#[AsContext(name: 'api2')]
-function create_api2_context(): Context
+#[AsContext(name: 'server2')]
+function create_server2_context(): Context
 {
     $c = create_default_context();
 

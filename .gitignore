@@ -3,7 +3,7 @@
 /infrastructure/docker/services/router/certs/*.pem
 
 # Media
-/api/public/storage
+/server/public/storage
 
 # Tools
 .php-cs-fixer.cache
