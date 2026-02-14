@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "HiveCache",
-    "version": "0.1",
+    "version": "0.2",
     "description": "The decentralized social bookmarking service official web extension.",
     "permissions": [
         "activeTab",

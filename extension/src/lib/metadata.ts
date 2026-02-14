@@ -7,7 +7,6 @@ import { findThumbnail } from '@shared';
 
 /**
  * Extracts image URL from the current page
- * Tries findThumbnail, then og:image, then twitter:image, then favicon
  * @returns Image URL or null if none found
  */
 function extractImageUrl(): string | null {
@@ -17,27 +16,27 @@ function extractImageUrl(): string | null {
         return thumbnailUrl;
     }
 
-    // Try og:image
+    const resolveUrl = (content: string): string => {
+        try {
+            return new URL(content, window.location.href).href;
+        } catch {
+            return content;
+        }
+    };
+
     const ogImage = document.querySelector('meta[property="og:image"]') as HTMLMetaElement | null;
     if (ogImage?.content) {
-        try {
-            // Convert to absolute URL (handles both relative and absolute URLs)
-            // new URL() will use absolute URLs as-is, or resolve relative URLs against the base
-            return new URL(ogImage.content, window.location.href).href;
-        } catch {
-            // If URL parsing fails, return original content (might be invalid but worth trying)
-            return ogImage.content;
-        }
+        return resolveUrl(ogImage.content);
     }
 
-    // Try twitter:image
+    const ogImageUrl = document.querySelector('meta[property="og:image:url"]') as HTMLMetaElement | null;
+    if (ogImageUrl?.content) {
+        return resolveUrl(ogImageUrl.content);
+    }
+
     const twitterImage = document.querySelector('meta[name="twitter:image"]') as HTMLMetaElement | null;
     if (twitterImage?.content) {
-        try {
-            return new URL(twitterImage.content, window.location.href).href;
-        } catch {
-            return twitterImage.content;
-        }
+        return resolveUrl(twitterImage.content);
     }
 
     // Try favicon
