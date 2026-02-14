@@ -4,7 +4,7 @@ Before starting, see [Limitations](../Limitations.md) to know more about the lim
 
 ## URLs
 
-Those are the urls implemented by the underlying ActivityPub server: 
+Those are the URLs implemented by the underlying ActivityPub server: 
 
 - instance.ltd/ap/u/{username}/followers
 - instance.ltd/ap/u/{username}/following
@@ -96,3 +96,11 @@ Key controllers and message handlers:
 - `MeBookmarkController` - Creates bookmarks and sends them to followers
 - `SendFollowMessage` / `ReceiveFollowMessage` / `ReceiveAcceptMessage` - Message handlers for following flow
 - `SendCreateNoteMessage` / `ReceiveCreateNoteMessage` - Message handlers for bookmark sharing
+
+
+## Server2
+
+There is a second server set up, it can be useful when testing scenario
+where you want to follow people from one server to another.
+
+See [Setup#server2](./Setup.md#server2)

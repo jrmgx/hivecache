@@ -31,7 +31,7 @@ ensure your domain names point to the IP of your Docker daemon by editing your `
 This IP is probably `127.0.0.1` unless you run Docker in a special way.
 
 ```bash
-echo '127.0.0.1 hivecache.test api.hivecache.test admin.hivecache.test' | sudo tee -a /etc/hosts
+echo '127.0.0.1 hivecache.test server2.hivecache.test app.hivecache.test docs.hivecache.test mail.hivecache.test' | sudo tee -a /etc/hosts
 ```
 
 ## Starting the Stack
@@ -76,3 +76,19 @@ castor builder
 ## Other Tasks
 
 Checkout `castor` to have the list of available tasks.
+
+
+## Server2
+
+There is a second server set up, it can be useful when testing scenario 
+where you want to follow people from one server to another.
+
+To use this server you can go to: https://server2.hivecache.test
+
+Note that all `castor` command need the `--context server2` option so they are sent to the right server.
+
+Examples:
+```sh 
+castor --context server2 fixtures
+castor --context server2 builder
+```

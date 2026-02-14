@@ -8,7 +8,7 @@ See the [User Guide](./UserGuide.md) for general concepts.
 Get the official extensions from your browser store:
 
  - For Firefox, at [addons.mozilla.org/addon/hivecache](https://addons.mozilla.org/en-GB/firefox/addon/hivecache/)
- - For Google Chrome (and Chrome based), at __pending review__
+ - For Google Chrome (and Chrome based), at [chromewebstore.google.com/hivecache](https://chromewebstore.google.com/detail/hivecache/klhkogenlgcnjpagljdincjkcacblhdg)
  - From source, at [github.com/hivecache/extension](https://github.com/jrmgx/hivecache/tree/main/extension)
 
 ## Configuration
