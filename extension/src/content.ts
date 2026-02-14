@@ -1,5 +1,3 @@
-// Content script for the extension
-
 import { inlineAllCSS } from './lib/css';
 import { embedAllImages } from './lib/images';
 import { removeAllScripts, removeNoscriptAndIframes, disableAllLinks, cleanupHead } from './lib/dom';
@@ -9,10 +7,8 @@ import { getBrowserAPI, getBrowserRuntime } from './lib/browser';
 const browserAPI = getBrowserAPI();
 const runtime = getBrowserRuntime();
 
-// Flag to ensure message listener is only registered once per script execution
 let messageListenerRegistered = false;
 
-// Function to send HTML to background script for compression
 async function compressHTML(): Promise<string | null> {
     console.log("Archive: Getting final HTML...");
 
@@ -38,55 +34,22 @@ async function compressHTML(): Promise<string | null> {
 async function archivePage(): Promise<string | null> {
     console.log("Archive: Starting page archive...");
 
-    // Remove all JavaScript scripts first
     removeAllScripts();
-
-    // Remove all noscript tags and iframes
     removeNoscriptAndIframes();
-
-    // Inline all CSS first (this will fetch external stylesheets)
     await inlineAllCSS();
-
-    // Then embed all images (including background images in CSS)
     await embedAllImages();
-
-    // Disable all links (make them non-clickable but preserve URL info)
     disableAllLinks();
-
-    // Clean up the <head> tag, keeping only CSS
     cleanupHead();
-
-    // Compress the final HTML and upload to API
     const fileObjectId = await compressHTML();
 
     console.log("Archive: Page archive complete!");
 
     // Refresh the page after capture is complete
     window.location.reload();
-
     return fileObjectId;
 }
 
-// Listen for messages from background script
-// browserAPI.runtime.onMessage.addListener((
-//     request: InlineCSSMessage,
-//     _sender: chrome.runtime.MessageSender,
-//     sendResponse: (response: MessageResponse) => void
-// ): boolean => {
-//     if (request.action === 'inlineCSS') {
-//         archivePage().then(() => {
-//             sendResponse({ success: true });
-//         }).catch((error: Error) => {
-//             console.error('Archive: Error archiving page:', error);
-//             sendResponse({ success: false, error: error.message });
-//         });
-//         return true; // Keep the message channel open for async response
-//     }
-//     return false;
-// });
-
 // Listen for messages from popup (for metadata extraction and page archiving)
-// Only register the listener once to prevent duplicate handlers
 if (runtime && typeof runtime.onMessage === 'object' && !messageListenerRegistered) {
     messageListenerRegistered = true;
     runtime.onMessage.addListener((message: { action?: string }, _sender, sendResponse) => {

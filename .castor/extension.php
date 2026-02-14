@@ -67,7 +67,7 @@ function build(): void
     } catch (\Exception $e) {
         io()->error($e->getMessage());
     } finally {
-        fs()->copy($extensionDir . '/manifest-dev.json', $extensionDir . '/manifest.json');
+        fs()->copy($extensionDir . '/manifest-dev.json', $extensionDir . '/manifest.json', overwriteNewerFiles: true);
     }
 
     io()->success("Web extension zip created: {$zipPath}");

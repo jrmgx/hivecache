@@ -123,5 +123,29 @@ export async function extractPageMetadata(): Promise<PageData> {
     const imageUrl = extractImageUrl();
     pageData.image = await validateImageUrl(imageUrl);
 
+    // This will tentatively get youtube video duration
+    const microformatScript = document.querySelector('#microformat player-microformat-renderer script') as HTMLScriptElement | null;
+    if (microformatScript?.textContent) {
+        try {
+            const json = JSON.parse(microformatScript.textContent);
+            if (json && typeof json.duration === 'string') {
+                const match = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/.exec(json.duration);
+                if (match) {
+                    const totalSeconds = (parseInt(match[1] || '0', 10) * 3600) + (parseInt(match[2] || '0', 10) * 60) + parseInt(match[3] || '0', 10);
+                    const hh = Math.floor(totalSeconds / 3600);
+                    const mm = Math.floor((totalSeconds % 3600) / 60);
+                    const ss = totalSeconds % 60;
+                    console.log(hh);
+                    const formatted = hh > 0
+                        ? `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`
+                        : `${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
+                    pageData.title = `[${formatted}] ${pageData.title}`;
+                }
+            }
+        } catch {
+            // Ignore parsing errors
+        }
+    }
+
     return pageData;
 }
