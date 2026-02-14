@@ -5,6 +5,7 @@ interface SidebarSectionProps {
   children: React.ReactNode;
   defaultCollapsed?: boolean;
   storageKey: string;
+  persistState?: boolean;
 }
 
 export const SidebarSection = ({
@@ -12,20 +13,25 @@ export const SidebarSection = ({
   children,
   defaultCollapsed = false,
   storageKey,
+  persistState = true,
 }: SidebarSectionProps) => {
   const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
 
   useEffect(() => {
-    const stored = localStorage.getItem(storageKey);
-    if (stored !== null) {
-      setIsCollapsed(stored === 'true');
+    if (persistState) {
+      const stored = localStorage.getItem(storageKey);
+      if (stored !== null) {
+        setIsCollapsed(stored === 'true');
+      }
     }
-  }, [storageKey]);
+  }, [storageKey, persistState]);
 
   const toggleCollapse = () => {
     const newState = !isCollapsed;
     setIsCollapsed(newState);
-    localStorage.setItem(storageKey, String(newState));
+    if (persistState) {
+      localStorage.setItem(storageKey, String(newState));
+    }
   };
 
   const collapseId = `collapse-${storageKey}`;

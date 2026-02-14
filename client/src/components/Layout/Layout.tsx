@@ -6,6 +6,7 @@ import { ProfileSection } from '../Sidebar/sections/ProfileSection';
 import { SocialSection } from '../Sidebar/sections/SocialSection';
 import { SettingsSection } from '../Sidebar/sections/SettingsSection';
 import { EditBookmarkSidebarSection } from '../Sidebar/sections/EditBookmarkSidebarSection';
+import { AboutSection } from '../Sidebar/sections/AboutSection';
 import { getTags, deleteBookmark } from '../../services/api';
 import { getPublicTags } from '../../services/publicApi';
 import { useProfileContext } from '../../hooks/useProfileContext';
@@ -196,6 +197,7 @@ export const Layout = () => {
         isTagsPage={isTagsPage}
       />
     );
+    sections.push(<AboutSection key="about" />);
   } else if (isBookmarkPage) {
     // Own bookmarks: show full edit section
     sections.push(
@@ -207,6 +209,7 @@ export const Layout = () => {
         isDeleting={isDeleting}
       />
     );
+    sections.push(<AboutSection key="about" />);
   } else {
     // Own profile home page or tags page: show all sections
     // Keep MeSection visible even on tags page
@@ -223,6 +226,7 @@ export const Layout = () => {
     );
     sections.push(<SocialSection key="social" />);
     sections.push(<SettingsSection key="settings" />);
+    sections.push(<AboutSection key="about" />);
   }
 
   return (
@@ -266,7 +270,7 @@ export const Layout = () => {
                 id="offcanvasResponsiveLabel"
                 style={{ cursor: 'pointer' }}
                 onClick={() => {
-                  window.dispatchEvent(new Event('refreshCurrentPage'));
+                  navigate('/');
                 }}
               >
                 HiveCache
