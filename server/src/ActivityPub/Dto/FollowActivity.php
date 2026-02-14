@@ -4,9 +4,6 @@ namespace App\ActivityPub\Dto;
 
 use Symfony\Component\Serializer\Attribute\SerializedName;
 
-/**
- * @see AcceptFollowActivity.json
- */
 final class FollowActivity
 {
     #[SerializedName('@context')]

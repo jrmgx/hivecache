@@ -5,6 +5,7 @@
 namespace App\Api\Controller;
 
 use App\ActivityPub\Message\SendCreateNoteMessage;
+use App\ActivityPub\Message\SendDeleteTombstoneMessage;
 use App\Api\Config\RouteAction;
 use App\Api\Config\RouteType;
 use App\Api\Dto\BookmarkApiDto;
@@ -14,6 +15,7 @@ use App\Entity\Account;
 use App\Entity\Bookmark;
 use App\Entity\User;
 use App\Entity\UserTag;
+use App\Repository\UserTimelineEntryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\ORMInvalidArgumentException;
@@ -447,15 +449,46 @@ final class MeBookmarkController extends BookmarkController
     #[Route(path: '/{id}', name: RouteAction::Delete->value, methods: ['DELETE'])]
     #[IsGranted(attribute: BookmarkVoter::ACCOUNT, subject: 'bookmark', statusCode: Response::HTTP_NOT_FOUND)]
     public function delete(
+        UserTimelineEntryRepository $userTimelineEntryRepository,
         #[CurrentUser] User $user,
         Bookmark $bookmark,
     ): JsonResponse {
         $indexAction = $this->indexActionUpdater->update($bookmark, BookmarkIndexActionType::Deleted);
         $this->entityManager->persist($indexAction);
 
-        $this->bookmarkRepository->deleteByAccountAndUrl($user->account, $bookmark->url);
+        $bookmarkId = $bookmark->id;
+        $bookmarkUrl = $bookmark->url;
+
+        $bookmarks = $this->bookmarkRepository->findByAccountAndUrl($user->account, $bookmark->url);
+        $sharedInboxUrls = [];
+        foreach ($bookmarks as $b) {
+            $sharedInboxUrls = array_merge($sharedInboxUrls, $b->sentToSharedInboxes ?? []);
+            $userTimelineEntryRepository->deleteByBookmark($b);
+            $this->entityManager->remove($b);
+        }
 
         $this->entityManager->flush();
+
+        $sharedInboxUrls = array_unique($sharedInboxUrls);
+        if (\count($sharedInboxUrls) > 0) {
+            $bookmarkUri = $this->urlGenerator->generate(
+                RouteType::ProfileBookmarks, RouteAction::Get, [
+                    'id' => $bookmarkId,
+                    'username' => $user->username,
+                ]
+            );
+            $actorUri = $this->urlGenerator->generate(
+                RouteType::Profile, RouteAction::Get, [
+                    'username' => $user->username,
+                ]
+            );
+            $this->messageBus->dispatch(new SendDeleteTombstoneMessage(
+                $bookmarkUri,
+                $actorUri,
+                $bookmarkUrl,
+                $sharedInboxUrls
+            ));
+        }
 
         return new JsonResponse(status: Response::HTTP_NO_CONTENT);
     }

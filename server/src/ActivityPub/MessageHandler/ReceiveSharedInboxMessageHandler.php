@@ -4,6 +4,7 @@ namespace App\ActivityPub\MessageHandler;
 
 use App\ActivityPub\AccountFetch;
 use App\ActivityPub\Message\ReceiveCreateNoteMessage;
+use App\ActivityPub\Message\ReceiveDeleteTombstoneMessage;
 use App\ActivityPub\Message\ReceiveSharedInboxMessage;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -39,7 +40,12 @@ final readonly class ReceiveSharedInboxMessageHandler extends AbstractSignedMess
             // For now we only handle Create activity about Note object
             $this->messageBus->dispatch(new ReceiveCreateNoteMessage($message->body));
 
-            // return;
+            return;
+        }
+
+        if ('Delete' === $type) {
+            // For now we only handle Delete activity about Tombstone object (that represent Bookmarks)
+            $this->messageBus->dispatch(new ReceiveDeleteTombstoneMessage($message->body));
         }
     }
 }

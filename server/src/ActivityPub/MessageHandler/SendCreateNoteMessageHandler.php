@@ -8,6 +8,7 @@ use App\ActivityPub\Message\SendMessage;
 use App\Entity\Follower;
 use App\Repository\BookmarkRepository;
 use App\Repository\FollowerRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
@@ -24,6 +25,7 @@ final readonly class SendCreateNoteMessageHandler
         private CreateActivityBundler $createActivityBundler,
         private FollowerRepository $followerRepository,
         private LoggerInterface $logger,
+        private EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -54,6 +56,9 @@ final readonly class SendCreateNoteMessageHandler
                 ]);
             }
         }
+
+        $bookmark->sentToSharedInboxes = $urls;
+        $this->entityManager->flush();
 
         foreach (array_unique($urls) as $url) {
             $this->messageBus->dispatch(new SendMessage(

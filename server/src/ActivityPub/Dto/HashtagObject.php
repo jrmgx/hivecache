@@ -2,9 +2,6 @@
 
 namespace App\ActivityPub\Dto;
 
-/**
- * @see NoteObject.json
- */
 final class HashtagObject
 {
     public string $type = 'Hashtag';

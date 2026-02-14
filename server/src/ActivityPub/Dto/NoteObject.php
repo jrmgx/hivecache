@@ -2,9 +2,6 @@
 
 namespace App\ActivityPub\Dto;
 
-/**
- * @see NoteObject.json
- */
 final class NoteObject
 {
     public string $type = 'Note';

@@ -135,19 +135,20 @@ class BookmarkRepository extends ServiceEntityRepository
 
     /**
      * @param string $url The url will be normalized
+     *
+     * @return array<int, Bookmark>
      */
-    public function deleteByAccountAndUrl(Account $account, string $url): void
+    public function findByAccountAndUrl(Account $account, string $url): array
     {
         $normalizedUrl = UrlHelper::normalize($url);
 
-        $this->createQueryBuilder('o')
+        return $this->createQueryBuilder('o')
             ->andWhere('o.account = :account')
             ->setParameter('account', $account)
             ->andWhere('o.normalizedUrl = :normalizedUrl')
             ->setParameter('normalizedUrl', $normalizedUrl)
-            ->delete()
             ->getQuery()
-            ->execute()
+            ->getResult()
         ;
     }
 

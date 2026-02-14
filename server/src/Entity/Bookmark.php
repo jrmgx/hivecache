@@ -134,6 +134,10 @@ class Bookmark
     #[ORM\Column]
     public string $instance;
 
+    /** @var ?array<int, string> */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    public ?array $sentToSharedInboxes = null;
+
     /** @var Collection<int, UserTag> */
     #[ORM\ManyToMany(targetEntity: UserTag::class)]
     public Collection $userTags;

@@ -10,7 +10,9 @@ use App\Api\UrlGenerator;
 use App\Entity\Bookmark;
 use App\Entity\UserTimelineEntry;
 use App\Factory\AccountFactory;
+use App\Factory\BookmarkFactory;
 use App\Factory\UserFactory;
+use App\Factory\UserTimelineEntryFactory;
 use App\Tests\BaseApiTestCase;
 
 class SharedInboxControllerTest extends BaseApiTestCase
@@ -155,5 +157,85 @@ class SharedInboxControllerTest extends BaseApiTestCase
             'bookmark' => $bookmark,
         ]);
         $this->assertNotNull($timelineEntry2, 'Timeline entry should exist for localuser2');
+    }
+
+    public function testInboxPostDeleteRemovesBookmarkAndTimelineEntries(): void
+    {
+        $keysGenerator = $this->container->get(KeysGenerator::class);
+        $keyPair = $keysGenerator->generate();
+
+        $externalActorUri = 'https://external.example.com/users/testuser';
+        $externalAccount = AccountFactory::createOne([
+            'uri' => $externalActorUri,
+            'username' => 'testuser',
+            'instance' => 'external.example.com',
+            'publicKey' => $keyPair['public'],
+            'privateKey' => $keyPair['private'],
+        ]);
+
+        $bookmarkUrl = 'https://example.com/article';
+        $bookmark = BookmarkFactory::createOne([
+            'account' => $externalAccount,
+            'title' => 'Test Article',
+            'url' => $bookmarkUrl,
+            'isPublic' => true,
+            'instance' => 'external.example.com',
+        ]);
+
+        $localUser1 = UserFactory::createOne(['username' => 'localuser1']);
+        $localUser2 = UserFactory::createOne(['username' => 'localuser2']);
+        UserTimelineEntryFactory::createOne(['owner' => $localUser1, 'bookmark' => $bookmark]);
+        UserTimelineEntryFactory::createOne(['owner' => $localUser2, 'bookmark' => $bookmark]);
+
+        $bookmarkUri = 'https://external.example.com/users/testuser/bookmarks/123';
+        $tombstoneId = $bookmarkUri . '#' . $bookmarkUrl;
+
+        $deleteActivity = [
+            '@context' => ['https://www.w3.org/ns/activitystreams'],
+            'id' => $bookmarkUri . '#delete',
+            'type' => 'Delete',
+            'actor' => $externalActorUri,
+            'object' => [
+                'type' => 'Tombstone',
+                'id' => $tombstoneId,
+            ],
+        ];
+
+        $payload = json_encode($deleteActivity, \JSON_UNESCAPED_SLASHES);
+        $inboxPath = '/ap/inbox';
+        $inboxUrl = 'https://' . $this->instanceHost . $inboxPath;
+        $signatureHeaders = SignatureHelper::build(
+            $inboxUrl,
+            $externalAccount->keyId,
+            $externalAccount->privateKey,
+            $payload
+        );
+
+        $server = [
+            'CONTENT_TYPE' => 'application/activity+json',
+            'HTTP_HOST' => $this->instanceHost,
+            'HTTP_DATE' => $signatureHeaders['Date'],
+            'HTTP_DIGEST' => $signatureHeaders['Digest'],
+            'HTTP_SIGNATURE' => $signatureHeaders['Signature'],
+        ];
+
+        $bookmarkCountBefore = $this->entityManager->getRepository(Bookmark::class)->count([]);
+        $timelineCountBefore = $this->entityManager->getRepository(UserTimelineEntry::class)->count([]);
+
+        $this->client->request('POST', '/ap/inbox', server: $server, content: $payload);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertResponseHeaderSame('Content-Type', 'application/activity+json');
+
+        $this->entityManager->clear();
+
+        $bookmarkCountAfter = $this->entityManager->getRepository(Bookmark::class)->count([]);
+        $this->assertEquals($bookmarkCountBefore - 1, $bookmarkCountAfter, 'Bookmark should be deleted');
+
+        $timelineCountAfter = $this->entityManager->getRepository(UserTimelineEntry::class)->count([]);
+        $this->assertEquals($timelineCountBefore - 2, $timelineCountAfter, 'Timeline entries should be deleted');
+
+        $remainingBookmark = $this->entityManager->getRepository(Bookmark::class)->findOneBy(['url' => $bookmarkUrl]);
+        $this->assertNull($remainingBookmark, 'Bookmark should no longer exist');
     }
 }

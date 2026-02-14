@@ -31,7 +31,7 @@ final readonly class ReceiveCreateNoteMessageHandler
         $createNoteActivity = $this->serializer->deserialize($message->payload, CreateNoteActivity::class, 'json');
         // For now, we only handle Create Note type
         if ('Note' !== $createNoteActivity->object->type) {
-            throw new UnrecoverableMessageHandlingException('Not an Create Note type.');
+            throw new UnrecoverableMessageHandlingException('Not a Create Note type.');
         }
 
         $bookmark = $this->noteObjectBundler->unbundleToBookmark($createNoteActivity->object);

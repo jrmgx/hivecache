@@ -6,9 +6,6 @@ namespace App\ActivityPub\Dto;
 
 use Symfony\Component\Serializer\Attribute\SerializedName;
 
-/**
- * @see CreateNoteActivity.json
- */
 final class CreateNoteActivity
 {
     /** @var array<mixed> */
