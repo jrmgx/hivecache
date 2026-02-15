@@ -94,6 +94,38 @@ class UserTest extends BaseApiTestCase
         $this->assertUserOwnerResponse($json);
     }
 
+    public function testInactiveUserCannotLogin(): void
+    {
+        $this->createUserAccountWithPassword('inactiveuser', 'password', active: false);
+
+        $this->request('POST', '/auth', [
+            'headers' => ['Content-Type' => 'application/json'],
+            'json' => [
+                'username' => 'inactiveuser',
+                'password' => 'password',
+            ],
+        ]);
+        $this->assertResponseStatusCodeSame(401);
+
+        $json = $this->getResponseArray();
+        $message = $json['message'] ?? $json['error']['message'] ?? '';
+        $this->assertStringContainsString('not activated', $message);
+    }
+
+    public function testInactiveUserCannotAccessApi(): void
+    {
+        [$user, $token] = $this->createAuthenticatedUserAccount('willbedeactivated', 'password');
+        $user->active = false;
+        $this->entityManager->flush();
+
+        $this->request('GET', '/users/me', ['auth_bearer' => $token]);
+        $this->assertResponseStatusCodeSame(401);
+
+        $json = $this->getResponseArray();
+        $message = $json['message'] ?? $json['error']['message'] ?? '';
+        $this->assertStringContainsString('not activated', $message);
+    }
+
     public function testDeleteOwnProfile(): void
     {
         [$user, $token] = $this->createAuthenticatedUserAccount('test', 'test');
@@ -275,6 +307,30 @@ class UserTest extends BaseApiTestCase
         $this->assertResponseStatusCodeSame(422, 'Updating username to 33 characters should be rejected.');
     }
 
+    public function testRegisterWithMotivations(): void
+    {
+        $uniqUsername = uniqid('user');
+        $this->request('POST', '/register', [
+            'headers' => ['Content-Type' => 'application/json'],
+            'json' => [
+                'username' => $uniqUsername,
+                'password' => 'password',
+                'motivations' => 'I want to save my bookmarks.',
+            ],
+        ]);
+        $this->assertResponseIsSuccessful();
+
+        $json = $this->getResponseArray();
+        $this->assertEquals($uniqUsername, $json['username']);
+        $this->assertUserCreateResponse($json);
+
+        $userRepository = $this->container->get(UserRepository::class);
+        $user = $userRepository->findOneBy(['username' => $uniqUsername]);
+        $this->assertNotNull($user);
+        $this->assertTrue($user->active);
+        $this->assertEquals('I want to save my bookmarks.', $user->motivations);
+    }
+
     public function testCreateUserWithMeta(): void
     {
         $uniqUsername = uniqid('user');
@@ -386,7 +442,7 @@ class UserTest extends BaseApiTestCase
         $this->assertArrayHasKey('query', $parsedUrl, 'Location URL should have query parameters');
         parse_str($parsedUrl['query'], $queryParams);
         $this->assertArrayHasKey('iri', $queryParams, 'Query parameters should contain iri');
-        $this->assertStringStartsWith('https://', $queryParams['iri'], 'iri parameter should be an absolute URL starting with http://');
+        $this->assertStringStartsWith('https://', $queryParams['iri'], 'iri parameter should be an absolute URL starting with https://');
     }
 
     private function getUserRepository()

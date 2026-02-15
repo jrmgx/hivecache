@@ -20,6 +20,7 @@ enum RouteAction: string
     case Delete = 'delete';
 
     // Public API
+    case Config = 'config';
     case This = 'this';
     case Other = 'other';
     case Trending = 'trending';

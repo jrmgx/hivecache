@@ -44,5 +44,7 @@ class UserCrudController extends AbstractCrudController
         yield IdField::new('id');
         yield TextField::new('username');
         yield BooleanField::new('isPublic');
+        yield BooleanField::new('active');
+        yield TextField::new('motivations')->onlyOnDetail();
     }
 }

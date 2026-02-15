@@ -43,6 +43,7 @@ use Symfony\Component\Validator\Constraints as Assert;
         new OA\Property(property: 'password', type: 'string', minLength: 8, description: 'Password'),
         new OA\Property(property: 'isPublic', type: 'boolean', description: 'Whether the profile is public', default: false),
         new OA\Property(property: 'meta', type: 'object', description: 'Additional metadata', additionalProperties: true),
+        new OA\Property(property: 'motivations', type: 'string', description: 'User motivations (required when instance ask for it before registration)'),
     ]
 )]
 #[Context([DateTimeNormalizer::FORMAT_KEY => \DateTimeInterface::ATOM])]
@@ -75,6 +76,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['user:create', 'user:show:private', 'user:update'])]
     #[ORM\Column(type: Types::JSON, options: ['default' => '{}'])]
     public array $meta = [];
+
+    #[Groups(['user:create'])]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    public ?string $motivations = null;
+
+    #[ORM\Column(options: ['default' => true])]
+    public bool $active = true;
 
     /**
      * This field is used to validate the JWT so changing it allows to invalidate the JWT.

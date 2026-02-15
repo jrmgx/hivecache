@@ -28,12 +28,14 @@ final readonly class UserFactory
      *
      * @return array{0: User, 1: Account}
      */
-    public function new(string $username, string $password, bool $isPublic = false, array $meta = []): array
+    public function new(string $username, string $password, bool $isPublic = false, array $meta = [], bool $active = true, ?string $motivations = null): array
     {
         $user = new User();
         $user->username = $username;
         $user->isPublic = $isPublic;
         $user->meta = $meta;
+        $user->active = $active;
+        $user->motivations = $motivations;
         $user->setPassword($this->passwordHasher->hashPassword($user, $password));
         $this->entityManager->persist($user);
 

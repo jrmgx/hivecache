@@ -16,6 +16,57 @@
         }
     ],
     "paths": {
+        "/url": {
+            "get": {
+                "description": "New endpoint",
+                "responses": {
+                    "200": {
+                        "description": "New response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "": ""
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/url": {
+            "get": {
+                "description": "New endpoint",
+                "responses": {
+                    "200": {
+                        "description": "New response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "": ""
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/url": {
+            "get": {
+                "description": "New endpoint",
+                "responses": {
+                    "200": {
+                        "description": "New response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "": ""
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/auth": {
             "post": {
                 "tags": [
@@ -83,6 +134,42 @@
                     },
                     "401": {
                         "description": "Authentication failed - invalid credentials"
+                    }
+                }
+            }
+        },
+        "/instance/config": {
+            "get": {
+                "tags": [
+                    "Instance"
+                ],
+                "summary": "Get instance configuration",
+                "description": "Returns instance configuration including registration settings.",
+                "operationId": "getInstanceConfig",
+                "responses": {
+                    "200": {
+                        "description": "Instance configuration",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "askForMotivation": {
+                                            "description": "Whether motivations are required for registration",
+                                            "type": "boolean"
+                                        },
+                                        "accountLimit": {
+                                            "description": "Maximum number of accounts allowed on this instance",
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "askForMotivation": false,
+                                    "accountLimit": 100
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -2921,6 +3008,10 @@
                         "description": "Additional metadata",
                         "type": "object",
                         "additionalProperties": true
+                    },
+                    "motivations": {
+                        "description": "User motivations (required when instance ask for it before registration)",
+                        "type": "string"
                     }
                 },
                 "type": "object"

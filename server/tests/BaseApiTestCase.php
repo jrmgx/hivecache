@@ -36,12 +36,12 @@ abstract class BaseApiTestCase extends WebTestCase
     /**
      * @return array{0: User, 1: Account}
      */
-    protected function createUserAccountWithPassword(string $username, string $password): array
+    protected function createUserAccountWithPassword(string $username, string $password, bool $isPublic = false, array $meta = [], bool $active = true): array
     {
         /** @var UserFactory $userFactory */
         $userFactory = $this->container->get(UserFactory::class);
 
-        [$user, $account] = $userFactory->new($username, $password);
+        [$user, $account] = $userFactory->new($username, $password, $isPublic, $meta, $active);
 
         // We need to persist those again because in our factory we are not in the same entity manager
         $this->entityManager->persist($user);

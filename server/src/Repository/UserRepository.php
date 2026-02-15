@@ -30,10 +30,12 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         ;
     }
 
-    public function countAll(): int
+    public function countActive(): int
     {
         return (int) $this->createQueryBuilder('o')
             ->select('COUNT(o.id)')
+            ->andWhere('o.active = :true')
+            ->setParameter('true', true)
             ->getQuery()
             ->getSingleScalarResult()
         ;

@@ -6,15 +6,49 @@ use App\Api\Config\RouteAction;
 use App\Api\Config\RouteType;
 use App\Entity\Bookmark;
 use OpenApi\Attributes as OA;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\Routing\Attribute\Route;
 
-// TODO add tests
 #[Route(path: '/instance', name: RouteType::Instance->value)]
 final class InstanceController extends BookmarkController
 {
+    #[OA\Get(
+        path: '/instance/config',
+        tags: ['Instance'],
+        operationId: 'getInstanceConfig',
+        summary: 'Get instance configuration',
+        description: 'Returns instance configuration including registration settings.',
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Instance configuration',
+                content: new OA\JsonContent(
+                    type: 'object',
+                    properties: [
+                        new OA\Property(property: 'askForMotivation', type: 'boolean', description: 'Whether motivations are required for registration'),
+                        new OA\Property(property: 'accountLimit', type: 'integer', description: 'Maximum number of accounts allowed on this instance'),
+                    ],
+                    example: ['askForMotivation' => false, 'accountLimit' => 100],
+                )
+            ),
+        ]
+    )]
+    #[Route(path: '/config', name: RouteAction::Config->value, methods: ['GET'])]
+    public function config(
+        #[Autowire('%env(int:ACCOUNT_LIMIT)%')]
+        int $accountLimit,
+        #[Autowire('%env(bool:ASK_FOR_MOTIVATION)%')]
+        bool $askForMotivation,
+    ): JsonResponse {
+        return new JsonResponse([
+            'askForMotivation' => $askForMotivation,
+            'accountLimit' => $accountLimit,
+        ]);
+    }
+
     #[OA\Get(
         path: '/instance/this',
         tags: ['Instance'],

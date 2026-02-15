@@ -11,6 +11,18 @@ use Doctrine\Common\Collections\ArrayCollection;
 
 class InstanceTest extends BaseApiTestCase
 {
+    public function testGetInstanceConfig(): void
+    {
+        $this->request('GET', '/instance/config');
+        $this->assertResponseIsSuccessful();
+
+        $json = $this->getResponseArray();
+        $this->assertArrayHasKey('askForMotivation', $json);
+        $this->assertIsBool($json['askForMotivation']);
+        $this->assertArrayHasKey('accountLimit', $json);
+        $this->assertIsInt($json['accountLimit']);
+    }
+
     public function testInstanceThisEndpointFiltersPrivateTags(): void
     {
         $user = UserFactory::createOne(['username' => 'testuser']);

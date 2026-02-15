@@ -3,7 +3,7 @@
  * Uses shared API client with localStorage adapter
  */
 
-import { createApiClient, createLocalStorageAdapter, getCursorFromUrl, type ApiClient, type BookmarksResponse, type Bookmark, type Tag, type UserOwner } from '@shared';
+import { createApiClient, createLocalStorageAdapter, getCursorFromUrl, type ApiClient, type BookmarksResponse, type Bookmark, type InstanceConfig, type Tag, type UserOwner } from '@shared';
 
 const storageAdapter = createLocalStorageAdapter();
 
@@ -58,9 +58,24 @@ export const login = async (instanceUrl: string, username: string, password: str
 };
 
 /**
+ * Get instance configuration (askForMotivation, accountLimit)
+ */
+export const getInstanceConfig = async (instanceUrl: string): Promise<InstanceConfig> => {
+  const normalizedUrl = instanceUrl.trim().replace(/\/$/, '');
+  const response = await fetch(`${normalizedUrl}/instance/config`, {
+    method: 'GET',
+    headers: { 'Accept': 'application/json' },
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to fetch instance config: ${response.status}`);
+  }
+  return response.json();
+};
+
+/**
  * Register a new user account
  */
-export const register = async (instanceUrl: string, userData: { password: string; username: string }): Promise<UserOwner> => {
+export const register = async (instanceUrl: string, userData: { password: string; username: string; motivations?: string }): Promise<UserOwner> => {
   // Save instance URL first
   await storageAdapter.setBaseUrl(instanceUrl);
 

@@ -1,7 +1,7 @@
 import { useState, type FormEvent, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ErrorAlert } from '../components/ErrorAlert/ErrorAlert';
-import { register, ApiError } from '../services/api';
+import { register, getInstanceConfig, ApiError } from '../services/api';
 import { isAuthenticated, getBaseUrl } from '../services/auth';
 
 export const Register = () => {
@@ -11,6 +11,8 @@ export const Register = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [motivations, setMotivations] = useState('');
+  const [askForMotivation, setAskForMotivation] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errorStatus, setErrorStatus] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -21,16 +23,32 @@ export const Register = () => {
       if (isAuthenticated()) {
         navigate('/me');
       } else {
-        // Load stored instance URL if available
         const storedInstanceUrl = await getBaseUrl();
         if (storedInstanceUrl) {
           setInstanceUrl(storedInstanceUrl);
+          try {
+            const config = await getInstanceConfig(storedInstanceUrl);
+            setAskForMotivation(config.askForMotivation);
+          } catch {
+            setAskForMotivation(false);
+          }
         }
         setCheckingAuth(false);
       }
     };
     checkAuthAndLoadInstance();
   }, [navigate]);
+
+  useEffect(() => {
+    const url = instanceUrl.trim().replace(/\/$/, '');
+    if (!url || !url.startsWith('http')) {
+      setAskForMotivation(false);
+      return;
+    }
+    getInstanceConfig(url)
+      .then((config) => setAskForMotivation(config.askForMotivation))
+      .catch(() => setAskForMotivation(false));
+  }, [instanceUrl]);
 
   if (checkingAuth) {
     return (
@@ -62,10 +80,18 @@ export const Register = () => {
         return;
       }
 
-      // Normalize instance URL (remove trailing slash)
-      const normalizedUrl = instanceUrl.trim().replace(/\/$/, '');
+      if (askForMotivation && !motivations.trim()) {
+        setError('Motivations are required for registration on this instance.');
+        return;
+      }
 
-      await register(normalizedUrl, { password, username });
+      const normalizedUrl = instanceUrl.trim().replace(/\/$/, '');
+      const userData: { password: string; username: string; motivations?: string } = { password, username };
+      if (askForMotivation) {
+        userData.motivations = motivations.trim();
+      }
+
+      await register(normalizedUrl, userData);
       // After successful registration, redirect to login
       navigate('/login', { state: { message: 'Account created successfully. Please login.' } });
     } catch (err: unknown) {
@@ -151,6 +177,24 @@ export const Register = () => {
                       disabled={isLoading}
                     />
                   </div>
+                  {askForMotivation && (
+                    <div className="mb-3">
+                      <label htmlFor="motivations" className="form-label">
+                        Motivations <span className="text-danger">*</span>
+                      </label>
+                      <textarea
+                        className="form-control"
+                        id="motivations"
+                        rows={4}
+                        value={motivations}
+                        onChange={(e) => setMotivations(e.target.value)}
+                        required
+                        disabled={isLoading}
+                        placeholder="Why do you want to join this instance?"
+                      />
+                      <small className="form-text text-muted">Please describe your motivations for joining this instance</small>
+                    </div>
+                  )}
                   <button type="submit" className="btn btn-primary w-100" disabled={isLoading}>
                     {isLoading ? (
                       <>

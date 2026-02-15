@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route(path: '/register', name: RouteType::Register->value)]
@@ -27,8 +28,10 @@ final class RegisterController extends AbstractController
         private readonly EntityManagerInterface $entityManager,
         private readonly JsonResponseBuilder $jsonResponseBuilder,
         private readonly UserFactory $userFactory,
-        #[Autowire('%env(ACCOUNT_LIMIT)%')]
+        #[Autowire('%env(int:ACCOUNT_LIMIT)%')]
         private readonly int $accountLimit,
+        #[Autowire('%env(bool:ASK_FOR_MOTIVATION)%')]
+        private readonly bool $askForMotivation,
     ) {
     }
 
@@ -50,6 +53,7 @@ final class RegisterController extends AbstractController
                     new OA\Property(property: 'password', type: 'string', minLength: 8, description: 'User password'),
                     new OA\Property(property: 'isPublic', type: 'boolean', description: 'Whether the profile is public', default: false),
                     new OA\Property(property: 'meta', type: 'object', description: 'Additional metadata as key-value pairs', additionalProperties: true),
+                    new OA\Property(property: 'motivations', type: 'string', description: 'User motivations (required when instance ask for it before registration)'),
                 ],
                 example: ['username' => 'janedoe', 'password' => 'password']
             )
@@ -112,7 +116,7 @@ final class RegisterController extends AbstractController
         )]
         User $userInput,
     ): JsonResponse {
-        if ($this->userRepository->countAll() >= $this->accountLimit) {
+        if ($this->userRepository->countActive() >= $this->accountLimit) {
             throw new AccessDeniedHttpException('This instance does not allow new accounts.');
         }
 
@@ -120,11 +124,18 @@ final class RegisterController extends AbstractController
             throw new ConflictHttpException('Username already exists.');
         }
 
+        if ($this->askForMotivation && (null === $userInput->motivations || '' === mb_trim($userInput->motivations))) {
+            throw new UnprocessableEntityHttpException('Motivations are required for registration on this instance.');
+        }
+
+        $active = !$this->askForMotivation;
         [$user] = $this->userFactory->new(
             $userInput->username,
             $userInput->getPlainPassword() ?? throw new \LogicException(),
             $userInput->isPublic,
-            $userInput->meta
+            $userInput->meta,
+            $active,
+            $userInput->motivations,
         );
 
         $this->entityManager->flush();

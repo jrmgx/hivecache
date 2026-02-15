@@ -151,6 +151,15 @@ export interface UserCreate {
   password: string;
   isPublic?: boolean;
   meta?: ApiTagMeta;
+  motivations?: string;
+}
+
+/**
+ * InstanceConfig - Instance configuration from GET /instance/config
+ */
+export interface InstanceConfig {
+  askForMotivation: boolean;
+  accountLimit: number;
 }
 
 /**
