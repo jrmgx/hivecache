@@ -14,6 +14,7 @@ They all use the same entities, and they must all respect the rules described be
 # Rules
 
 - Use PHP 8.4 syntax
+- Never use `empty` except if it is the only option
 - Use positional and named argument instead of default values
 - Use last Symfony version
 - Use attributes when possible, prefer attribute over config files

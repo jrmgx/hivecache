@@ -51,6 +51,7 @@ and empowers users with control over their data through decentralization.
 - **Privacy Controls**: Public and private bookmarks (end-to-end encryption coming soon)
 - **Social**: Follow users and discover bookmarks across instances
 - **Decentralized**: Uses ActivityPub protocol for federation between instances
+- **Open Source**: Find the code and contribute at [github.com/hivecache](https://github.com/jrmgx/hivecache)
 
 ## Next Step
 

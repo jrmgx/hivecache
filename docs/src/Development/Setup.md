@@ -1,9 +1,11 @@
 # Development Setup
 
-This project uses [docker-starter](https://github.com/jolicode/docker-starter)
-and [castor](https://github.com/jolicode/castor) for ease of developer experience.
+Get the code at [github.com/hivecache](https://github.com/jrmgx/hivecache)
 
 ## Requirements
+
+This project uses [docker-starter](https://github.com/jolicode/docker-starter)
+and [castor](https://github.com/jolicode/castor) for ease of developer experience.
 
 A Docker environment is provided and requires you to have these tools available:
 
