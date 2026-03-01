@@ -40,7 +40,7 @@ final readonly class NoteObjectBundler
         $scheme = parse_url($url, \PHP_URL_SCHEME) . '://';
         $urlVisible = preg_replace("`^{$scheme}`", '', $url);
         $id = $this->urlGenerator->generate(
-            RouteType::Profile,
+            RouteType::ProfileBookmarks,
             RouteAction::Get,
             ['username' => $actorAccount->username, 'id' => $bookmark->id],
         );

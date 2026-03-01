@@ -47,5 +47,6 @@ class CreateActivityBundlerTest extends KernelTestCase
         $this->assertContains($follower1->account->uri, $createActivity->cc);
         $this->assertContains($follower2->account->uri, $createActivity->cc);
         $this->assertEquals($createActivity->object->published, $createActivity->published);
+        $this->assertStringContainsString('/' . $bookmark->id, $createActivity->object->id);
     }
 }
