@@ -42,7 +42,7 @@ final readonly class UrlHelper
     }
 
     /**
-     * Opinionated: remove `www` and `m` (for mobile most of the time) from domain to normalize a bit.
+     * Opinionated: remove `www` and `m` (for mobile most of the time) from domain to normalize a bit more.
      */
     public static function calculateDomain(string $url): string
     {

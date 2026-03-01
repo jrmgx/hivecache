@@ -16,57 +16,6 @@
         }
     ],
     "paths": {
-        "/url": {
-            "get": {
-                "description": "New endpoint",
-                "responses": {
-                    "200": {
-                        "description": "New response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "": ""
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/url": {
-            "get": {
-                "description": "New endpoint",
-                "responses": {
-                    "200": {
-                        "description": "New response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "": ""
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/url": {
-            "get": {
-                "description": "New endpoint",
-                "responses": {
-                    "200": {
-                        "description": "New response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "": ""
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/auth": {
             "post": {
                 "tags": [
