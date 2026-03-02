@@ -13,16 +13,16 @@
         "ext-mbstring": "*",
         "ext-openssl": "*",
         "ext-zlib": "*",
-        "doctrine/dbal": "^3.10.4",
-        "doctrine/doctrine-bundle": "^2.18.1",
+        "doctrine/dbal": "^3.10.5",
+        "doctrine/doctrine-bundle": "^2.18.2",
         "doctrine/doctrine-migrations-bundle": "^3.7",
-        "doctrine/orm": "^3.5.8",
-        "easycorp/easyadmin-bundle": "^4.28",
-        "gotenberg/gotenberg-php": "^2.15.1",
-        "league/flysystem-bundle": "^3.6.1",
-        "lexik/jwt-authentication-bundle": ">=3.1.1",
-        "phpdocumentor/reflection-docblock": "^5.6.5",
-        "phpstan/phpdoc-parser": "^2.3",
+        "doctrine/orm": "^3.6.2",
+        "easycorp/easyadmin-bundle": "^4.29.2",
+        "gotenberg/gotenberg-php": "^2.17.0",
+        "league/flysystem-bundle": "^3.6.2",
+        "lexik/jwt-authentication-bundle": ">=3.2.0",
+        "phpdocumentor/reflection-docblock": "^5.6.6",
+        "phpstan/phpdoc-parser": "^2.3.2",
         "symfony/asset": "7.4.*",
         "symfony/console": "7.4.*",
         "symfony/doctrine-messenger": "7.4.*",
@@ -48,9 +48,9 @@
         "symfony/validator": "7.4.*",
         "symfony/yaml": "7.4.*",
         "symfonycasts/reset-password-bundle": "^1.24",
-        "twig/extra-bundle": "^2.12|^3.22.2",
-        "twig/twig": "^2.12|^3.22.1",
-        "zircote/swagger-php": "^5.7.6"
+        "twig/extra-bundle": "^2.12|^3.23.0",
+        "twig/twig": "^2.12|^3.23.0",
+        "zircote/swagger-php": "^5.8.3"
     },
     "config": {
         "allow-plugins": {
@@ -104,18 +104,18 @@
     },
     "require-dev": {
         "ext-pcntl": "*",
-        "dama/doctrine-test-bundle": "^8.4.1",
+        "dama/doctrine-test-bundle": "^8.6.0",
         "doctrine/doctrine-fixtures-bundle": "^4.3.1",
-        "hautelook/alice-bundle": "^2.16",
+        "hautelook/alice-bundle": "^2.17.2",
         "jrmgx/interactive-bundle": "^1.1",
-        "justinrainbow/json-schema": "^6.6.3",
-        "phpunit/phpunit": "^12.5.4",
+        "justinrainbow/json-schema": "^6.7.2",
+        "phpunit/phpunit": "^12.5.14",
         "symfony/browser-kit": "7.4.*",
         "symfony/css-selector": "7.4.*",
         "symfony/debug-bundle": "7.4.*",
-        "symfony/maker-bundle": "^1.65.1",
+        "symfony/maker-bundle": "^1.66.0",
         "symfony/stopwatch": "7.4.*",
         "symfony/web-profiler-bundle": "7.4.*",
-        "zenstruck/foundry": "^2.8.2"
+        "zenstruck/foundry": "^2.9.2"
     }
 }
