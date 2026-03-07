@@ -10,6 +10,25 @@ use function Castor\context;
 use function Castor\io;
 use function Castor\run;
 
+#[AsTask(description: 'Create a transparent PNG version of the icon from the SVG')]
+function icon_png(?string $svgPath = null, ?string $pngPath = null, int $size = 1024): void
+{
+    $context = context()->withWorkingDirectory('./images');
+
+    $projectRoot = \dirname(__DIR__);
+    $svgPath ??= $projectRoot . '/images/icon.svg';
+    $pngPath ??= $projectRoot . '/images/icon.png';
+
+    io()->title("Creating transparent PNG from {$svgPath} to {$pngPath}");
+    if (!is_file($svgPath)) {
+        throw new \RuntimeException("SVG not found: {$svgPath}");
+    }
+
+    run("rsvg-convert -w {$size} -h {$size} -o '{$pngPath}' '{$svgPath}'", context: $context);
+
+    io()->success("Created {$pngPath}");
+}
+
 #[AsTask(description: 'Copy global assets to each project')]
 function copy_assets(): void
 {
@@ -49,6 +68,9 @@ function copy_assets(): void
     if (false === file_put_contents($clientIconPath, $svgWithPadding)) {
         throw new \RuntimeException("Failed to write {$clientIconPath}");
     }
+
+    $appleIconPath = $projectRoot . '/apple/Shared (App)/Assets.xcassets/icon.appiconset/icon.png';
+    icon_png($clientIconPath, $appleIconPath);
 }
 
 /**
