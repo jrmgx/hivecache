@@ -39,6 +39,17 @@ Find your bookmarks, either by tags, or with fuzzy search across title, URL, or 
 The web client is typically available at your HiveCache instance URL. For example:
 - `https://app.hivecache.net`
 
+## URLs
+
+If, for some reason you need to build the client URL by hand, those are the URLs used on the client:
+
+- /social/{username}@{instance}                                          
+- /social/{username}@{instance} 
+- /social/{username}@{instance}?tags=...
+- /social/{username}@{instance}/bookmarks/{id}                           
+- /social/{username}@{instance}/tags                                     
+- /social/{username}@{instance}?tags={slug}
+
 ## Tips
 
 > [!TIP]

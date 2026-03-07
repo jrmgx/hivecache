@@ -1,21 +1,49 @@
 # ActivityPub Implementation
 
-Before starting, see [Limitations](../Limitations.md) to know more about the limit of the ActivityPub implementation.
+Before starting, see [Limitations](../Limitations.md) 
+to know more about the limit of the ActivityPub implementation.
 
 ## URLs
 
-Those are the URLs implemented by the underlying ActivityPub server: 
+Those are the URLs implemented by the underlying ActivityPub server:
+
+where `username` can be either the current instance username, like: `janedoe`<br>
+— or — the full username@instance version, like: `janedoe@instance.ltd`
+
+**ActivityPub endpoints:**
 
 - instance.ltd/ap/u/{username}/followers
 - instance.ltd/ap/u/{username}/following
 - instance.ltd/ap/u/{username}/inbox
 - instance.ltd/ap/u/{username}/outbox
-- instance.ltd/profile/{username}
 - instance.ltd/ap/inbox
 - instance.ltd/.well-known/webfinger
 
-where `username` can be either the current instance username, like: `janedoe`<br>
-— or — the full username@instance version, like: `janedoe@instance.ltd`
+**Profile endpoints (with content negotiation):**
+
+Content negotiation endpoints use the `Accept` header to determine the response:
+
+| Accept header                                      | Response               |
+| -------------------------------------------------- | ---------------------- |
+| `text/html` or browser default                     | Redirect to client app |
+| `application/activity+json`, `application/ld+json` | ActivityPub JSON       |
+| `application/json`                                 | REST API JSON          |
+
+- instance.ltd/profile/{username}
+- instance.ltd/profile/{username}/bookmarks
+- instance.ltd/profile/{username}/bookmarks/{id}
+- instance.ltd/profile/{username}/tags
+- instance.ltd/profile/{username}/tags/{slug}
+
+**Redirect targets:**
+
+| API URL                            | Client redirect                                                         |
+| ---------------------------------- | ----------------------------------------------------------------------- |
+| /profile/{username}                | /social/{username}@{instance}                                           |
+| /profile/{username}/bookmarks      | /social/{username}@{instance} or /social/{username}@{instance}?tags=... |
+| /profile/{username}/bookmarks/{id} | /social/{username}@{instance}/bookmarks/{id}                            |
+| /profile/{username}/tags           | /social/{username}@{instance}/tags                                      |
+| /profile/{username}/tags/{slug}    | /social/{username}@{instance}?tags={slug}                               |
 
 ## Flow and Related Code
 

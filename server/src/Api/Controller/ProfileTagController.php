@@ -55,8 +55,13 @@ final class ProfileTagController extends TagController
     )]
     #[Route(path: '', name: RouteAction::Collection->value, methods: ['GET'])]
     public function collection(
+        Request $request,
         #[MapEntity(mapping: ['username' => 'username'])] Account $account,
-    ): JsonResponse {
+    ): JsonResponse|RedirectResponse {
+        if (RequestHelper::accepts($request, ['text/html'])) {
+            return new RedirectResponse($this->clientUrlHelper->tags($account));
+        }
+
         $user = $account->owner ?? throw new NotFoundHttpException();
 
         return $this->collectionCommon($user, ['tag:show:public'], onlyPublic: true);
@@ -132,13 +137,7 @@ final class ProfileTagController extends TagController
         $user = $account->owner ?? throw new NotFoundHttpException();
 
         if (RequestHelper::accepts($request, ['text/html'])) {
-            $iri = $this->urlGenerator->generate(
-                RouteType::ProfileTags,
-                RouteAction::Get,
-                ['slug' => $slug, 'username' => $user->username]
-            );
-
-            return new RedirectResponse($this->preferredClient . "?iri={$iri}");
+            return new RedirectResponse($this->clientUrlHelper->tagFilter($account, $slug));
         }
 
         $tag = $this->userTagRepository->findOneByOwnerAndSlug($user, $slug, onlyPublic: true)

@@ -2,6 +2,7 @@
 
 namespace App\Api\Controller;
 
+use App\Api\Helper\ClientUrlHelper;
 use App\Api\InstanceTagService;
 use App\Api\Response\JsonResponseBuilder;
 use App\Api\UrlGenerator;
@@ -24,6 +25,7 @@ abstract class TagController extends AbstractController
         protected readonly EntityManagerInterface $entityManager,
         protected readonly JsonResponseBuilder $jsonResponseBuilder,
         protected readonly UrlGenerator $urlGenerator,
+        protected readonly ClientUrlHelper $clientUrlHelper,
     ) {
     }
 

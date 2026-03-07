@@ -4,10 +4,6 @@
 
 namespace App\Admin\Controller;
 
-use App\Entity\Admin;
-use App\Entity\Bookmark;
-use App\Entity\InstanceTag;
-use App\Entity\User;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
@@ -31,9 +27,9 @@ class DashboardController extends AbstractDashboardController
 
     public function configureMenuItems(): iterable
     {
-        yield MenuItem::linkToCrud('Users', 'fas fa-list', User::class);
-        yield MenuItem::linkToCrud('Admins', 'fas fa-list', Admin::class);
-        yield MenuItem::linkToCrud('Tags', 'fas fa-list', InstanceTag::class);
-        yield MenuItem::linkToCrud('Bookmarks', 'fas fa-list', Bookmark::class);
+        yield MenuItem::linkTo('Users', 'fas fa-list', UserCrudController::class);
+        yield MenuItem::linkTo('Admins', 'fas fa-list', AdminCrudController::class);
+        yield MenuItem::linkTo('Tags', 'fas fa-list', InstanceTagCrudController::class);
+        yield MenuItem::linkTo('Bookmarks', 'fas fa-list', BookmarkCrudController::class);
     }
 }

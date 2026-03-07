@@ -4,15 +4,14 @@ namespace App\Api\Controller;
 
 use App\Api\Config\RouteAction;
 use App\Api\Config\RouteType;
+use App\Api\Helper\ClientUrlHelper;
 use App\Api\Helper\RequestHelper;
 use App\Api\Response\ActivityPubResponseBuilder;
 use App\Api\Response\JsonResponseBuilder;
-use App\Api\UrlGenerator;
 use App\Entity\Account;
 use OpenApi\Attributes as OA;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,11 +21,9 @@ use Symfony\Component\Routing\Attribute\Route;
 final class ProfileController extends AbstractController
 {
     public function __construct(
-        #[Autowire('%env(PREFERRED_CLIENT)%')]
-        private readonly string $preferredClient,
+        private readonly ClientUrlHelper $clientUrlHelper,
         private readonly JsonResponseBuilder $jsonResponseBuilder,
         private readonly ActivityPubResponseBuilder $activityPubResponseBuilder,
-        private readonly UrlGenerator $urlGenerator,
     ) {
     }
 
@@ -104,13 +101,7 @@ final class ProfileController extends AbstractController
         }
 
         if (RequestHelper::accepts($request, ['text/html'])) {
-            $iri = $this->urlGenerator->generate(
-                RouteType::Profile,
-                RouteAction::Get,
-                ['username' => $account->username]
-            );
-
-            return new RedirectResponse($this->preferredClient . "?iri={$iri}");
+            return new RedirectResponse($this->clientUrlHelper->profile($account));
         }
 
         return $this->jsonResponseBuilder->single($account, ['account:show:public']);

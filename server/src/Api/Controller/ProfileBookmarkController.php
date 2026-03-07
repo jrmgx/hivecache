@@ -88,13 +88,7 @@ final class ProfileBookmarkController extends BookmarkController
         #[MapQueryParameter(name: 'after')] ?string $afterQueryString = null,
     ): Response {
         if (RequestHelper::accepts($request, ['text/html'])) {
-            $iri = $this->urlGenerator->generate(
-                RouteType::ProfileBookmarks,
-                RouteAction::Collection,
-                ['username' => $account->username]
-            );
-
-            return new RedirectResponse($this->preferredClient . "?iri={$iri}");
+            return new RedirectResponse($this->clientUrlHelper->bookmarks($account, $tagQueryString));
         }
 
         return $this->collectionCommon(
@@ -183,20 +177,18 @@ final class ProfileBookmarkController extends BookmarkController
         #[MapEntity(mapping: ['username' => 'username'])] Account $account,
         string $id,
     ): Response {
-        if (RequestHelper::accepts($request, ['text/html'])) {
-            $iri = $this->urlGenerator->generate(
-                RouteType::ProfileBookmarks,
-                RouteAction::Get,
-                ['id' => $id, 'username' => $account->username]
-            );
-
-            return new RedirectResponse($this->preferredClient . "?iri={$iri}");
-        }
-
         $bookmark = $this->bookmarkRepository->findOneByAccountAndId($account, $id, onlyPublic: true)
             ->getQuery()->getOneOrNullResult()
             ?? throw new NotFoundHttpException()
         ;
+
+        if (RequestHelper::accepts($request, ['application/activity+json', 'application/ld+json'])) {
+            return $this->activityPubResponseBuilder->bookmark($bookmark);
+        }
+
+        if (RequestHelper::accepts($request, ['text/html'])) {
+            return new RedirectResponse($this->clientUrlHelper->bookmark($account, $id));
+        }
 
         return $this->jsonResponseBuilder->single($bookmark, ['bookmark:show:public', 'tag:show:public']);
     }

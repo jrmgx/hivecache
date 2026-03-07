@@ -2,6 +2,7 @@
 
 namespace App\Api\Response;
 
+use App\ActivityPub\Bundler\CreateActivityBundler;
 use App\ActivityPub\Dto\OrderedCollection;
 use App\ActivityPub\Dto\OrderedCollectionPage;
 use App\ActivityPub\Dto\PersonActor;
@@ -13,6 +14,8 @@ use App\Api\Config\RouteAction;
 use App\Api\Config\RouteType;
 use App\Api\UrlGenerator;
 use App\Entity\Account;
+use App\Entity\Bookmark;
+use App\Repository\FollowerRepository;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -24,6 +27,8 @@ final readonly class ActivityPubResponseBuilder
         #[Autowire('%instanceHost%')]
         private string $instanceHost,
         private SerializerInterface $serializer,
+        private CreateActivityBundler $createActivityBundler,
+        private FollowerRepository $followerRepository,
     ) {
     }
 
@@ -79,6 +84,18 @@ final readonly class ActivityPubResponseBuilder
         );
 
         return $this->jsonActivity($this->serializer->serialize($person, 'json'));
+    }
+
+    public function bookmark(Bookmark $bookmark): JsonResponse
+    {
+        $account = $bookmark->account;
+        $followers = [];
+        if ($owner = $account->owner) {
+            $followers = $this->followerRepository->findByOwner($owner)->getQuery()->getResult();
+        }
+        $createActivity = $this->createActivityBundler->bundleFromBookmark($bookmark, $followers);
+
+        return $this->jsonActivity($this->serializer->serialize($createActivity, 'json'));
     }
 
     public function webfinger(string $username): JsonResponse

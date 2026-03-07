@@ -4,9 +4,11 @@ namespace App\Api\Controller;
 
 use App\Api\Config\RouteAction;
 use App\Api\Config\RouteType;
+use App\Api\Helper\ClientUrlHelper;
 use App\Api\Helper\PaginationHelper;
 use App\Api\IndexActionUpdater;
 use App\Api\InstanceTagService;
+use App\Api\Response\ActivityPubResponseBuilder;
 use App\Api\Response\JsonResponseBuilder;
 use App\Api\UrlGenerator;
 use App\Entity\Account;
@@ -33,6 +35,8 @@ abstract class BookmarkController extends AbstractController
         protected readonly IndexActionUpdater $indexActionUpdater,
         protected readonly InstanceTagService $instanceTagService,
         protected readonly UrlGenerator $urlGenerator,
+        protected readonly ClientUrlHelper $clientUrlHelper,
+        protected readonly ActivityPubResponseBuilder $activityPubResponseBuilder,
     ) {
     }
 

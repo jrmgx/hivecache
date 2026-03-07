@@ -965,15 +965,34 @@ class BookmarkTest extends BaseApiTestCase
 
         $location = $this->client->getResponse()->headers->get('Location');
         $this->assertNotEmpty($location, 'Location header should be present');
-        $this->assertStringContainsString('?iri=', $location, 'Location URL should contain iri query parameter');
+        $expectedUrl = 'http://localhost:5173/social/testuser@hivecache.test/bookmarks/' . $bookmark->id;
+        $this->assertEquals($expectedUrl, $location, 'Location should redirect to client bookmark URL');
+    }
 
-        // Parse the URL and verify the iri parameter is an absolute URL
-        $parsedUrl = parse_url($location);
-        $this->assertIsArray($parsedUrl, 'Location should be a valid URL');
-        $this->assertArrayHasKey('query', $parsedUrl, 'Location URL should have query parameters');
-        parse_str($parsedUrl['query'], $queryParams);
-        $this->assertArrayHasKey('iri', $queryParams, 'Query parameters should contain iri');
-        $this->assertStringStartsWith('https://', $queryParams['iri'], 'iri parameter should be an absolute URL starting with http://');
+    public function testGetPublicBookmarkWithActivityPubAcceptReturnsCreateActivity(): void
+    {
+        $user = UserFactory::createOne(['username' => 'testuser', 'isPublic' => true]);
+        $account = AccountFactory::createOneWithUsernameAndInstance('testuser', AccountFactory::TEST_INSTANCE, [
+            'owner' => $user,
+        ]);
+
+        $bookmark = BookmarkFactory::createOne([
+            'account' => $account,
+            'title' => 'Public Bookmark',
+            'url' => 'https://example.com',
+            'isPublic' => true,
+        ]);
+
+        $this->request('GET', "/profile/{$user->username}/bookmarks/{$bookmark->id}", [
+            'headers' => ['Accept' => 'application/activity+json'],
+        ]);
+        $this->assertResponseIsSuccessful();
+        $this->assertResponseHeaderSame('Content-Type', 'application/activity+json');
+
+        $content = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals('Create', $content['type']);
+        $this->assertEquals('Note', $content['object']['type']);
+        $this->assertStringContainsString('Public Bookmark', $content['object']['content']);
     }
 
     #[DataProvider('domainExtractionProvider')]
