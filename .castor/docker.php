@@ -359,6 +359,7 @@ function docker_compose_run(
     $command = [
         'run',
         '--rm',
+        '--no-build',
     ];
 
     if ($noDeps) {

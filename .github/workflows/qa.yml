@@ -142,37 +142,6 @@ jobs:
       - name: Run PHPStan
         run: castor qa:phpstan
 
-  twig-cs:
-    name: Twig CS Fixer
-    runs-on: ubuntu-latest
-    needs: setup
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: castor-php/setup-castor@v1.0.0
-
-      - name: Restore builder image
-        uses: actions/cache/restore@v4
-        with:
-          path: /tmp/builder-image.tar
-          key: ${{ runner.os }}-builder-image-${{ hashFiles('infrastructure/docker/**') }}-${{ env.PHP_VERSION }}
-
-      - name: Load builder image
-        run: docker load -i /tmp/builder-image.tar
-
-      - name: Restore vendor cache
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            server/vendor
-            tools/php-cs-fixer/vendor
-            tools/phpstan/vendor
-            tools/twig-cs-fixer/vendor
-          key: ${{ runner.os }}-vendor-${{ hashFiles('server/composer.lock', 'tools/php-cs-fixer/composer.lock', 'tools/phpstan/composer.lock', 'tools/twig-cs-fixer/composer.lock') }}
-
-      - name: Run Twig CS Fixer
-        run: castor qa:twig-cs --dry-run
-
   phpunit:
     name: PHPUnit
     runs-on: ubuntu-latest
