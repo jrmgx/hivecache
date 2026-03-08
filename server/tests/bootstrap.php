@@ -33,7 +33,7 @@ if (function_exists('pcntl_signal')) {
 }
 
 $certDir = sys_get_temp_dir() . '/ap-server-certs';
-@mkdir($certDir, 0755, true);
+@mkdir($certDir, 0o755, true);
 
 $keyFile = $certDir . '/server.key';
 $certFile = $certDir . '/server.crt';
