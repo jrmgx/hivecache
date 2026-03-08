@@ -5,6 +5,7 @@ $finder = PhpCsFixer\Finder::create()
     ->ignoreDotFiles(false)
     ->in(__DIR__)
     ->in(__DIR__ . '/../.castor')
+    ->notPath('config/reference.php')
     ->append([
         __FILE__,
     ])

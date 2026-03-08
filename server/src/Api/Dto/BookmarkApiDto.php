@@ -61,9 +61,13 @@ class BookmarkApiDto
     #[Groups(['bookmark:create', 'bookmark:update'])]
     public ?bool $isPublic = null;
 
-    /** @var array<int, UserTag> */
+    /**
+     * When null in PATCH (preserve existing), [] to clear all.
+     *
+     * @var ?array<int, UserTag>
+     */
     #[Groups(['bookmark:create', 'bookmark:update'])]
-    public array $tags = [];
+    public ?array $tags = null;
 
     #[Groups(['bookmark:create', 'bookmark:update'])]
     public ?FileObject $mainImage = null;

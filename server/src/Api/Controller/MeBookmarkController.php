@@ -194,7 +194,7 @@ final class MeBookmarkController extends BookmarkController
         $bookmark->isPublic = $bookmarkPayload->isPublic ?? false;
         $bookmark->account = $user->account;
         $bookmark->instance = $this->instanceHost;
-        $bookmark->userTags = new ArrayCollection($bookmarkPayload->tags);
+        $bookmark->userTags = new ArrayCollection($bookmarkPayload->tags ?? []);
         $bookmark->mainImage = $bookmarkPayload->mainImage;
         $bookmark->archive = $bookmarkPayload->archive;
 
@@ -392,7 +392,7 @@ final class MeBookmarkController extends BookmarkController
         if (isset($bookmarkPayload->isPublic)) {
             $bookmark->isPublic = $bookmarkPayload->isPublic;
         }
-        if (\count($bookmarkPayload->tags) > 0) {
+        if (null !== $bookmarkPayload->tags) {
             /* @phpstan-ignore-next-line $bookmarkPayload->tags is an array of UserTag as denormalized by IriDenormalizer */
             $bookmark->userTags = new ArrayCollection($bookmarkPayload->tags);
         }
