@@ -77,7 +77,7 @@ export const Home = () => {
       setDebouncedSearchQuery(searchParam);
       lastSyncedSearchParamRef.current = searchParam;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [searchParams]); // Sync when URL params change (e.g., browser back button)
 
   // Determine which bookmarks to display
@@ -311,7 +311,7 @@ export const Home = () => {
 
     const results = searchBookmarks(debouncedSearchQuery, currentIndexed, selectedTagSlugs);
     setSearchResults(results);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [debouncedSearchQuery, searchAvailable, selectedTagSlugs]); // indexedBookmarks intentionally omitted to avoid infinite loop
 
   // Re-run search when indexedBookmarks becomes available (using length to avoid infinite loop)

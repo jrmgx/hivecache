@@ -1,5 +1,4 @@
 import type { Tag as TagType } from '../../types';
-import { formatTagName as formatTagNameShared } from '@shared';
 
 interface TagNameProps {
   tag: TagType;
@@ -20,11 +19,4 @@ export const TagName = ({ tag, showIcon = true, showPublicIndicator = true }: Ta
     </>
   );
 };
-
-/**
- * Formats tag name as a string (for use in text-only contexts like select options)
- * Includes icon and public indicator
- * Re-exports the shared formatTagName function for convenience
- */
-export const formatTagName = formatTagNameShared;
 

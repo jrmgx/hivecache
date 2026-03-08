@@ -21,7 +21,7 @@ export const SidebarSection = ({
     if (persistState) {
       const stored = localStorage.getItem(storageKey);
       if (stored !== null) {
-        setIsCollapsed(stored === 'true');
+        queueMicrotask(() => setIsCollapsed(stored === 'true'));
       }
     }
   }, [storageKey, persistState]);

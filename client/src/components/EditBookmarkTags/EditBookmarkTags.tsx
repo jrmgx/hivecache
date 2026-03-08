@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import TomSelect from 'tom-select';
 import 'tom-select/dist/css/tom-select.bootstrap5.css';
 import { ErrorAlert } from '../ErrorAlert/ErrorAlert';
-import { formatTagName } from '../TagName/TagName';
+import { formatTagName } from '@shared';
 import { updateBookmarkTags, getTags, createTag, ApiError } from '../../services/api';
 import type { Bookmark as BookmarkType, Tag as TagType } from '../../types';
 
@@ -140,7 +140,7 @@ export const EditBookmarkTags = ({ bookmark, onSave, onClose }: EditBookmarkTags
               console.error('Failed to create tag:', err);
               callback(undefined);
             }
-          }) as any,
+          }) as unknown as TomSelect['settings']['create'],
           maxItems: null,
           valueField: 'value',
           labelField: 'text',
@@ -150,10 +150,10 @@ export const EditBookmarkTags = ({ bookmark, onSave, onClose }: EditBookmarkTags
             text: formatTagName(tag),
           })),
           render: {
-            option: (data: any, escape: (str: string) => string) => {
+            option: (data: { text: string }, escape: (str: string) => string) => {
               return `<div>${escape(data.text)}</div>`;
             },
-            item: (data: any, escape: (str: string) => string) => {
+            item: (data: { text: string }, escape: (str: string) => string) => {
               return `<div>${escape(data.text)}</div>`;
             },
           },

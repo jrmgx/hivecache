@@ -114,7 +114,7 @@ function extractApiBaseUrl(webfingerResponse: WebfingerResponse): string {
   try {
     const url = new URL(profileUrl);
     return `${url.protocol}//${url.host}`;
-  } catch (e) {
+  } catch {
     throw new Error(`Invalid profile URL in webfinger response: ${profileUrl}`);
   }
 }
@@ -165,7 +165,7 @@ export async function resolveProfile(profileIdentifier: string): Promise<{ baseU
       }
       // Cache expired, remove it
       localStorage.removeItem(cacheKey);
-    } catch (e) {
+    } catch {
       // Invalid cache entry, remove it
       localStorage.removeItem(cacheKey);
     }

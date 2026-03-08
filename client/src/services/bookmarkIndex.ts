@@ -84,65 +84,61 @@ export async function indexAllBookmarks(onProgress?: ProgressCallback): Promise<
   let total: number | null = null;
   let fetched = 0;
 
-  try {
-    // Fetch first page to get total count
-    const firstResponse = await getBookmarksIndex();
-    allBookmarks.push(...firstResponse.collection);
-    fetched += firstResponse.collection.length;
-    total = firstResponse.total;
-    cursor = getCursorFromUrl(firstResponse.nextPage);
+  // Fetch first page to get total count
+  const firstResponse = await getBookmarksIndex();
+  allBookmarks.push(...firstResponse.collection);
+  fetched += firstResponse.collection.length;
+  total = firstResponse.total;
+  cursor = getCursorFromUrl(firstResponse.nextPage);
 
-    // Report initial progress
+  // Report initial progress
+  if (onProgress && total !== null) {
+    const progress = Math.round((fetched / total) * 100);
+    onProgress(progress, fetched, total);
+  }
+
+  // Continue fetching remaining pages
+  while (cursor) {
+    const response = await getBookmarksIndex(cursor);
+    allBookmarks.push(...response.collection);
+    fetched += response.collection.length;
+    cursor = getCursorFromUrl(response.nextPage);
+
+    // Report progress
     if (onProgress && total !== null) {
       const progress = Math.round((fetched / total) * 100);
       onProgress(progress, fetched, total);
     }
-
-    // Continue fetching remaining pages
-    while (cursor) {
-      const response = await getBookmarksIndex(cursor);
-      allBookmarks.push(...response.collection);
-      fetched += response.collection.length;
-      cursor = getCursorFromUrl(response.nextPage);
-
-      // Report progress
-      if (onProgress && total !== null) {
-        const progress = Math.round((fetched / total) * 100);
-        onProgress(progress, fetched, total);
-      }
-    }
-
-    // Store in IndexedDB (required)
-    try {
-      await storeInIndexedDB(allBookmarks);
-    } catch (indexedDBError) {
-      throw new Error(`Failed to store bookmarks in IndexedDB: ${indexedDBError instanceof Error ? indexedDBError.message : String(indexedDBError)}`);
-    }
-
-    // After successful indexing, get the latest diff operation ID
-    try {
-      const diffResponse = await getBookmarkIndexDiff();
-      if (diffResponse.collection && diffResponse.collection.length > 0) {
-        // Get the last operation ID (operations are ordered by ID ascending)
-        const lastAction = diffResponse.collection[diffResponse.collection.length - 1];
-        saveLastOperationId(lastAction.id);
-      }
-    } catch (error) {
-      console.warn('Failed to fetch last operation ID, continuing without it:', error);
-    }
-
-    // Save update timestamp
-    saveLastUpdate();
-
-    // Report completion
-    if (onProgress && total !== null) {
-      onProgress(100, fetched, total);
-    }
-
-    return allBookmarks;
-  } catch (error) {
-    throw error;
   }
+
+  // Store in IndexedDB (required)
+  try {
+    await storeInIndexedDB(allBookmarks);
+  } catch (indexedDBError) {
+    throw new Error(`Failed to store bookmarks in IndexedDB: ${indexedDBError instanceof Error ? indexedDBError.message : String(indexedDBError)}`);
+  }
+
+  // After successful indexing, get the latest diff operation ID
+  try {
+    const diffResponse = await getBookmarkIndexDiff();
+    if (diffResponse.collection && diffResponse.collection.length > 0) {
+      // Get the last operation ID (operations are ordered by ID ascending)
+      const lastAction = diffResponse.collection[diffResponse.collection.length - 1];
+      saveLastOperationId(lastAction.id);
+    }
+  } catch (error) {
+    console.warn('Failed to fetch last operation ID, continuing without it:', error);
+  }
+
+  // Save update timestamp
+  saveLastUpdate();
+
+  // Report completion
+  if (onProgress && total !== null) {
+    onProgress(100, fetched, total);
+  }
+
+  return allBookmarks;
 }
 
 /**

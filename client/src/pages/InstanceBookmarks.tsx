@@ -5,7 +5,7 @@ import { BookmarkListing } from '../components/Bookmark/BookmarkListing';
 import { Masonry } from '../components/Masonry/Masonry';
 import { ErrorAlert } from '../components/ErrorAlert/ErrorAlert';
 import { getInstanceBookmarks, getCursorFromUrl, ApiError } from '../services/api';
-import type { Bookmark as BookmarkType } from '../types';
+import type { Bookmark as BookmarkType, BookmarkWithAccount } from '../types';
 import { LAYOUT_DEFAULT, LAYOUT_IMAGE, LAYOUT_LISTING } from '../types';
 
 export const InstanceBookmarks = () => {
@@ -88,12 +88,12 @@ export const InstanceBookmarks = () => {
   const handleShow = (id: string, bookmark: BookmarkType) => {
     // Extract username@instance from bookmark account
     // Timeline bookmarks have account field with username and instance
-    const account = (bookmark as any).account;
+    const account = (bookmark as BookmarkWithAccount).account;
     let profileIdentifier = '';
 
     if (account) {
       const username = account.username;
-      const instance = account.instance || (bookmark as any).instance;
+      const instance = account.instance || (bookmark as BookmarkWithAccount).instance;
 
       if (username && instance) {
         profileIdentifier = `${username}@${instance}`;

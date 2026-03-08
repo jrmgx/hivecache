@@ -79,7 +79,7 @@ export const Bookmark = ({
   };
 
   useEffect(() => {
-    setIsSmallImage(false);
+    queueMicrotask(() => setIsSmallImage(false));
   }, [imageUrl]);
 
   // Determine background image style for normal bookmarks

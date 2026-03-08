@@ -1,6 +1,6 @@
 import { Link, useParams, useSearchParams, useLocation } from 'react-router-dom';
 import { updateTagParams } from '../../utils/tags';
-import type { Bookmark } from '../../types';
+import type { Bookmark, BookmarkWithAccount } from '../../types';
 
 interface BookmarkImageProps {
   bookmark: Bookmark;
@@ -27,10 +27,10 @@ export const BookmarkImage = ({ bookmark, imageRef }: BookmarkImageProps) => {
   // But only if we're NOT on a /me route
   let profileIdentifier = urlProfileIdentifier;
   if (!profileIdentifier && !isMeRoute) {
-    const account = (bookmark as any).account;
+    const account = (bookmark as BookmarkWithAccount).account;
     if (account) {
       const username = account.username;
-      const instance = account.instance || (bookmark as any).instance;
+      const instance = account.instance || (bookmark as BookmarkWithAccount).instance;
       if (username && instance) {
         profileIdentifier = `${username}@${instance}`;
       } else if (username) {
