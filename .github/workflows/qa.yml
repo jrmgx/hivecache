@@ -44,6 +44,15 @@ jobs:
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
+      - name: Cache builder image
+        uses: actions/cache@v4
+        with:
+          path: /tmp/builder-image.tar
+          key: ${{ runner.os }}-builder-image-${{ hashFiles('infrastructure/docker/**') }}-${{ env.PHP_VERSION }}
+
+      - name: Save builder image
+        run: docker save hivecache-builder:ci -o /tmp/builder-image.tar
+
       - name: Cache vendor directories
         id: vendor-cache
         uses: actions/cache@v4
@@ -68,26 +77,14 @@ jobs:
 
       - uses: castor-php/setup-castor@v1.0.0
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Restore Docker cache
+      - name: Restore builder image
         uses: actions/cache/restore@v4
         with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ hashFiles('infrastructure/docker/**') }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
+          path: /tmp/builder-image.tar
+          key: ${{ runner.os }}-builder-image-${{ hashFiles('infrastructure/docker/**') }}-${{ env.PHP_VERSION }}
 
-      - name: Build builder image
-        run: |
-          docker buildx build \
-            --cache-from type=local,src=/tmp/.buildx-cache \
-            --build-arg PHP_VERSION=${{ env.PHP_VERSION }} \
-            --target builder \
-            --load \
-            -t hivecache-builder:ci \
-            -f infrastructure/docker/services/php/Dockerfile .
+      - name: Load builder image
+        run: docker load -i /tmp/builder-image.tar
 
       - name: Restore vendor cache
         uses: actions/cache/restore@v4
@@ -111,26 +108,14 @@ jobs:
 
       - uses: castor-php/setup-castor@v1.0.0
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Restore Docker cache
+      - name: Restore builder image
         uses: actions/cache/restore@v4
         with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ hashFiles('infrastructure/docker/**') }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
+          path: /tmp/builder-image.tar
+          key: ${{ runner.os }}-builder-image-${{ hashFiles('infrastructure/docker/**') }}-${{ env.PHP_VERSION }}
 
-      - name: Build builder image
-        run: |
-          docker buildx build \
-            --cache-from type=local,src=/tmp/.buildx-cache \
-            --build-arg PHP_VERSION=${{ env.PHP_VERSION }} \
-            --target builder \
-            --load \
-            -t hivecache-builder:ci \
-            -f infrastructure/docker/services/php/Dockerfile .
+      - name: Load builder image
+        run: docker load -i /tmp/builder-image.tar
 
       - name: Restore vendor cache
         uses: actions/cache/restore@v4
@@ -157,26 +142,14 @@ jobs:
 
       - uses: castor-php/setup-castor@v1.0.0
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Restore Docker cache
+      - name: Restore builder image
         uses: actions/cache/restore@v4
         with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ hashFiles('infrastructure/docker/**') }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
+          path: /tmp/builder-image.tar
+          key: ${{ runner.os }}-builder-image-${{ hashFiles('infrastructure/docker/**') }}-${{ env.PHP_VERSION }}
 
-      - name: Build builder image
-        run: |
-          docker buildx build \
-            --cache-from type=local,src=/tmp/.buildx-cache \
-            --build-arg PHP_VERSION=${{ env.PHP_VERSION }} \
-            --target builder \
-            --load \
-            -t hivecache-builder:ci \
-            -f infrastructure/docker/services/php/Dockerfile .
+      - name: Load builder image
+        run: docker load -i /tmp/builder-image.tar
 
       - name: Restore vendor cache
         uses: actions/cache/restore@v4
@@ -200,26 +173,14 @@ jobs:
 
       - uses: castor-php/setup-castor@v1.0.0
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Restore Docker cache
+      - name: Restore builder image
         uses: actions/cache/restore@v4
         with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ hashFiles('infrastructure/docker/**') }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
+          path: /tmp/builder-image.tar
+          key: ${{ runner.os }}-builder-image-${{ hashFiles('infrastructure/docker/**') }}-${{ env.PHP_VERSION }}
 
-      - name: Build builder image
-        run: |
-          docker buildx build \
-            --cache-from type=local,src=/tmp/.buildx-cache \
-            --build-arg PHP_VERSION=${{ env.PHP_VERSION }} \
-            --target builder \
-            --load \
-            -t hivecache-builder:ci \
-            -f infrastructure/docker/services/php/Dockerfile .
+      - name: Load builder image
+        run: docker load -i /tmp/builder-image.tar
 
       - name: Restore vendor cache
         uses: actions/cache/restore@v4
