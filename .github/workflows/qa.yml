@@ -1,0 +1,324 @@
+name: QA
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+env:
+  PHP_VERSION: '8.4'
+  PROJECT_NAME: hivecache
+  COMPOSE_ANSI: never
+
+jobs:
+  setup:
+    name: Setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ hashFiles('infrastructure/docker/**') }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build builder image
+        run: |
+          docker buildx build \
+            --cache-from type=local,src=/tmp/.buildx-cache \
+            --cache-to type=local,dest=/tmp/.buildx-cache-new,mode=max \
+            --build-arg PHP_VERSION=${{ env.PHP_VERSION }} \
+            --target builder \
+            --load \
+            -t hivecache-builder:ci \
+            -f infrastructure/docker/services/php/Dockerfile .
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+      - name: Cache server vendor
+        id: server-vendor-cache
+        uses: actions/cache@v4
+        with:
+          path: server/vendor
+          key: ${{ runner.os }}-server-vendor-${{ hashFiles('server/composer.lock') }}
+
+      - name: Install server dependencies
+        if: steps.server-vendor-cache.outputs.cache-hit != 'true'
+        run: |
+          docker run --rm \
+            -u "$(id -u):$(id -g)" \
+            -v "${{ github.workspace }}:/var/www" \
+            -w /var/www/server \
+            hivecache-builder:ci \
+            composer install -n --prefer-dist --optimize-autoloader
+
+      - name: Cache QA tools
+        id: qa-tools-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            tools/php-cs-fixer/vendor
+            tools/phpstan/vendor
+            tools/twig-cs-fixer/vendor
+          key: ${{ runner.os }}-qa-tools-${{ hashFiles('tools/php-cs-fixer/composer.lock', 'tools/phpstan/composer.lock', 'tools/twig-cs-fixer/composer.lock') }}
+
+      - name: Install QA tooling
+        if: steps.qa-tools-cache.outputs.cache-hit != 'true'
+        run: |
+          for tool in php-cs-fixer phpstan twig-cs-fixer; do
+            docker run --rm \
+              -u "$(id -u):$(id -g)" \
+              -v "${{ github.workspace }}:/var/www" \
+              -w /var/www/tools/$tool \
+              hivecache-builder:ci \
+              composer install -o
+          done
+
+  cs:
+    name: PHP CS Fixer
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Restore Docker cache
+        uses: actions/cache/restore@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ hashFiles('infrastructure/docker/**') }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build builder image
+        run: |
+          docker buildx build \
+            --cache-from type=local,src=/tmp/.buildx-cache \
+            --build-arg PHP_VERSION=${{ env.PHP_VERSION }} \
+            --target builder \
+            --load \
+            -t hivecache-builder:ci \
+            -f infrastructure/docker/services/php/Dockerfile .
+
+      - name: Restore QA tools
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            tools/php-cs-fixer/vendor
+            tools/phpstan/vendor
+            tools/twig-cs-fixer/vendor
+          key: ${{ runner.os }}-qa-tools-${{ hashFiles('tools/php-cs-fixer/composer.lock', 'tools/phpstan/composer.lock', 'tools/twig-cs-fixer/composer.lock') }}
+
+      - name: Run PHP CS Fixer
+        run: |
+          docker run --rm \
+            -u "$(id -u):$(id -g)" \
+            -v "${{ github.workspace }}:/var/www" \
+            -e CI=true \
+            hivecache-builder:ci \
+            php-cs-fixer fix --dry-run --diff
+
+  phpstan:
+    name: PHPStan
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Restore Docker cache
+        uses: actions/cache/restore@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ hashFiles('infrastructure/docker/**') }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build builder image
+        run: |
+          docker buildx build \
+            --cache-from type=local,src=/tmp/.buildx-cache \
+            --build-arg PHP_VERSION=${{ env.PHP_VERSION }} \
+            --target builder \
+            --load \
+            -t hivecache-builder:ci \
+            -f infrastructure/docker/services/php/Dockerfile .
+
+      - name: Restore server vendor
+        uses: actions/cache/restore@v4
+        with:
+          path: server/vendor
+          key: ${{ runner.os }}-server-vendor-${{ hashFiles('server/composer.lock') }}
+
+      - name: Restore QA tools
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            tools/php-cs-fixer/vendor
+            tools/phpstan/vendor
+            tools/twig-cs-fixer/vendor
+          key: ${{ runner.os }}-qa-tools-${{ hashFiles('tools/php-cs-fixer/composer.lock', 'tools/phpstan/composer.lock', 'tools/twig-cs-fixer/composer.lock') }}
+
+      - name: Run PHPStan
+        run: |
+          docker run --rm \
+            -u "$(id -u):$(id -g)" \
+            -v "${{ github.workspace }}:/var/www" \
+            -e CI=true \
+            hivecache-builder:ci \
+            phpstan analyse --memory-limit=-1 -v
+
+  twig-cs:
+    name: Twig CS Fixer
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Restore Docker cache
+        uses: actions/cache/restore@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ hashFiles('infrastructure/docker/**') }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build builder image
+        run: |
+          docker buildx build \
+            --cache-from type=local,src=/tmp/.buildx-cache \
+            --build-arg PHP_VERSION=${{ env.PHP_VERSION }} \
+            --target builder \
+            --load \
+            -t hivecache-builder:ci \
+            -f infrastructure/docker/services/php/Dockerfile .
+
+      - name: Restore QA tools
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            tools/php-cs-fixer/vendor
+            tools/phpstan/vendor
+            tools/twig-cs-fixer/vendor
+          key: ${{ runner.os }}-qa-tools-${{ hashFiles('tools/php-cs-fixer/composer.lock', 'tools/phpstan/composer.lock', 'tools/twig-cs-fixer/composer.lock') }}
+
+      - name: Run Twig CS Fixer
+        run: |
+          docker run --rm \
+            -u "$(id -u):$(id -g)" \
+            -v "${{ github.workspace }}:/var/www" \
+            -e CI=true \
+            hivecache-builder:ci \
+            twig-cs-fixer
+
+  phpunit:
+    name: PHPUnit
+    runs-on: ubuntu-latest
+    needs: setup
+    env:
+      PROJECT_ROOT_DOMAIN: hivecache.test
+      PROJECT_DOMAINS: '`hivecache.test`'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Restore Docker cache
+        uses: actions/cache/restore@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ hashFiles('infrastructure/docker/**') }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build builder image
+        run: |
+          docker buildx build \
+            --cache-from type=local,src=/tmp/.buildx-cache \
+            --build-arg PHP_VERSION=${{ env.PHP_VERSION }} \
+            --target builder \
+            --load \
+            -t hivecache-builder:ci \
+            -f infrastructure/docker/services/php/Dockerfile .
+
+      - name: Restore server vendor
+        uses: actions/cache/restore@v4
+        with:
+          path: server/vendor
+          key: ${{ runner.os }}-server-vendor-${{ hashFiles('server/composer.lock') }}
+
+      - name: Set USER_ID
+        run: echo "USER_ID=$(id -u)" >> $GITHUB_ENV
+
+      - name: Start postgres
+        run: |
+          docker compose -p ${{ env.PROJECT_NAME }} --profile default up -d --wait postgres
+
+      - name: Generate JWT keypair
+        run: |
+          docker run --rm \
+            -u "${{ env.USER_ID }}:${{ env.USER_ID }}" \
+            -v "${{ github.workspace }}:/var/www" \
+            -w /var/www/server \
+            hivecache-builder:ci \
+            bin/console lexik:jwt:generate-keypair --skip-if-exists
+
+      - name: Setup test database
+        run: |
+          docker run --rm \
+            -u "${{ env.USER_ID }}:${{ env.USER_ID }}" \
+            -v "${{ github.workspace }}:/var/www" \
+            -w /var/www/server \
+            --network ${{ env.PROJECT_NAME }}_default \
+            -e APP_ENV=test \
+            hivecache-builder:ci \
+            sh -c "
+              bin/console doctrine:database:create --if-not-exists &&
+              bin/console doctrine:database:drop --force &&
+              bin/console doctrine:migration:migrate -n --allow-no-migration --all-or-nothing &&
+              bin/console foundry:load-story main -n --append
+            "
+
+      - name: Setup test_ap_server database
+        run: |
+          docker run --rm \
+            -u "${{ env.USER_ID }}:${{ env.USER_ID }}" \
+            -v "${{ github.workspace }}:/var/www" \
+            -w /var/www/server \
+            --network ${{ env.PROJECT_NAME }}_default \
+            -e APP_ENV=test_ap_server \
+            hivecache-builder:ci \
+            sh -c "
+              bin/console doctrine:database:create --if-not-exists &&
+              bin/console doctrine:database:drop --force &&
+              bin/console doctrine:migration:migrate -n --allow-no-migration --all-or-nothing &&
+              bin/console foundry:load-story ap_server -n --append
+            "
+
+      - name: Run PHPUnit
+        run: |
+          docker run --rm \
+            -u "${{ env.USER_ID }}:${{ env.USER_ID }}" \
+            -v "${{ github.workspace }}:/var/www" \
+            -w /var/www/server \
+            --network ${{ env.PROJECT_NAME }}_default \
+            --add-host external_ap_server.test:127.0.0.1 \
+            -e APP_ENV=test \
+            -e CI=true \
+            hivecache-builder:ci \
+            bin/phpunit
