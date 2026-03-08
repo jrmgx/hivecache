@@ -170,6 +170,15 @@ jobs:
             tools/twig-cs-fixer/vendor
           key: ${{ runner.os }}-qa-tools-${{ hashFiles('tools/php-cs-fixer/composer.lock', 'tools/phpstan/composer.lock', 'tools/twig-cs-fixer/composer.lock') }}
 
+      - name: Warm up Symfony cache
+        run: |
+          docker run --rm \
+            -u "$(id -u):$(id -g)" \
+            -v "${{ github.workspace }}:/var/www" \
+            -w /var/www/server \
+            hivecache-builder:ci \
+            bin/console cache:warmup
+
       - name: Run PHPStan
         run: |
           docker run --rm \
@@ -288,8 +297,8 @@ jobs:
             -e APP_ENV=test \
             hivecache-builder:ci \
             sh -c "
-              bin/console doctrine:database:create --if-not-exists &&
-              bin/console doctrine:database:drop --force &&
+              bin/console doctrine:database:drop --force --if-exists &&
+              bin/console doctrine:database:create &&
               bin/console doctrine:migration:migrate -n --allow-no-migration --all-or-nothing &&
               bin/console foundry:load-story main -n --append
             "
@@ -304,8 +313,8 @@ jobs:
             -e APP_ENV=test_ap_server \
             hivecache-builder:ci \
             sh -c "
-              bin/console doctrine:database:create --if-not-exists &&
-              bin/console doctrine:database:drop --force &&
+              bin/console doctrine:database:drop --force --if-exists &&
+              bin/console doctrine:database:create &&
               bin/console doctrine:migration:migrate -n --allow-no-migration --all-or-nothing &&
               bin/console foundry:load-story ap_server -n --append
             "
