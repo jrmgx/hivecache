@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Tag } from '../components/Tag/Tag';
 import { Icon } from '../components/Icon/Icon';
 import { EditTag } from '../components/EditTag/EditTag';
 import { ErrorAlert } from '../components/ErrorAlert/ErrorAlert';
+import { SearchInput } from '../components/SearchInput/SearchInput';
 import { getTags, ApiError } from '../services/api';
 import { toggleTag, updateTagParams } from '../utils/tags';
 import type { Tag as TagType } from '../types';
@@ -13,6 +14,7 @@ export const Tags = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [tags, setTags] = useState<TagType[]>([]);
+  const [tagSearchQuery, setTagSearchQuery] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [errorStatus, setErrorStatus] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -22,6 +24,15 @@ export const Tags = () => {
 
   const tagQueryString = searchParams.get('tags') || '';
   const selectedTagSlugs = tagQueryString ? tagQueryString.split(',').filter(Boolean) : [];
+
+  const filteredTags = useMemo(() => {
+    const q = tagSearchQuery.trim().toLowerCase();
+    if (!q) return tags;
+    return tags.filter(
+      (tag) =>
+        tag.name.toLowerCase().includes(q) || tag.slug.toLowerCase().includes(q)
+    );
+  }, [tags, tagSearchQuery]);
 
   useEffect(() => {
     const updateColumnCount = () => {
@@ -36,7 +47,7 @@ export const Tags = () => {
     updateColumnCount();
     window.addEventListener('resize', updateColumnCount);
     return () => window.removeEventListener('resize', updateColumnCount);
-  }, [tags]);
+  }, [filteredTags]);
 
   useEffect(() => {
     const loadTags = async () => {
@@ -100,8 +111,16 @@ export const Tags = () => {
           </div>
         </div>
       ) : (
-        <div ref={gridRef} className="tags-grid my-2">
-          {tags.map((tag, index) => {
+        <>
+          <SearchInput
+            value={tagSearchQuery}
+            onChange={setTagSearchQuery}
+            onClear={() => setTagSearchQuery('')}
+            disabled={false}
+            placeholder="Search tags..."
+          />
+          <div ref={gridRef} className="tags-grid my-2">
+            {filteredTags.map((tag, index) => {
             const row = columnCount > 0 ? Math.floor(index / columnCount) : 0;
             const col = columnCount > 0 ? index % columnCount : 0;
             const isCheckerboard = (row + col) % 2 === 0;
@@ -127,7 +146,8 @@ export const Tags = () => {
               </div>
             );
           })}
-        </div>
+          </div>
+        </>
       )}
 
       <div className="mt-1">&nbsp;</div>
