@@ -1,11 +1,15 @@
 import { SidebarSection } from '../SidebarSection';
 
-export const AboutSection = () => {
+interface AboutSectionProps {
+  defaultCollapsed?: boolean;
+}
+
+export const AboutSection = ({ defaultCollapsed = true }: AboutSectionProps) => {
   return (
     <SidebarSection
       title="HiveCache?"
       storageKey="sidebar-section-about-collapsed"
-      defaultCollapsed={true}
+      defaultCollapsed={defaultCollapsed}
       persistState={false}
     >
       <div className="d-flex align-items-center position-relative flex-grow-1 mb-0">

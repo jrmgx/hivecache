@@ -11,6 +11,7 @@ import { PublicHome } from './pages/PublicHome';
 import { PublicTags } from './pages/PublicTags';
 import { PublicShowBookmark } from './pages/PublicShowBookmark';
 import { Styleguide } from './pages/Styleguide';
+import { NotFound } from './pages/NotFound';
 import { Layout } from './components/Layout/Layout';
 import { IriRedirect } from './components/IriRedirect/IriRedirect';
 import { isAuthenticated } from './services/auth';
@@ -46,6 +47,7 @@ function App() {
           <Route path="/social/:profileIdentifier/tags" element={<PublicTags />} />
           <Route path="/social/:profileIdentifier/bookmarks/:id" element={<PublicShowBookmark />} />
           <Route path="/social/:profileIdentifier" element={<PublicHome />} />
+          <Route path="*" element={<NotFound />} />
         </Route>
         {/* Protected routes - authentication required */}
         <Route

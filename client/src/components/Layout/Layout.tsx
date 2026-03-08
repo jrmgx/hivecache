@@ -197,7 +197,7 @@ export const Layout = () => {
         isTagsPage={isTagsPage}
       />
     );
-    sections.push(<AboutSection key="about" />);
+    sections.push(<AboutSection key="about" defaultCollapsed={isAuthenticated()} />);
   } else if (isBookmarkPage) {
     // Own bookmarks: show full edit section
     sections.push(
@@ -209,24 +209,27 @@ export const Layout = () => {
         isDeleting={isDeleting}
       />
     );
-    sections.push(<AboutSection key="about" />);
+    sections.push(<AboutSection key="about" defaultCollapsed={isAuthenticated()} />);
   } else {
-    // Own profile home page or tags page: show all sections
-    // Keep MeSection visible even on tags page
-    sections.push(
-      <MeSection
-        key="me"
-        tags={tags}
-        selectedTagSlugs={selectedTagSlugs}
-        onTagToggle={handleTagToggle}
-        onNavigateToTags={handleNavigateToTags}
-        onClearTags={handleClearTags}
-        isTagsPage={isTagsPage}
-      />
-    );
-    sections.push(<SocialSection key="social" />);
-    sections.push(<SettingsSection key="settings" />);
-    sections.push(<AboutSection key="about" />);
+    // Own profile home page or tags page: show sections (me and account only when authenticated)
+    if (isAuthenticated()) {
+      sections.push(
+        <MeSection
+          key="me"
+          tags={tags}
+          selectedTagSlugs={selectedTagSlugs}
+          onTagToggle={handleTagToggle}
+          onNavigateToTags={handleNavigateToTags}
+          onClearTags={handleClearTags}
+          isTagsPage={isTagsPage}
+        />
+      );
+    }
+    if (isAuthenticated()) {
+      sections.push(<SocialSection key="social" />);
+      sections.push(<SettingsSection key="settings" />);
+    }
+    sections.push(<AboutSection key="about" defaultCollapsed={isAuthenticated()} />);
   }
 
   return (
