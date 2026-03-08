@@ -39,7 +39,7 @@ class OutboxController extends AbstractController
             throw $this->createNotFoundException('Account has no owner.');
         }
 
-        $qb = $this->bookmarkRepository->findByAccount($account, true);
+        $qb = $this->bookmarkRepository->findByAccount($account, onlyPublic: true);
 
         $totalItems = (int) (clone $qb)
             ->resetDQLPart('select')

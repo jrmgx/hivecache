@@ -11,15 +11,16 @@ import type { IFuseOptions } from 'fuse.js';
  */
 const fuseOptions: IFuseOptions<Bookmark> = {
   keys: [
-    { name: 'title', weight: 0.4 },
-    { name: 'url', weight: 0.3 },
-    { name: 'domain', weight: 0.2 },
-    { name: 'tags.name', weight: 0.1 },
+    { name: 'title', weight: 1.0 },
+    { name: 'url', weight: 0.5 },
+    { name: 'domain', weight: 0.25 },
+    { name: 'tags.name', weight: 0.75 },
   ],
-  threshold: 0.4, // Moderate fuzziness (0.0 = exact match, 1.0 = match anything)
+  threshold: 0.2, // Moderate fuzziness (0.0 = exact match, 1.0 = match anything)
   includeScore: true,
   ignoreDiacritics: true,
   minMatchCharLength: 2,
+  ignoreLocation: true,
 };
 
 /**
