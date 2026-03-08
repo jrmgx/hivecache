@@ -541,6 +541,18 @@ class BookmarkTest extends BaseApiTestCase
         $this->assertEquals($initialTitle, $json['title'], 'Title should remain unchanged');
         $this->assertEquals($initialUrl, $json['url'], 'URL should remain unchanged');
         $this->assertBookmarkOwnerResponse($json);
+
+        // Remove all tags
+        $this->request('PATCH', "/users/me/bookmarks/{$bookmark->id}", [
+            'headers' => ['Content-Type' => 'application/json'],
+            'auth_bearer' => $token,
+            'json' => ['tags' => []],
+        ]);
+        $this->assertResponseIsSuccessful();
+
+        $json = $this->dump($this->getResponseArray());
+        $this->assertIsArray($json['tags']);
+        $this->assertCount(0, $json['tags'], 'All tags should be removed');
     }
 
     public function testDeleteOwnBookmark(): void
