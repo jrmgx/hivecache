@@ -49,14 +49,14 @@ jobs:
             --build-arg PHP_VERSION=${{ env.PHP_VERSION }} \
             --target builder \
             --load \
-            -t hivecache-builder:ci \
+            -t hivecache-builder:latest \
             -f infrastructure/docker/services/php/Dockerfile .
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
       - name: Save builder image
         if: steps.builder-image-cache.outputs.cache-hit != 'true'
-        run: docker save hivecache-builder:ci -o /tmp/builder-image.tar
+        run: docker save hivecache-builder:latest -o /tmp/builder-image.tar
 
       - name: Load builder image
         if: steps.builder-image-cache.outputs.cache-hit == 'true'

@@ -113,6 +113,7 @@ services:
             - "traefik.http.services.${PROJECT_NAME}-maildev.loadbalancer.server.port=8025"
 
     builder: &builder-base
+        image: hivecache-builder:latest
         build:
             dockerfile: infrastructure/docker/services/php/Dockerfile
             context: ./
