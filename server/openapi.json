@@ -140,6 +140,15 @@
                             "type": "string",
                             "format": "uuid"
                         }
+                    },
+                    {
+                        "name": "tags",
+                        "in": "query",
+                        "description": "Comma-separated instance tag slugs to filter by (AND logic)",
+                        "schema": {
+                            "type": "string",
+                            "example": "tag-one,tag-two"
+                        }
                     }
                 ],
                 "responses": {
@@ -232,6 +241,15 @@
                         "schema": {
                             "type": "string",
                             "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "tags",
+                        "in": "query",
+                        "description": "Comma-separated instance tag slugs to filter by (AND logic)",
+                        "schema": {
+                            "type": "string",
+                            "example": "tag-one,tag-two"
                         }
                     }
                 ],
@@ -860,6 +878,15 @@
                         "schema": {
                             "type": "string",
                             "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "tags",
+                        "in": "query",
+                        "description": "Comma-separated instance tag slugs to filter by (AND logic)",
+                        "schema": {
+                            "type": "string",
+                            "example": "tag-one,tag-two"
                         }
                     }
                 ],

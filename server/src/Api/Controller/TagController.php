@@ -13,6 +13,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 abstract class TagController extends AbstractController
 {
@@ -26,6 +27,7 @@ abstract class TagController extends AbstractController
         protected readonly JsonResponseBuilder $jsonResponseBuilder,
         protected readonly UrlGenerator $urlGenerator,
         protected readonly ClientUrlHelper $clientUrlHelper,
+        protected readonly MessageBusInterface $messageBus,
     ) {
     }
 

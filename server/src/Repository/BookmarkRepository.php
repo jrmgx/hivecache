@@ -9,6 +9,7 @@ use App\Entity\Account;
 use App\Entity\Bookmark;
 use App\Entity\InstanceTag;
 use App\Entity\User;
+use App\Entity\UserTag;
 use App\Entity\UserTimelineEntry;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
@@ -84,6 +85,23 @@ class BookmarkRepository extends ServiceEntityRepository
             ->andWhere('o.outdated = false')
             ->andWhere('o.isPublic = true')
         ;
+    }
+
+    /**
+     * @return array<string> Bookmark Ids
+     */
+    public function findIdsByUserTag(UserTag $userTag): array
+    {
+        $result = $this->createQueryBuilder('o')
+            ->select('o.id')
+            ->join('o.userTags', 'ut')
+            ->andWhere('ut = :userTag')
+            ->setParameter('userTag', $userTag)
+            ->getQuery()
+            ->getSingleColumnResult()
+        ;
+
+        return array_map(strval(...), $result);
     }
 
     public function findOneByAccountAndId(Account $account, string $id, bool $onlyPublic): QueryBuilder
