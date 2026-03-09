@@ -1,8 +1,10 @@
 {
   "name": "hivecache-extension",
   "version": "0.0.1",
+  "type": "module",
   "description": "Browser extension for HiveCache",
   "scripts": {
+    "lint": "eslint --config eslint.config.js .",
     "build": "yarn copy:libs && yarn bundle",
     "copy:libs": "mkdir -p lib && cp node_modules/tom-select/dist/js/tom-select.complete.min.js lib/tom-select.complete.min.js && cp node_modules/tom-select/dist/css/tom-select.css lib/tom-select.css",
     "bundle": "yarn bundle:content && yarn bundle:background && yarn bundle:popup && yarn bundle:options",
@@ -19,8 +21,12 @@
     "clean": "rm -f *.js *.js.map lib/*.js lib/*.js.map"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.1",
     "@types/chrome": "^0.0.268",
     "@types/node": "^20.0.0",
+    "eslint": "^9.39.1",
+    "globals": "^16.5.0",
+    "typescript-eslint": "^8.46.4",
     "concurrently": "^9.2.1",
     "esbuild": "^0.19.12",
     "tsx": "^4.21.0",

@@ -3,6 +3,7 @@
 namespace client;
 
 use Castor\Attribute\AsArgument;
+use Castor\Attribute\AsOption;
 use Castor\Attribute\AsTask;
 
 use function Castor\context;
@@ -14,6 +15,7 @@ function install(): void
 {
     io()->title('Install dependencies');
 
+    run('yarn install', context: context()->withWorkingDirectory('./shared'));
     run('yarn install', context: context()->withWorkingDirectory('./client'));
 }
 
@@ -26,8 +28,11 @@ function watch(): void
 }
 
 #[AsTask(description: 'Build the production artifact')]
-function build(#[AsArgument] $toDirectory = '../client'): void
-{
+function build(
+    #[AsArgument] $toDirectory = '../client',
+    #[AsOption(description: 'Only verify build succeeds, skip copy to output directory')]
+    bool $verifyOnly = false,
+): void {
     io()->title('Build the production artifact');
 
     $styleGuideFile = './client/src/pages/Styleguide.tsx';
@@ -39,6 +44,10 @@ function build(#[AsArgument] $toDirectory = '../client'): void
 
     if (0 !== $exitCode) {
         throw new \RuntimeException('Build Failed.');
+    }
+
+    if ($verifyOnly) {
+        return;
     }
 
     $toDirectory = mb_rtrim($toDirectory, '/');

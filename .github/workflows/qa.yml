@@ -12,9 +12,42 @@ env:
   COMPOSE_ANSI: never
 
 jobs:
-  setup:
-    name: Setup
+  paths-filter:
+    name: Paths filter
     runs-on: ubuntu-latest
+    outputs:
+      server: ${{ steps.filter.outputs.server }}
+      client: ${{ steps.filter.outputs.client }}
+      extension: ${{ steps.filter.outputs.extension }}
+      docs: ${{ steps.filter.outputs.docs }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            server:
+              - 'server/**'
+              - 'tools/**'
+              - 'infrastructure/**'
+              - 'docker-compose*.yml'
+              - '.castor/**'
+              - '.github/workflows/qa.yml'
+            client:
+              - 'client/**'
+              - 'shared/**'
+            extension:
+              - 'extension/**'
+              - 'shared/**'
+            docs:
+              - 'docs/**'
+
+  build-builder:
+    name: Build Builder Image
+    runs-on: ubuntu-latest
+    needs: paths-filter
+    if: needs.paths-filter.outputs.server == 'true' || needs.paths-filter.outputs.docs == 'true'
     steps:
       - uses: actions/checkout@v4
 
@@ -41,6 +74,29 @@ jobs:
       - name: Debug - List Images
         run: docker images
 
+  setup:
+    name: Setup
+    runs-on: ubuntu-latest
+    needs: [paths-filter, build-builder]
+    if: needs.paths-filter.outputs.server == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: castor-php/setup-castor@v1.0.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Load Builder Image from Cache
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infrastructure/docker/services/php/Dockerfile
+          target: builder
+          tags: ${{ env.PROJECT_NAME }}-builder:latest
+          load: true
+          cache-from: type=gha
+
       - name: Cache vendor directories
         id: vendor-cache
         uses: actions/cache@v4
@@ -59,7 +115,8 @@ jobs:
   cs:
     name: PHP CS Fixer
     runs-on: ubuntu-latest
-    needs: setup
+    needs: [paths-filter, build-builder, setup]
+    if: needs.paths-filter.outputs.server == 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: castor-php/setup-castor@v1.0.0
@@ -96,7 +153,8 @@ jobs:
   phpstan:
     name: PHPStan
     runs-on: ubuntu-latest
-    needs: setup
+    needs: [paths-filter, build-builder, setup]
+    if: needs.paths-filter.outputs.server == 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: castor-php/setup-castor@v1.0.0
@@ -136,7 +194,8 @@ jobs:
   phpunit:
     name: PHPUnit
     runs-on: ubuntu-latest
-    needs: setup
+    needs: [paths-filter, build-builder, setup]
+    if: needs.paths-filter.outputs.server == 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: castor-php/setup-castor@v1.0.0
@@ -175,3 +234,106 @@ jobs:
 
       - name: Run PHPUnit
         run: castor qa:phpunit
+
+  client-qa:
+    name: Client QA
+    runs-on: ubuntu-latest
+    needs: paths-filter
+    if: needs.paths-filter.outputs.client == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: castor-php/setup-castor@v1.0.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Cache client and shared node_modules
+        id: client-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            client/node_modules
+            shared/node_modules
+          key: ${{ runner.os }}-client-${{ hashFiles('client/yarn.lock', 'shared/package.json') }}
+
+      - name: Install client dependencies
+        if: steps.client-cache.outputs.cache-hit != 'true'
+        run: castor client:install
+
+      - name: Lint
+        run: castor client:lint
+
+      - name: Build
+        run: castor client:build --verify-only
+
+  extension-qa:
+    name: Extension QA
+    runs-on: ubuntu-latest
+    needs: paths-filter
+    if: needs.paths-filter.outputs.extension == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: castor-php/setup-castor@v1.0.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Cache extension and shared node_modules
+        id: extension-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            extension/node_modules
+            shared/node_modules
+          key: ${{ runner.os }}-extension-${{ hashFiles('extension/yarn.lock', 'shared/package.json') }}
+
+      - name: Install extension dependencies
+        if: steps.extension-cache.outputs.cache-hit != 'true'
+        run: castor extension:install
+
+      - name: Lint
+        run: castor extension:lint
+
+      - name: Typecheck
+        run: castor extension:typecheck
+
+      - name: Build
+        run: castor extension:build
+
+  docs-qa:
+    name: Docs QA
+    runs-on: ubuntu-latest
+    needs: [paths-filter, build-builder]
+    if: needs.paths-filter.outputs.docs == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: castor-php/setup-castor@v1.0.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Load Builder Image from Cache
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infrastructure/docker/services/php/Dockerfile
+          target: builder
+          tags: ${{ env.PROJECT_NAME }}-builder:latest
+          load: true
+          cache-from: type=gha
+
+      - name: Build docs
+        run: castor qa:docs

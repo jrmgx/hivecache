@@ -1,4 +1,5 @@
 // Type declaration for TomSelect (loaded via CDN)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const TomSelect: any;
 
 import { getAPIHost, getJWTToken, uploadFileObject, createBookmark, fetchUserTags, ensureTagsExist } from './api';
@@ -10,6 +11,7 @@ import { formatTagName } from '@shared';
 document.addEventListener('DOMContentLoaded', () => {
     // Store user tags for tag input completion
     let userTags: Tag[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let tagsSelect: any = null;
     let currentUrl: string = '';
     const bookmarkForm = document.getElementById('bookmarkForm') as HTMLFormElement | null;
@@ -232,10 +234,10 @@ document.addEventListener('DOMContentLoaded', () => {
             maxOptions: null,
             closeAfterSelect: true,
             render: {
-                option: function(data: any, escape: (str: string) => string) {
+                option: function(data: { text: string }, escape: (str: string) => string) {
                     return `<div class="ts-option-text">${escape(data.text)}</div>`;
                 },
-                item: function(data: any, escape: (str: string) => string) {
+                item: function(data: { text: string }, escape: (str: string) => string) {
                     return `<div class="ts-item-text">${escape(data.text)}</div>`;
                 }
             }

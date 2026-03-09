@@ -1,5 +1,8 @@
 import * as esbuild from "esbuild";
 import * as path from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const entryPoints: Record<string, string> = {
   content: "./src/content.ts",
