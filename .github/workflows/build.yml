@@ -1,0 +1,123 @@
+name: Build
+
+on:
+  push:
+    branches: [main, dev]
+  workflow_dispatch:
+
+env:
+  PHP_VERSION: '8.4'
+  PROJECT_NAME: hivecache
+  COMPOSE_ANSI: never
+
+jobs:
+  build-client:
+    name: Build client
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: castor-php/setup-castor@v1.0.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Cache client dependencies
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            client/node_modules
+            shared/node_modules
+          key: ${{ runner.os }}-client-${{ hashFiles('client/yarn.lock', 'shared/package.json') }}
+
+      - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: castor client:install
+
+      - name: Build client
+        run: castor client:build --verify-only
+
+      - name: Upload client artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hivecache-client
+          path: client/dist/
+
+  build-extension:
+    name: Build extension
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: castor-php/setup-castor@v1.0.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Cache extension dependencies
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            extension/node_modules
+            shared/node_modules
+          key: ${{ runner.os }}-extension-${{ hashFiles('extension/yarn.lock', 'shared/package.json') }}
+
+      - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: castor extension:install
+
+      - name: Build extension
+        run: castor extension:build
+
+      - name: Upload extension artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hivecache-extension
+          path: extension/hivecache-extension.zip
+
+  build-docs:
+    name: Build docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: castor-php/setup-castor@v1.0.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and Cache Builder Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infrastructure/docker/services/php/Dockerfile
+          target: builder
+          tags: ${{ env.PROJECT_NAME }}-builder:latest
+          push: false
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            PHP_VERSION=${{ env.PHP_VERSION }}
+            PROJECT_NAME=${{ env.PROJECT_NAME }}
+
+      - name: Build docs
+        run: castor qa:docs
+
+      - name: Upload docs artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hivecache-docs
+          path: docs/book/
