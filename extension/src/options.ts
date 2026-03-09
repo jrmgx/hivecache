@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             normalizedUrl = normalizedUrl.replace(/\/$/, '');
             new URL(normalizedUrl);
-        } catch (error) {
+        } catch {
             showStatus('Please enter a valid URL (e.g., https://hivecache.test)', 'error');
             return;
         }

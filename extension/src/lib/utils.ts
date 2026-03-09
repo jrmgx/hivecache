@@ -11,7 +11,7 @@
 export function resolveURL(url: string, base: string): string {
     try {
         return new URL(url, base).href;
-    } catch (e) {
+    } catch {
         return url;
     }
 }

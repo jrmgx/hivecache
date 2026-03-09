@@ -6,11 +6,16 @@ use Castor\Attribute\AsOption;
 use Castor\Attribute\AsRawTokens;
 use Castor\Attribute\AsTask;
 
+use function Castor\context;
 use function Castor\io;
 use function Castor\run;
 use function Castor\variable;
+use function client\build as client_build;
+use function client\install as client_install;
 use function docker\docker_compose_run;
 use function docker\docker_exit_code;
+use function extension\build as extension_build;
+use function extension\install as extension_install;
 
 #[AsTask(description: 'Runs all QA tasks')]
 function all(): int
@@ -19,8 +24,59 @@ function all(): int
     $phpstan = phpstan();
     $twigCs = twigCs();
     $phpunit = phpunit();
+    $client = client();
+    $extension = extension();
+    $docs = docs();
 
-    return max($cs, $phpstan, $twigCs, $phpunit);
+    return max($cs, $phpstan, $twigCs, $phpunit, $client, $extension, $docs);
+}
+
+#[AsTask(description: 'Client lint + build')]
+function client(): int
+{
+    client_install();
+    $lint = run('castor client:lint', context: context()->withAllowFailure())->getExitCode();
+    if (0 !== $lint) {
+        return $lint;
+    }
+
+    try {
+        client_build(verifyOnly: true);
+    } catch (\Throwable) {
+        return 1;
+    }
+
+    return 0;
+}
+
+#[AsTask(description: 'Extension lint + build')]
+function extension(): int
+{
+    extension_install();
+    $lint = run('castor extension:lint', context: context()->withAllowFailure())->getExitCode();
+    if (0 !== $lint) {
+        return $lint;
+    }
+    $typecheck = run('castor extension:typecheck', context: context()->withAllowFailure())->getExitCode();
+    if (0 !== $typecheck) {
+        return $typecheck;
+    }
+
+    try {
+        extension_build();
+    } catch (\Throwable) {
+        return 1;
+    }
+
+    return 0;
+}
+
+#[AsTask(description: 'Docs build')]
+function docs(): int
+{
+    io()->section('Building mdbook documentation...');
+
+    return docker_exit_code('mdbook build', workDir: '/var/www/docs');
 }
 
 #[AsTask(description: 'Installs tooling')]

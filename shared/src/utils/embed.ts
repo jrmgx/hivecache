@@ -51,8 +51,8 @@ function convertPeerTubeUrl(url: string): string | null {
   if (videoId.length === 22) {
     try {
       const buffer = base58.decode(videoId);
-      const uuidCondensed = Array.from(buffer)
-        .map((b) => b.toString(16).padStart(2, '0'))
+      const uuidCondensed = Array.from(buffer as Uint8Array)
+        .map((b: number) => b.toString(16).padStart(2, '0'))
         .join('');
 
       const uuidMatch = uuidCondensed.match(

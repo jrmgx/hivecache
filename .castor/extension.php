@@ -14,6 +14,7 @@ function install(): void
 {
     io()->title('Install dependencies');
 
+    run('yarn install', context: context()->withWorkingDirectory('./shared'));
     run('yarn install', context: context()->withWorkingDirectory('./extension'));
 }
 
@@ -102,7 +103,5 @@ function lint(): void
 {
     io()->title('Lint code');
 
-    io()->warning('ESLint is not configured for the extension. Skipping lint task.');
-    // TODO: Add eslint configuration to extension
-    // run('yarn run eslint .', context: context()->withWorkingDirectory('./extension'));
+    run('yarn run lint', context: context()->withWorkingDirectory('./extension'));
 }
