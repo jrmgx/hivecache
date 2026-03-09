@@ -27,6 +27,8 @@ export const MeSection = ({
   const isSocialTagPage = location.pathname.startsWith('/social/tag/');
   const isInstancePage = location.pathname === '/social/instance/this' || location.pathname === '/social/instance/other';
   const isHomepageActive = selectedTagSlugs.length === 0 && !isTagsPage && !isTimelinePage && !isSocialTagPage && !isInstancePage;
+  const isSocialView = isTimelinePage || isSocialTagPage || isInstancePage;
+  const meSelectedTagSlugs = isSocialView ? [] : selectedTagSlugs;
 
   return (
     <SidebarSection
@@ -42,7 +44,7 @@ export const MeSection = ({
       )}
       <TagList
         tags={tags}
-        selectedTagSlugs={selectedTagSlugs}
+        selectedTagSlugs={meSelectedTagSlugs}
         pinnedTags={pinnedTags}
         onTagToggle={onTagToggle}
       />

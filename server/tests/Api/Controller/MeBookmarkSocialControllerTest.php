@@ -38,6 +38,41 @@ class MeBookmarkSocialControllerTest extends BaseApiTestCase
         $this->assertBookmarkCollection($json['collection'], private: false);
     }
 
+    public function testGetTimelineReturnsBookmarksFilteredByInstanceTag(): void
+    {
+        [$user, $token] = $this->createAuthenticatedUserAccount('testuser', 'test');
+
+        $account = AccountFactory::createOneWithUsernameAndInstance('otheruser');
+        $tag = InstanceTagFactory::createOne(['name' => 'Timeline Filter Tag']);
+        $bookmarkWithTag = BookmarkFactory::createOne([
+            'account' => $account,
+            'isPublic' => true,
+            'instanceTags' => new ArrayCollection([$tag]),
+        ]);
+        $bookmarkWithoutTag = BookmarkFactory::createOne([
+            'account' => $account,
+            'isPublic' => true,
+        ]);
+        UserTimelineEntryFactory::createOne([
+            'bookmark' => $bookmarkWithTag,
+            'owner' => $user,
+        ]);
+        UserTimelineEntryFactory::createOne([
+            'bookmark' => $bookmarkWithoutTag,
+            'owner' => $user,
+        ]);
+
+        $this->request('GET', '/users/me/bookmarks/social/timeline?tags=' . $tag->slug, ['auth_bearer' => $token]);
+        $this->assertResponseIsSuccessful();
+
+        $json = $this->getResponseArray();
+        $this->assertArrayHasKey('collection', $json);
+        $this->assertIsArray($json['collection']);
+        $bookmarkIds = array_column($json['collection'], 'id');
+        $this->assertContains($bookmarkWithTag->id, $bookmarkIds);
+        $this->assertNotContains($bookmarkWithoutTag->id, $bookmarkIds);
+    }
+
     public function testGetTagBookmarksReturnsBookmarks(): void
     {
         [, $token] = $this->createAuthenticatedUserAccount('testuser', 'test');

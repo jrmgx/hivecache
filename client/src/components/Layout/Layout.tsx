@@ -88,7 +88,6 @@ export const Layout = () => {
     }
   }, [isProfileMode, profileContext.baseUrl, profileContext.username, profileContext.isLoading]);
 
-  // Navigation handlers
   const handleTagToggle = (slug: string) => {
     const newSelectedSlugs = toggleTag(slug, selectedTagSlugs);
     const newParams = updateTagParams(newSelectedSlugs, searchParams);
@@ -103,11 +102,21 @@ export const Layout = () => {
       if (isTagsPage) {
         navigate(`/me?${newParams.toString()}`);
       } else if (isTimelinePage || isSocialTagPage || isInstancePage) {
-        // On timeline, social tag, or instance pages, navigate to /me with tag filter
-        navigate(`/me?${newParams.toString()}`);
+        setSearchParams(newParams);
       } else {
         setSearchParams(newParams);
       }
+    }
+  };
+
+  const handleMeTagToggle = (slug: string) => {
+    const newSelectedSlugs = toggleTag(slug, selectedTagSlugs);
+    const newParams = updateTagParams(newSelectedSlugs, new URLSearchParams());
+
+    if (isTimelinePage || isSocialTagPage || isInstancePage) {
+      navigate(`/me?${newParams.toString()}`);
+    } else {
+      handleTagToggle(slug);
     }
   };
 
@@ -127,13 +136,14 @@ export const Layout = () => {
 
   const handleClearTags = () => {
     const params = updateTagParams([], searchParams);
-    if (isTagsPage || isTimelinePage || isSocialTagPage || isInstancePage) {
-      // If on tags page, timeline page, social tag page, or instance page, navigate back to home page
+    if (isTagsPage) {
       if (isProfileMode) {
         navigate(`/social/${profileIdentifier}?${params.toString()}`);
       } else {
         navigate(`/me?${params.toString()}`);
       }
+    } else if (isTimelinePage || isSocialTagPage || isInstancePage) {
+      setSearchParams(params);
     } else {
       setSearchParams(params);
     }
@@ -218,7 +228,7 @@ export const Layout = () => {
           key="me"
           tags={tags}
           selectedTagSlugs={selectedTagSlugs}
-          onTagToggle={handleTagToggle}
+          onTagToggle={handleMeTagToggle}
           onNavigateToTags={handleNavigateToTags}
           onClearTags={handleClearTags}
           isTagsPage={isTagsPage}
@@ -226,7 +236,13 @@ export const Layout = () => {
       );
     }
     if (isAuthenticated()) {
-      sections.push(<SocialSection key="social" />);
+      sections.push(
+        <SocialSection
+          key="social"
+          selectedTagSlugs={selectedTagSlugs}
+          onTagToggle={handleTagToggle}
+        />
+      );
       sections.push(<SettingsSection key="settings" />);
     }
     sections.push(<AboutSection key="about" defaultCollapsed={isAuthenticated()} />);

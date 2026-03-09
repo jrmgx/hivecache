@@ -37,9 +37,9 @@ export interface ApiClient {
   getBookmarkIndexDiff(before?: string): Promise<BookmarkIndexDiffResponse>;
   getBookmark(id: string): Promise<Bookmark | null>;
   getBookmarkHistory(id: string): Promise<BookmarksResponse>;
-  getSocialTimeline(after?: string): Promise<BookmarksResponse>;
+  getSocialTimeline(after?: string, tags?: string): Promise<BookmarksResponse>;
   getSocialTagBookmarks(slug: string, after?: string): Promise<BookmarksResponse>;
-  getInstanceBookmarks(type: 'this' | 'other', after?: string): Promise<BookmarksResponse>;
+  getInstanceBookmarks(type: 'this' | 'other', after?: string, tags?: string): Promise<BookmarksResponse>;
   createBookmark(payload: BookmarkCreate): Promise<BookmarkOwner>;
   updateBookmark(id: string, payload: BookmarkUpdate): Promise<Bookmark>;
   updateBookmarkTags(id: string, tagSlugs: string[]): Promise<Bookmark>;
@@ -325,11 +325,12 @@ export function createApiClient(config: ApiConfig): ApiClient {
      * Gets social timeline bookmarks
      * Returns public bookmarks from users you follow and your instance
      */
-    async getSocialTimeline(after?: string): Promise<BookmarksResponse> {
-      let url = `${baseUrl}/users/me/bookmarks/social/timeline`;
-      if (after) {
-        url += `?after=${encodeURIComponent(after)}`;
-      }
+    async getSocialTimeline(after?: string, tags?: string): Promise<BookmarksResponse> {
+      const params = new URLSearchParams();
+      if (after) params.set('after', after);
+      if (tags) params.set('tags', tags);
+      const query = params.toString();
+      const url = `${baseUrl}/users/me/bookmarks/social/timeline${query ? `?${query}` : ''}`;
 
       const response = await fetch(url, {
         method: 'GET',
@@ -505,11 +506,12 @@ export function createApiClient(config: ApiConfig): ApiClient {
      * Gets instance bookmarks
      * Returns public bookmarks from the current instance (type: 'this') or other instances (type: 'other')
      */
-    async getInstanceBookmarks(type: 'this' | 'other', after?: string): Promise<BookmarksResponse> {
-      let url = `${baseUrl}/instance/${type}`;
-      if (after) {
-        url += `?after=${encodeURIComponent(after)}`;
-      }
+    async getInstanceBookmarks(type: 'this' | 'other', after?: string, tags?: string): Promise<BookmarksResponse> {
+      const params = new URLSearchParams();
+      if (after) params.set('after', after);
+      if (tags) params.set('tags', tags);
+      const query = params.toString();
+      const url = `${baseUrl}/instance/${type}${query ? `?${query}` : ''}`;
 
       const response = await fetch(url, {
         method: 'GET',

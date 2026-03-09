@@ -4,6 +4,7 @@ namespace App\Tests\Api\Controller;
 
 use App\Factory\AccountFactory;
 use App\Factory\BookmarkFactory;
+use App\Factory\InstanceTagFactory;
 use App\Factory\UserFactory;
 use App\Factory\UserTagFactory;
 use App\Tests\BaseApiTestCase;
@@ -70,5 +71,38 @@ class InstanceTest extends BaseApiTestCase
         $tag = $foundBookmark['tags'][0];
         $this->assertEquals('Public Tag', $tag['name'], 'Should contain the public tag');
         $this->assertEquals('public-tag', $tag['slug']);
+    }
+
+    public function testInstanceThisEndpointFiltersByInstanceTag(): void
+    {
+        $user = UserFactory::createOne(['username' => 'testuser']);
+        $account = AccountFactory::createOneWithUsernameAndInstance('testuser', AccountFactory::TEST_INSTANCE, [
+            'owner' => $user,
+        ]);
+
+        $instanceTag = InstanceTagFactory::createOne(['name' => 'Instance Filter Tag']);
+        $bookmarkWithTag = BookmarkFactory::createOne([
+            'account' => $account,
+            'title' => 'Bookmark With Instance Tag',
+            'url' => 'https://example.com/with-tag',
+            'isPublic' => true,
+            'instanceTags' => new ArrayCollection([$instanceTag]),
+        ]);
+        $bookmarkWithoutTag = BookmarkFactory::createOne([
+            'account' => $account,
+            'title' => 'Bookmark Without Instance Tag',
+            'url' => 'https://example.com/without-tag',
+            'isPublic' => true,
+        ]);
+
+        $this->request('GET', '/instance/this?tags=' . $instanceTag->slug);
+        $this->assertResponseIsSuccessful();
+
+        $json = $this->getResponseArray();
+        $this->assertArrayHasKey('collection', $json);
+        $this->assertIsArray($json['collection']);
+        $bookmarkIds = array_column($json['collection'], 'id');
+        $this->assertContains($bookmarkWithTag->id, $bookmarkIds);
+        $this->assertNotContains($bookmarkWithoutTag->id, $bookmarkIds);
     }
 }

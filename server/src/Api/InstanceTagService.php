@@ -30,6 +30,10 @@ final readonly class InstanceTagService
         return $instanceTag;
     }
 
+    /**
+     * Sync instanceTags from userTags: rebuilds the collection from scratch,
+     * so both additions and removals of user tags are reflected.
+     */
     public function synchronize(Bookmark $bookmark): void
     {
         $bookmark->instanceTags->clear();
