@@ -155,7 +155,6 @@ class BookmarkRepository extends ServiceEntityRepository
     /**
      * Apply filters:
      * - tags: all given tags must be present and extra tags can be present
-     * - search: fulltext search in title, url and description TODO
      *
      * @param array<string> $tagSlugs
      */
@@ -175,5 +174,33 @@ class BookmarkRepository extends ServiceEntityRepository
         ;
 
         return $onlyPublic ? $qb->andWhere('t.isPublic = true') : $qb;
+    }
+
+    /**
+     * Apply instance tag filters (AND logic: bookmark must have all given tags).
+     * Uses subquery to avoid GROUP BY conflicts with existing joins (e.g. UserTimelineEntry).
+     *
+     * @param array<string> $tagSlugs Instance tag slugs
+     */
+    public function applyInstanceTagFilters(QueryBuilder $qb, array $tagSlugs): QueryBuilder
+    {
+        if (0 === \count($tagSlugs)) {
+            return $qb;
+        }
+
+        $subQb = $this->createQueryBuilder('sub')
+            ->select('sub.id')
+            ->join('sub.instanceTags', 'it')
+            ->andWhere('it.slug IN (:instanceTagSlugs)')
+            ->setParameter('instanceTagSlugs', $tagSlugs)
+            ->groupBy('sub.id')
+            ->having('COUNT(DISTINCT it.id) = :instanceTagCount')
+            ->setParameter('instanceTagCount', \count($tagSlugs))
+        ;
+
+        return $qb->andWhere($qb->expr()->in('o.id', $subQb->getDQL()))
+            ->setParameter('instanceTagSlugs', $tagSlugs)
+            ->setParameter('instanceTagCount', \count($tagSlugs))
+        ;
     }
 }

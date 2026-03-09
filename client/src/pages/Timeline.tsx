@@ -1,15 +1,20 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Bookmark } from '../components/Bookmark/Bookmark';
 import { BookmarkListing } from '../components/Bookmark/BookmarkListing';
 import { Masonry } from '../components/Masonry/Masonry';
 import { ErrorAlert } from '../components/ErrorAlert/ErrorAlert';
 import { getSocialTimeline, getCursorFromUrl, ApiError } from '../services/api';
+import { toggleTag, updateTagParams } from '../utils/tags';
 import type { Bookmark as BookmarkType, BookmarkWithAccount } from '../types';
 import { LAYOUT_DEFAULT, LAYOUT_IMAGE, LAYOUT_LISTING } from '../types';
 
 export const Timeline = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tagQueryString = searchParams.get('tags') || '';
+  const selectedTagSlugs = tagQueryString ? tagQueryString.split(',').filter(Boolean) : [];
+
   const [bookmarks, setBookmarks] = useState<BookmarkType[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [errorStatus, setErrorStatus] = useState<number | null>(null);
@@ -18,7 +23,6 @@ export const Timeline = () => {
   const [nextPage, setNextPage] = useState<string | null>(null);
   const observerTarget = useRef<HTMLDivElement>(null);
 
-  // Load initial data
   const loadData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -26,7 +30,7 @@ export const Timeline = () => {
     setBookmarks([]);
     setNextPage(null);
     try {
-      const bookmarksResponse = await getSocialTimeline();
+      const bookmarksResponse = await getSocialTimeline(undefined, tagQueryString || undefined);
       setBookmarks(bookmarksResponse.collection);
       setNextPage(bookmarksResponse.nextPage);
     } catch (err: unknown) {
@@ -38,7 +42,7 @@ export const Timeline = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [tagQueryString]);
 
   useEffect(() => {
     loadData();
@@ -50,7 +54,7 @@ export const Timeline = () => {
     setIsLoadingMore(true);
     try {
       const cursor = getCursorFromUrl(nextPage);
-      const response = await getSocialTimeline(cursor);
+      const response = await getSocialTimeline(cursor, tagQueryString || undefined);
       setBookmarks((prev) => [...prev, ...response.collection]);
       setNextPage(response.nextPage);
     } catch (err: unknown) {
@@ -58,7 +62,13 @@ export const Timeline = () => {
     } finally {
       setIsLoadingMore(false);
     }
-  }, [nextPage, isLoadingMore]);
+  }, [nextPage, isLoadingMore, tagQueryString]);
+
+  const handleTagToggle = useCallback((slug: string) => {
+    const newSelectedSlugs = toggleTag(slug, selectedTagSlugs);
+    const newParams = updateTagParams(newSelectedSlugs, searchParams);
+    setSearchParams(newParams);
+  }, [selectedTagSlugs, searchParams, setSearchParams]);
 
   // Intersection Observer for infinite scroll
   useEffect(() => {
@@ -109,7 +119,6 @@ export const Timeline = () => {
     }
   };
 
-  // Use default layout for timeline (no tag filtering)
   const layout: string = LAYOUT_DEFAULT;
   const isLayoutImage = layout === LAYOUT_IMAGE;
   const isLayoutListing = layout === LAYOUT_LISTING;
@@ -130,17 +139,15 @@ export const Timeline = () => {
           {bookmarks.length > 0 ? (
             <>
               {isLayoutImage ? (
-                <Masonry bookmarks={bookmarks} />
+                <Masonry bookmarks={bookmarks} selectedTagSlugs={selectedTagSlugs} onTagToggle={handleTagToggle} />
               ) : isLayoutListing ? (
                 <div>
                   {bookmarks.map((bookmark) => (
                     <BookmarkListing
                       key={bookmark.id}
                       bookmark={bookmark}
-                      selectedTagSlugs={[]}
-                      onTagToggle={() => {
-                        // Timeline doesn't support tag filtering
-                      }}
+                      selectedTagSlugs={selectedTagSlugs}
+                      onTagToggle={handleTagToggle}
                       onShow={() => handleShow(bookmark.id, bookmark)}
                       hideAddTagButton={true}
                       isProfileMode={true}
@@ -154,10 +161,8 @@ export const Timeline = () => {
                       key={bookmark.id}
                       bookmark={bookmark}
                       layout={layout}
-                      selectedTagSlugs={[]}
-                      onTagToggle={() => {
-                        // Timeline doesn't support tag filtering
-                      }}
+                      selectedTagSlugs={selectedTagSlugs}
+                      onTagToggle={handleTagToggle}
                       onShow={() => handleShow(bookmark.id, bookmark)}
                       hideAddTagButton={true}
                       isProfileMode={true}
@@ -179,7 +184,7 @@ export const Timeline = () => {
           ) : (
             <div className="row">
               <div className="col-12 text-center pt-5">
-                <strong>No bookmarks in timeline!</strong>
+                <strong>No bookmarks</strong>
               </div>
             </div>
           )}

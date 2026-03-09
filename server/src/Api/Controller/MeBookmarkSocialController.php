@@ -32,6 +32,11 @@ final class MeBookmarkSocialController extends BookmarkController
                 description: 'Cursor for pagination - bookmark ID to fetch results after',
                 schema: new OA\Schema(type: 'string', format: 'uuid')
             ),
+            new OA\QueryParameter(
+                name: 'tags',
+                description: 'Comma-separated instance tag slugs to filter by (AND logic)',
+                schema: new OA\Schema(type: 'string', example: 'tag-one,tag-two')
+            ),
         ],
         responses: [
             new OA\Response(
@@ -75,8 +80,12 @@ final class MeBookmarkSocialController extends BookmarkController
     public function timeline(
         #[CurrentUser] User $user,
         #[MapQueryParameter(name: 'after')] ?string $afterQueryString = null,
+        #[MapQueryParameter(name: 'tags')] ?string $tagQueryString = null,
     ): JsonResponse {
+        $tagSlugs = $this->parseTagSlugs($tagQueryString);
+
         $qb = $this->bookmarkRepository->findTimelineByOwner($user);
+        $qb = $this->bookmarkRepository->applyInstanceTagFilters($qb, $tagSlugs);
 
         return $this->responseFromQueryBuilder(
             $qb,
@@ -84,6 +93,8 @@ final class MeBookmarkSocialController extends BookmarkController
             ['bookmark:show:public', 'tag:show:public'],
             RouteType::MeBookmarks,
             RouteAction::SocialTimeline,
+            [],
+            $tagSlugs,
         );
     }
 

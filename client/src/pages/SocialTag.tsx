@@ -182,7 +182,7 @@ export const SocialTag = () => {
           ) : (
             <div className="row">
               <div className="col-12 text-center pt-5">
-                <strong>No bookmarks in timeline!</strong>
+                <strong>No bookmarks</strong>
               </div>
             </div>
           )}

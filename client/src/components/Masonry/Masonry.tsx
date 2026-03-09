@@ -4,6 +4,8 @@ import type { Bookmark } from '../../types';
 
 interface MasonryProps {
   bookmarks: Bookmark[];
+  selectedTagSlugs?: string[];
+  onTagToggle?: (slug: string) => void;
 }
 
 const getNumColumns = () => {

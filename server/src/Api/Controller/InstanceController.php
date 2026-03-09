@@ -61,6 +61,11 @@ final class InstanceController extends BookmarkController
                 description: 'Cursor for pagination - bookmark ID to fetch results after',
                 schema: new OA\Schema(type: 'string', format: 'uuid')
             ),
+            new OA\QueryParameter(
+                name: 'tags',
+                description: 'Comma-separated instance tag slugs to filter by (AND logic)',
+                schema: new OA\Schema(type: 'string', example: 'tag-one,tag-two')
+            ),
         ],
         responses: [
             new OA\Response(
@@ -99,13 +104,21 @@ final class InstanceController extends BookmarkController
     #[Route(path: '/this', name: RouteAction::This->value, methods: ['GET'])]
     public function this(
         #[MapQueryParameter(name: 'after')] ?string $afterQueryString = null,
+        #[MapQueryParameter(name: 'tags')] ?string $tagQueryString = null,
     ): JsonResponse {
+        $tagSlugs = $this->parseTagSlugs($tagQueryString);
+
         $qb = $this->bookmarkRepository->findByThisInstance($this->instanceHost);
+        $qb = $this->bookmarkRepository->applyInstanceTagFilters($qb, $tagSlugs);
 
         return $this->responseFromQueryBuilder(
-            $qb, $afterQueryString,
+            $qb,
+            $afterQueryString,
             ['bookmark:show:public', 'tag:show:public'],
-            RouteType::Instance, RouteAction::This,
+            RouteType::Instance,
+            RouteAction::This,
+            [],
+            $tagSlugs,
         );
     }
 
@@ -120,6 +133,11 @@ final class InstanceController extends BookmarkController
                 name: 'after',
                 description: 'Cursor for pagination - bookmark ID to fetch results after',
                 schema: new OA\Schema(type: 'string', format: 'uuid')
+            ),
+            new OA\QueryParameter(
+                name: 'tags',
+                description: 'Comma-separated instance tag slugs to filter by (AND logic)',
+                schema: new OA\Schema(type: 'string', example: 'tag-one,tag-two')
             ),
         ],
         responses: [
@@ -159,13 +177,21 @@ final class InstanceController extends BookmarkController
     #[Route(path: '/other', name: RouteAction::Other->value, methods: ['GET'])]
     public function other(
         #[MapQueryParameter(name: 'after')] ?string $afterQueryString = null,
+        #[MapQueryParameter(name: 'tags')] ?string $tagQueryString = null,
     ): Response {
+        $tagSlugs = $this->parseTagSlugs($tagQueryString);
+
         $qb = $this->bookmarkRepository->findByOtherInstance($this->instanceHost);
+        $qb = $this->bookmarkRepository->applyInstanceTagFilters($qb, $tagSlugs);
 
         return $this->responseFromQueryBuilder(
-            $qb, $afterQueryString,
+            $qb,
+            $afterQueryString,
             ['bookmark:show:public', 'tag:show:public'],
-            RouteType::Instance, RouteAction::Other,
+            RouteType::Instance,
+            RouteAction::Other,
+            [],
+            $tagSlugs,
         );
     }
 }

@@ -130,9 +130,9 @@ export const getBookmarkHistory = async (id: string): Promise<BookmarksResponse>
  * Get social timeline bookmarks
  * Returns public bookmarks from users you follow and your instance
  */
-export const getSocialTimeline = async (after?: string): Promise<BookmarksResponse> => {
+export const getSocialTimeline = async (after?: string, tags?: string): Promise<BookmarksResponse> => {
   const client = await getOrCreateApiClient();
-  return client.getSocialTimeline(after);
+  return client.getSocialTimeline(after, tags);
 };
 
 /**
@@ -148,9 +148,9 @@ export const getSocialTagBookmarks = async (slug: string, after?: string): Promi
  * Get instance bookmarks
  * Returns public bookmarks from the current instance (type: 'this') or other instances (type: 'other')
  */
-export const getInstanceBookmarks = async (type: 'this' | 'other', after?: string): Promise<BookmarksResponse> => {
+export const getInstanceBookmarks = async (type: 'this' | 'other', after?: string, tags?: string): Promise<BookmarksResponse> => {
   const client = await getOrCreateApiClient();
-  return client.getInstanceBookmarks(type, after);
+  return client.getInstanceBookmarks(type, after, tags);
 };
 
 /**

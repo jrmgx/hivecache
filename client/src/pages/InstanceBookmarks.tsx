@@ -1,17 +1,22 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Bookmark } from '../components/Bookmark/Bookmark';
 import { BookmarkListing } from '../components/Bookmark/BookmarkListing';
 import { Masonry } from '../components/Masonry/Masonry';
 import { ErrorAlert } from '../components/ErrorAlert/ErrorAlert';
 import { getInstanceBookmarks, getCursorFromUrl, ApiError } from '../services/api';
+import { toggleTag, updateTagParams } from '../utils/tags';
 import type { Bookmark as BookmarkType, BookmarkWithAccount } from '../types';
 import { LAYOUT_DEFAULT, LAYOUT_IMAGE, LAYOUT_LISTING } from '../types';
 
 export const InstanceBookmarks = () => {
   const navigate = useNavigate();
   const { type } = useParams<{ type: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
   const instanceType = (type === 'this' || type === 'other') ? type : 'this';
+  const tagQueryString = searchParams.get('tags') || '';
+  const selectedTagSlugs = tagQueryString ? tagQueryString.split(',').filter(Boolean) : [];
+
   const [bookmarks, setBookmarks] = useState<BookmarkType[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [errorStatus, setErrorStatus] = useState<number | null>(null);
@@ -20,7 +25,6 @@ export const InstanceBookmarks = () => {
   const [nextPage, setNextPage] = useState<string | null>(null);
   const observerTarget = useRef<HTMLDivElement>(null);
 
-  // Load initial data
   const loadData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -28,7 +32,7 @@ export const InstanceBookmarks = () => {
     setBookmarks([]);
     setNextPage(null);
     try {
-      const bookmarksResponse = await getInstanceBookmarks(instanceType);
+      const bookmarksResponse = await getInstanceBookmarks(instanceType, undefined, tagQueryString || undefined);
       setBookmarks(bookmarksResponse.collection);
       setNextPage(bookmarksResponse.nextPage);
     } catch (err: unknown) {
@@ -40,7 +44,7 @@ export const InstanceBookmarks = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [instanceType]);
+  }, [instanceType, tagQueryString]);
 
   useEffect(() => {
     loadData();
@@ -52,7 +56,7 @@ export const InstanceBookmarks = () => {
     setIsLoadingMore(true);
     try {
       const cursor = getCursorFromUrl(nextPage);
-      const response = await getInstanceBookmarks(instanceType, cursor);
+      const response = await getInstanceBookmarks(instanceType, cursor, tagQueryString || undefined);
       setBookmarks((prev) => [...prev, ...response.collection]);
       setNextPage(response.nextPage);
     } catch (err: unknown) {
@@ -60,7 +64,13 @@ export const InstanceBookmarks = () => {
     } finally {
       setIsLoadingMore(false);
     }
-  }, [nextPage, isLoadingMore, instanceType]);
+  }, [nextPage, isLoadingMore, instanceType, tagQueryString]);
+
+  const handleTagToggle = useCallback((slug: string) => {
+    const newSelectedSlugs = toggleTag(slug, selectedTagSlugs);
+    const newParams = updateTagParams(newSelectedSlugs, searchParams);
+    setSearchParams(newParams);
+  }, [selectedTagSlugs, searchParams, setSearchParams]);
 
   // Intersection Observer for infinite scroll
   useEffect(() => {
@@ -111,7 +121,6 @@ export const InstanceBookmarks = () => {
     }
   };
 
-  // Use default layout for timeline (no tag filtering)
   const layout: string = LAYOUT_DEFAULT;
   const isLayoutImage = layout === LAYOUT_IMAGE;
   const isLayoutListing = layout === LAYOUT_LISTING;
@@ -132,17 +141,15 @@ export const InstanceBookmarks = () => {
           {bookmarks.length > 0 ? (
             <>
               {isLayoutImage ? (
-                <Masonry bookmarks={bookmarks} />
+                <Masonry bookmarks={bookmarks} selectedTagSlugs={selectedTagSlugs} onTagToggle={handleTagToggle} />
               ) : isLayoutListing ? (
                 <div>
                   {bookmarks.map((bookmark) => (
                     <BookmarkListing
                       key={bookmark.id}
                       bookmark={bookmark}
-                      selectedTagSlugs={[]}
-                      onTagToggle={() => {
-                        // Timeline doesn't support tag filtering
-                      }}
+                      selectedTagSlugs={selectedTagSlugs}
+                      onTagToggle={handleTagToggle}
                       onShow={() => handleShow(bookmark.id, bookmark)}
                       hideAddTagButton={true}
                       isProfileMode={true}
@@ -156,10 +163,8 @@ export const InstanceBookmarks = () => {
                       key={bookmark.id}
                       bookmark={bookmark}
                       layout={layout}
-                      selectedTagSlugs={[]}
-                      onTagToggle={() => {
-                        // Timeline doesn't support tag filtering
-                      }}
+                      selectedTagSlugs={selectedTagSlugs}
+                      onTagToggle={handleTagToggle}
                       onShow={() => handleShow(bookmark.id, bookmark)}
                       hideAddTagButton={true}
                       isProfileMode={true}
@@ -181,7 +186,7 @@ export const InstanceBookmarks = () => {
           ) : (
             <div className="row">
               <div className="col-12 text-center pt-5">
-                <strong>No bookmarks in timeline!</strong>
+                <strong>No bookmarks</strong>
               </div>
             </div>
           )}

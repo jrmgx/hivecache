@@ -55,12 +55,7 @@ abstract class BookmarkController extends AbstractController
         bool $onlyPublic = true,
         int $resultPerPage = 24,
     ): JsonResponse {
-        $tagSlugs = [];
-        if ($tagQueryString) {
-            $tagSlugs = explode(',', $tagQueryString);
-            $tagSlugs = array_map(fn (string $t) => mb_trim($t), $tagSlugs);
-            $tagSlugs = array_filter($tagSlugs, fn (string $t) => '' !== $t);
-        }
+        $tagSlugs = $this->parseTagSlugs($tagQueryString);
 
         $qb = $this->bookmarkRepository->findByAccount($account, $onlyPublic);
         $qb = $this->bookmarkRepository->applyFilters($qb, $tagSlugs, $onlyPublic);
@@ -75,6 +70,20 @@ abstract class BookmarkController extends AbstractController
             $tagSlugs,
             $resultPerPage
         );
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function parseTagSlugs(?string $tagQueryString): array
+    {
+        if (!$tagQueryString) {
+            return [];
+        }
+        $tagSlugs = explode(',', $tagQueryString);
+        $tagSlugs = array_map(fn (string $t) => mb_trim($t), $tagSlugs);
+
+        return array_values(array_filter($tagSlugs, fn (string $t) => '' !== $t));
     }
 
     /**
