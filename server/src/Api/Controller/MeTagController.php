@@ -7,6 +7,7 @@ namespace App\Api\Controller;
 use App\Api\Config\RouteAction;
 use App\Api\Config\RouteType;
 use App\Api\Dto\UserTagApiDto;
+use App\Api\Message\SynchronizeBookmarksForUserTagMessage;
 use App\Entity\User;
 use App\Entity\UserTag;
 use Doctrine\ORM\Exception\ORMException;
@@ -321,6 +322,7 @@ final class MeTagController extends TagController
 
         if (isset($tagPayload->isPublic)) {
             $userTag->isPublic = $tagPayload->isPublic;
+            $this->messageBus->dispatch(new SynchronizeBookmarksForUserTagMessage($userTag->id));
         }
 
         // Meta is merge only

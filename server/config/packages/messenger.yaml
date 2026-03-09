@@ -8,18 +8,21 @@ framework:
 
         routing:
             'App\ActivityPub\Message\*': async
+            'App\Api\Message\*': async
 
 when@dev:
     framework:
         messenger:
             routing:
                 'App\ActivityPub\Message\*': sync # So we can inspect those in the profiler
+                'App\Api\Message\*': sync
 
 when@test:
     framework:
         messenger:
             routing:
                 'App\ActivityPub\Message\*': transport_debug
+                'App\Api\Message\*': transport_debug
                 # 'App\ActivityPub\Message\SendMessage': transport_null
             transports:
                 # For more Messenger testing tools, see https://github.com/zenstruck/messenger-test
@@ -31,6 +34,7 @@ when@test_ap_server:
         messenger:
             routing:
                 'App\ActivityPub\Message\*': transport_debug
+                'App\Api\Message\*': transport_debug
                 'App\ActivityPub\Message\SendMessage': transport_null
             transports:
                 transport_debug: 'sync://'

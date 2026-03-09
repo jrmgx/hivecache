@@ -4,6 +4,8 @@ namespace App\Api;
 
 use App\Entity\Bookmark;
 use App\Entity\InstanceTag;
+use App\Entity\UserTag;
+use App\Repository\BookmarkRepository;
 use App\Repository\InstanceTagRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\String\Slugger\AsciiSlugger;
@@ -13,6 +15,7 @@ final readonly class InstanceTagService
 {
     public function __construct(
         private InstanceTagRepository $instanceTagRepository,
+        private BookmarkRepository $bookmarkRepository,
         private EntityManagerInterface $entityManager,
     ) {
     }
@@ -42,6 +45,31 @@ final readonly class InstanceTagService
                 continue;
             }
             $bookmark->instanceTags->add($this->findOrCreate($userTag->name));
+        }
+    }
+
+    /**
+     * Re-sync instance tags on all bookmarks that have this user tag.
+     * Call when a user tag's isPublic changes so instance tags stay in sync.
+     * Processes in batches to avoid OOM with large bookmark counts.
+     */
+    public function synchronizeBookmarksForUserTag(UserTag $userTag): void
+    {
+        $ids = $this->bookmarkRepository->findIdsByUserTag($userTag);
+        foreach (array_chunk($ids, 100) as $batchIds) {
+            $bookmarks = $this->bookmarkRepository->createQueryBuilder('o')
+                ->join('o.userTags', 'ut')
+                ->addSelect('ut')
+                ->andWhere('o.id IN (:ids)')
+                ->setParameter('ids', $batchIds)
+                ->getQuery()
+                ->getResult()
+            ;
+            foreach ($bookmarks as $bookmark) {
+                $this->synchronize($bookmark);
+            }
+            $this->entityManager->flush();
+            $this->entityManager->clear();
         }
     }
 
