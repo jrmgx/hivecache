@@ -29,11 +29,13 @@
 ## API Documentation
 
 See `server/openapi.json` for the full API documentation.
+See [docs/src/Development/API.md](docs/src/Development/API.md) for API development details.
 
 
 ## Environment
 
 Commands run via Docker through Castor. Prefix host commands with `castor --no-it`.
+See [docs/src/Development/Setup.md](docs/src/Development/Setup.md) for setup.
 
 Example: `bin/console clear:cache` → `castor --no-it bin/console clear:cache`
 
@@ -42,9 +44,9 @@ Example: `bin/console clear:cache` → `castor --no-it bin/console clear:cache`
 
 **Paths:** `server/**/*.php`
 
-- API: `server/src/Api/*` (OpenAPI attributes)
-- Admin: `server/src/Admin/*` (EasyAdmin)
-- ActivityPub: `server/src/ActivityPub/*`
+- API: `server/src/Api/*` (OpenAPI attributes) — [docs/src/Development/API.md](docs/src/Development/API.md)
+- Admin: `server/src/Admin/*` (EasyAdmin) — [docs/src/Development/Admin.md](docs/src/Development/Admin.md)
+- ActivityPub: `server/src/ActivityPub/*` — [docs/src/Development/ActivityPub.md](docs/src/Development/ActivityPub.md)
 
 All share the same entities and must follow these rules:
 
@@ -52,8 +54,9 @@ All share the same entities and must follow these rules:
 - Never use `empty` except when it is the only option
 - Use positional and named arguments instead of default values
 - Use latest Symfony version
-- Prefer attributes over config files
+- Prefer attributes to config files
 - Do not remove debug code unless asked: `$this->client->enableProfiler()`, `dump`, `dd`
+- Create repository methods and do not use the `findOneBy` and `findBy` shortcuts
 
 **Testing:** Two servers in test mode:
 1. Current code (HttpKernel requests) — run assertions against this
@@ -70,6 +73,7 @@ All share the same entities and must follow these rules:
 - Use existing components when possible, adapt if needed
 - Check if new code can be refactored with existing code
 - Use shared code in `/shared` for API calls and common logic
+- See [docs/src/Development/Client.md](docs/src/Development/Client.md).
 
 
 ## Extension (Browser Extension)
@@ -77,6 +81,7 @@ All share the same entities and must follow these rules:
 **Paths:** `extension/**/*.ts`
 
 - Use shared code in `/shared` for API calls and common logic
+- See [docs/src/Development/Extension.md](docs/src/Development/Extension.md).
 
 
 ## Docs (mdBook)
@@ -88,7 +93,7 @@ All share the same entities and must follow these rules:
 
 ## Importer
 
-The importer is a PHP Castor command in `.castor/importer.php`. See https://castor.jolicode.com/
+The importer is a PHP Castor command in `.castor/importer.php`.
 
 
 ## More doc

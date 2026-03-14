@@ -11,6 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Serializer\Attribute\Context;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Serializer\Attribute\Ignore;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Uid\UuidV7;
@@ -151,6 +152,10 @@ class Bookmark
     public Collection $tags {
         get => $this->account->owner ? $this->userTags : $this->instanceTags;
     }
+
+    #[Ignore]
+    #[ORM\OneToOne(mappedBy: 'bookmark')]
+    public ?Note $note = null;
 
     public function __construct()
     {
