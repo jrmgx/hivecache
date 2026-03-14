@@ -3,7 +3,7 @@
  * Uses shared API client with localStorage adapter
  */
 
-import { createApiClient, createLocalStorageAdapter, getCursorFromUrl, type ApiClient, type BookmarksResponse, type Bookmark, type InstanceConfig, type Tag, type UserOwner } from '@shared';
+import { createApiClient, createLocalStorageAdapter, getCursorFromUrl, type ApiClient, type BookmarksResponse, type Bookmark, type InstanceConfig, type Note, type Tag, type UserOwner } from '@shared';
 
 const storageAdapter = createLocalStorageAdapter();
 
@@ -175,6 +175,30 @@ export const updateBookmarkTags = async (id: string, tagSlugs: string[]): Promis
 export const deleteBookmark = async (id: string): Promise<void> => {
   const client = await getOrCreateApiClient();
   return client.deleteBookmark(id);
+};
+
+/**
+ * Get the note for a bookmark, if it exists
+ */
+export const getBookmarkNote = async (bookmarkId: string): Promise<Note | null> => {
+  const client = await getOrCreateApiClient();
+  return client.getBookmarkNote(bookmarkId);
+};
+
+/**
+ * Create a new note for a bookmark
+ */
+export const createNote = async (bookmarkIri: string, content: string): Promise<Note> => {
+  const client = await getOrCreateApiClient();
+  return client.createNote(bookmarkIri, content);
+};
+
+/**
+ * Update an existing note
+ */
+export const updateNote = async (noteId: string, content: string): Promise<Note> => {
+  const client = await getOrCreateApiClient();
+  return client.updateNote(noteId, content);
 };
 
 /**

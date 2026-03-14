@@ -8,6 +8,7 @@ use App\Api\Config\RouteType;
 use App\Api\UrlGenerator;
 use App\Entity\Bookmark;
 use App\Entity\FileObject;
+use App\Entity\Note;
 use App\Entity\User;
 use App\Entity\UserTag;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -39,6 +40,11 @@ readonly class IriNormalizer implements NormalizerInterface
                     RouteType::MeTags,
                     RouteAction::Get,
                     ['slug' => $data->slug],
+                ),
+                Note::class => $this->urlGenerator->generate(
+                    RouteType::MeNotes,
+                    RouteAction::Get,
+                    ['id' => $data->id],
                 ),
                 FileObject::class => $this->urlGenerator->generate(
                     RouteType::MeFileObjects,
@@ -80,7 +86,8 @@ readonly class IriNormalizer implements NormalizerInterface
     {
         return
             $data instanceof User
-            || $data instanceof UserTag;
+            || $data instanceof UserTag
+            || $data instanceof Note;
         // ||$data instanceof Bookmark
         // || $data instanceof FileObject
     }
@@ -93,6 +100,7 @@ readonly class IriNormalizer implements NormalizerInterface
         return [
             User::class => true,
             UserTag::class => true,
+            Note::class => true,
             // Bookmark::class => true,
             // FileObject::class => true,
         ];

@@ -112,6 +112,7 @@ function consume_messages(#[AsOption] int $limit = 100): void
 function openapi(): void
 {
     docker_compose_run('./vendor/bin/openapi src/Entity src/Api/Controller src/Api/Dto --format json --output openapi.json');
+    io()->success('The schema has been updated.');
 }
 
 #[AsTask(namespace: 'server:admin', name: 'create', description: 'Add an admin user to your instance')]

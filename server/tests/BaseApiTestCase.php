@@ -193,6 +193,8 @@ abstract class BaseApiTestCase extends WebTestCase
             if ($private) {
                 $this->assertIsBool($bookmark['isPublic']);
             }
+            $this->assertArrayHasKey('outdated', $bookmark);
+            $this->assertIsBool($bookmark['outdated']);
             $this->assertArrayHasKey('account', $bookmark);
             $this->assertArrayHasKey('tags', $bookmark);
             $this->assertIsArray($bookmark['tags']);
@@ -200,7 +202,7 @@ abstract class BaseApiTestCase extends WebTestCase
             $this->assertIsString($bookmark['instance']);
 
             $bookmarkFields = array_keys($bookmark);
-            $expectedBookmarkFields = ['id', 'createdAt', 'title', 'url', 'domain', 'account', 'tags', 'instance', '@iri'];
+            $expectedBookmarkFields = ['id', 'createdAt', 'title', 'url', 'domain', 'account', 'outdated', 'tags', 'instance', '@iri'];
             if ($private) {
                 $expectedBookmarkFields[] = 'isPublic';
             }
