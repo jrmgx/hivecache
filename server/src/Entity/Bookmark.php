@@ -123,6 +123,7 @@ class Bookmark
     #[ORM\Column(type: Types::TEXT)]
     public string $normalizedUrl;
 
+    #[Groups(['bookmark:show:private', 'bookmark:show:public'])]
     #[ORM\Column]
     public bool $outdated = false;
 

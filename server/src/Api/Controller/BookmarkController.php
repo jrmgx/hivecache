@@ -14,6 +14,7 @@ use App\Api\UrlGenerator;
 use App\Entity\Account;
 use App\Entity\Bookmark;
 use App\Repository\BookmarkRepository;
+use App\Repository\NoteRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -37,6 +38,7 @@ abstract class BookmarkController extends AbstractController
         protected readonly UrlGenerator $urlGenerator,
         protected readonly ClientUrlHelper $clientUrlHelper,
         protected readonly ActivityPubResponseBuilder $activityPubResponseBuilder,
+        protected readonly NoteRepository $noteRepository,
     ) {
     }
 

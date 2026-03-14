@@ -106,7 +106,7 @@ final class MeNoteController extends AbstractController
             throw new UnprocessableEntityHttpException('Bookmark not owned by user');
         }
 
-        $existingNote = $this->noteRepository->findOneBy(['bookmark' => $bookmark]);
+        $existingNote = $this->noteRepository->findOneByBookmarkAndUser($bookmark, $user);
         if ($existingNote) {
             throw new UnprocessableEntityHttpException('Bookmark already has a note');
         }

@@ -119,6 +119,41 @@ class NoteTest extends BaseApiTestCase
         $this->assertOtherUserCannotAccess('GET', "/users/me/notes/{$note->id}");
     }
 
+    public function testGetBookmarkNote(): void
+    {
+        [$user, $token, $account] = $this->createAuthenticatedUserAccount('testuser', 'test');
+
+        $bookmark = BookmarkFactory::createOne(['account' => $account]);
+        $note = NoteFactory::createOne(['owner' => $user, 'bookmark' => $bookmark, 'content' => 'My note']);
+
+        $this->assertUnauthorized('GET', "/users/me/bookmarks/{$bookmark->id}/note", [], 'Should not be able to access.');
+
+        $this->request('GET', "/users/me/bookmarks/{$bookmark->id}/note", [
+            'auth_bearer' => $token,
+        ]);
+        $this->assertResponseIsSuccessful();
+
+        $json = $this->dump($this->getResponseArray());
+
+        $this->assertEquals('My note', $json['content']);
+        $this->assertNoteResponse($json);
+
+        $this->assertOtherUserCannotAccess('GET', "/users/me/bookmarks/{$bookmark->id}/note");
+    }
+
+    public function testGetBookmarkNoteReturns404WhenNoNote(): void
+    {
+        [, $token, $account] = $this->createAuthenticatedUserAccount('testuser', 'test');
+
+        $bookmark = BookmarkFactory::createOne(['account' => $account]);
+
+        $this->request('GET', "/users/me/bookmarks/{$bookmark->id}/note", [
+            'auth_bearer' => $token,
+        ]);
+
+        $this->assertResponseStatusCodeSame(404);
+    }
+
     public function testUpdateOwnNote(): void
     {
         [$user, $token, $account] = $this->createAuthenticatedUserAccount('testuser', 'test');

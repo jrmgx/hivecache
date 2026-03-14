@@ -748,6 +748,52 @@
                 ]
             }
         },
+        "/users/me/bookmarks/{id}/note": {
+            "get": {
+                "tags": [
+                    "Bookmarks",
+                    "Notes"
+                ],
+                "summary": "Get note for a bookmark",
+                "description": "Returns the note associated with the bookmark, if it exists. Returns 404 when the bookmark has no note.",
+                "operationId": "getBookmarkNote",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Bookmark ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Note details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NoteShowPrivate"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    },
+                    "404": {
+                        "description": "Bookmark not found or has no note"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/users/me/bookmarks/search/index": {
             "get": {
                 "tags": [
@@ -3346,6 +3392,10 @@
             "description": "Bookmarks"
         },
         {
+            "name": "Notes",
+            "description": "Notes"
+        },
+        {
             "name": "Search",
             "description": "Search"
         },
@@ -3364,10 +3414,6 @@
         {
             "name": "Following",
             "description": "Following"
-        },
-        {
-            "name": "Notes",
-            "description": "Notes"
         },
         {
             "name": "Tags",

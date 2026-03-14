@@ -9,13 +9,13 @@ enum RouteAction: string
 {
     // API actions
     case Collection = 'collection';
-    // case A = 'a';
     case SocialTimeline = 'timeline';
     case SocialTag = 'tag';
     case Diff = 'diff';
     case Create = 'create';
     case Get = 'get';
     case History = 'history';
+    case Note = 'note';
     case Patch = 'patch';
     case Delete = 'delete';
 
