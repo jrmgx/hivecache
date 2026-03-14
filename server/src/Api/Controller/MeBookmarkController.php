@@ -15,6 +15,7 @@ use App\Entity\Account;
 use App\Entity\Bookmark;
 use App\Entity\User;
 use App\Entity\UserTag;
+use App\Repository\NoteRepository;
 use App\Repository\UserTimelineEntryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Exception\ORMException;
@@ -25,6 +26,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
@@ -209,6 +211,10 @@ final class MeBookmarkController extends BookmarkController
             if ($existingBookmark->isPublic) {
                 $bookmark->isPublic = true;
             }
+
+            if ($note = $this->noteRepository->findOneByBookmarkAndUser($existingBookmark, $user)) {
+                $note->bookmark = $bookmark;
+            }
         }
 
         $this->instanceTagService->synchronize($bookmark);
@@ -322,6 +328,51 @@ final class MeBookmarkController extends BookmarkController
         ;
 
         return $this->jsonResponseBuilder->collection($bookmarks, ['bookmark:show:private', 'tag:show:private']);
+    }
+
+    #[OA\Get(
+        path: '/users/me/bookmarks/{id}/note',
+        tags: ['Bookmarks', 'Notes'],
+        operationId: 'getBookmarkNote',
+        summary: 'Get note for a bookmark',
+        description: 'Returns the note associated with the bookmark, if it exists. Returns 404 when the bookmark has no note.',
+        security: [['bearerAuth' => []]],
+        parameters: [
+            new OA\PathParameter(
+                name: 'id',
+                description: 'Bookmark ID',
+                schema: new OA\Schema(type: 'string', format: 'uuid')
+            ),
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Note details',
+                content: new OA\JsonContent(
+                    ref: '#/components/schemas/NoteShowPrivate'
+                )
+            ),
+            new OA\Response(
+                response: 401,
+                description: 'Unauthorized - authentication required'
+            ),
+            new OA\Response(
+                response: 404,
+                description: 'Bookmark not found or has no note'
+            ),
+        ]
+    )]
+    #[Route(path: '/{id}/note', name: RouteAction::Note->value, methods: ['GET'])]
+    #[IsGranted(attribute: BookmarkVoter::ACCOUNT, subject: 'bookmark', statusCode: Response::HTTP_NOT_FOUND)]
+    public function note(
+        #[CurrentUser] User $user,
+        Bookmark $bookmark,
+        NoteRepository $noteRepository,
+    ): JsonResponse {
+        $note = $noteRepository->findOneByBookmarkAndUser($bookmark, $user)
+            ?? throw new NotFoundHttpException('Bookmark has no note');
+
+        return $this->jsonResponseBuilder->single($note, ['note:show:private']);
     }
 
     #[OA\Patch(

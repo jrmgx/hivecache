@@ -188,6 +188,7 @@ export interface BookmarkOwner extends IRI {
   url: string;
   domain: string; // From entity, not in OpenAPI spec
   isPublic: boolean;
+  outdated?: boolean;
   tags: ApiTag[];
   owner: UserOwner;
   account?: Account;
@@ -221,6 +222,7 @@ export interface Bookmark extends IRI {
   url: string;
   domain: string;
   isPublic: boolean;
+  outdated?: boolean;
   tags: Tag[];
   owner: User;
   mainImage: FileObject | null;
@@ -269,6 +271,20 @@ export interface BookmarksResponse {
   prevPage: string | null;
   nextPage: string | null;
   total: number | null;
+}
+
+// ============================================================================
+// Note Types
+// ============================================================================
+
+/**
+ * Note - API response format for notes
+ * Extends IRI schema
+ */
+export interface Note extends IRI {
+  id: string;
+  createdAt: string;
+  content: string;
 }
 
 // ============================================================================

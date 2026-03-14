@@ -31,6 +31,17 @@ function all(): int
     return max($cs, $phpstan, $twigCs, $phpunit, $client, $extension, $docs);
 }
 
+#[AsTask(description: 'All server related QA tasks')]
+function server(): int
+{
+    $cs = cs();
+    $phpstan = phpstan();
+    $twigCs = twigCs();
+    $phpunit = phpunit();
+
+    return max($cs, $phpstan, $twigCs, $phpunit);
+}
+
 #[AsTask(description: 'Client lint + build')]
 function client(): int
 {

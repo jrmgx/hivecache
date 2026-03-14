@@ -1143,6 +1143,8 @@ class BookmarkTest extends BaseApiTestCase
         $this->assertIsString($json['domain']);
         $this->assertArrayHasKey('isPublic', $json);
         $this->assertIsBool($json['isPublic']);
+        $this->assertArrayHasKey('outdated', $json);
+        $this->assertIsBool($json['outdated']);
         $this->assertArrayHasKey('account', $json);
         $this->assertArrayHasKey('tags', $json);
         $this->assertIsArray($json['tags']);
@@ -1150,7 +1152,7 @@ class BookmarkTest extends BaseApiTestCase
         $this->assertIsString($json['instance']);
 
         $bookmarkFields = array_keys($json);
-        $expectedBookmarkFields = ['id', 'createdAt', 'title', 'url', 'domain', 'account', 'isPublic', 'tags', 'instance', '@iri'];
+        $expectedBookmarkFields = ['id', 'createdAt', 'title', 'url', 'domain', 'account', 'isPublic', 'outdated', 'tags', 'instance', '@iri'];
 
         // Archive and mainImage are optional, add them to expected fields if present
         if (isset($json['archive'])) {
@@ -1193,9 +1195,11 @@ class BookmarkTest extends BaseApiTestCase
         $this->assertIsArray($json['tags']);
         $this->assertArrayHasKey('instance', $json);
         $this->assertIsString($json['instance']);
+        $this->assertArrayHasKey('outdated', $json);
+        $this->assertIsBool($json['outdated']);
 
         $bookmarkFields = array_keys($json);
-        $expectedBookmarkFields = ['id', 'createdAt', 'title', 'url', 'domain', 'account', 'tags', 'instance', '@iri'];
+        $expectedBookmarkFields = ['id', 'createdAt', 'title', 'url', 'domain', 'account', 'outdated', 'tags', 'instance', '@iri'];
 
         // Archive and mainImage are optional, add them to expected fields if present
         if (isset($json['archive'])) {
@@ -1240,9 +1244,11 @@ class BookmarkTest extends BaseApiTestCase
             $this->assertIsArray($bookmark['tags']);
             $this->assertArrayHasKey('instance', $bookmark);
             $this->assertIsString($bookmark['instance']);
+            $this->assertArrayHasKey('outdated', $bookmark);
+            $this->assertIsBool($bookmark['outdated']);
 
             $bookmarkFields = array_keys($bookmark);
-            $expectedBookmarkFields = ['id', 'createdAt', 'title', 'url', 'domain', 'account', 'tags', 'instance', '@iri'];
+            $expectedBookmarkFields = ['id', 'createdAt', 'title', 'url', 'domain', 'account', 'outdated', 'tags', 'instance', '@iri'];
 
             // Archive and mainImage are optional, add them to expected fields if present
             if (isset($bookmark['archive'])) {

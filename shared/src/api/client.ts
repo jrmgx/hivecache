@@ -18,6 +18,7 @@ import type {
   FileObject,
   BookmarkIndexDiffResponse,
   Account,
+  Note,
 } from '../types';
 import { ApiError } from './error';
 import type { ApiConfig } from './config';
@@ -44,6 +45,11 @@ export interface ApiClient {
   updateBookmark(id: string, payload: BookmarkUpdate): Promise<Bookmark>;
   updateBookmarkTags(id: string, tagSlugs: string[]): Promise<Bookmark>;
   deleteBookmark(id: string): Promise<void>;
+
+  // Notes
+  getBookmarkNote(bookmarkId: string): Promise<Note | null>;
+  createNote(bookmarkIri: string, content: string): Promise<Note>;
+  updateNote(noteId: string, content: string): Promise<Note>;
 
   // Tags
   getTags(): Promise<Tag[]>;
@@ -319,6 +325,44 @@ export function createApiClient(config: ApiConfig): ApiClient {
         prevPage: null,
         total: null,
       };
+    },
+
+    /**
+     * Gets the note for a bookmark, if it exists
+     */
+    async getBookmarkNote(bookmarkId: string): Promise<Note | null> {
+      const response = await fetch(`${baseUrl}/users/me/bookmarks/${bookmarkId}/note`, {
+        method: 'GET',
+        headers: await getAuthHeaders(),
+      });
+      if (response.status === 404) {
+        return null;
+      }
+      return handleResponse<Note>(response);
+    },
+
+    /**
+     * Creates a new note for a bookmark
+     */
+    async createNote(bookmarkIri: string, content: string): Promise<Note> {
+      const response = await fetch(`${baseUrl}/users/me/notes`, {
+        method: 'POST',
+        headers: await getAuthHeaders(),
+        body: JSON.stringify({ bookmark: bookmarkIri, content }),
+      });
+      return handleResponse<Note>(response);
+    },
+
+    /**
+     * Updates an existing note
+     */
+    async updateNote(noteId: string, content: string): Promise<Note> {
+      const response = await fetch(`${baseUrl}/users/me/notes/${noteId}`, {
+        method: 'PATCH',
+        headers: await getAuthHeaders(),
+        body: JSON.stringify({ content }),
+      });
+      return handleResponse<Note>(response);
     },
 
     /**

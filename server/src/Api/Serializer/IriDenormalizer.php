@@ -2,9 +2,11 @@
 
 namespace App\Api\Serializer;
 
+use App\Entity\Bookmark;
 use App\Entity\FileObject;
 use App\Entity\User;
 use App\Entity\UserTag;
+use App\Repository\BookmarkRepository;
 use App\Repository\FileObjectRepository;
 use App\Repository\UserTagRepository;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -15,11 +17,13 @@ readonly class IriDenormalizer implements DenormalizerInterface
 {
     private const string PATH_TAGS = '`/users/me/tags/([a-z0-9-]+)`';
     private const string PATH_FILE_OBJECTS = '`/users/me/files/([a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12})`';
+    private const string PATH_BOOKMARKS = '`/users/me/bookmarks/([a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12})`';
 
     public function __construct(
         private Security $security,
         private UserTagRepository $userTagRepository,
         private FileObjectRepository $fileObjectRepository,
+        private BookmarkRepository $bookmarkRepository,
     ) {
     }
 
@@ -56,6 +60,20 @@ readonly class IriDenormalizer implements DenormalizerInterface
             ;
         }
 
+        if (Bookmark::class === $type) {
+            $path = (string) parse_url($data, \PHP_URL_PATH);
+            $matches = [];
+            if (!preg_match(self::PATH_BOOKMARKS, $path, $matches)) {
+                throw new UnprocessableEntityHttpException('This Bookmark does not exist.');
+            }
+            $id = $matches[1];
+
+            return $this->bookmarkRepository->findOneByAccountAndId($user->account, $id, onlyPublic: false)
+                ->getQuery()->getOneOrNullResult()
+                ?? throw new UnprocessableEntityHttpException('This Bookmark does not exist.')
+            ;
+        }
+
         return $data;
     }
 
@@ -65,10 +83,10 @@ readonly class IriDenormalizer implements DenormalizerInterface
         ?string $format = null,
         array $context = [],
     ): bool {
-        if (\is_string($data) && (UserTag::class === $type || FileObject::class === $type)) {
+        if (\is_string($data) && (UserTag::class === $type || FileObject::class === $type || Bookmark::class === $type)) {
             $path = (string) parse_url($data, \PHP_URL_PATH);
 
-            return preg_match(self::PATH_TAGS, $path) || preg_match(self::PATH_FILE_OBJECTS, $path);
+            return preg_match(self::PATH_TAGS, $path) || preg_match(self::PATH_FILE_OBJECTS, $path) || preg_match(self::PATH_BOOKMARKS, $path);
         }
 
         return false;
@@ -84,6 +102,7 @@ readonly class IriDenormalizer implements DenormalizerInterface
         return [
             UserTag::class => true,
             FileObject::class => true,
+            Bookmark::class => true,
         ];
     }
 }

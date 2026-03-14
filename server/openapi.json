@@ -748,6 +748,52 @@
                 ]
             }
         },
+        "/users/me/bookmarks/{id}/note": {
+            "get": {
+                "tags": [
+                    "Bookmarks",
+                    "Notes"
+                ],
+                "summary": "Get note for a bookmark",
+                "description": "Returns the note associated with the bookmark, if it exists. Returns 404 when the bookmark has no note.",
+                "operationId": "getBookmarkNote",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Bookmark ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Note details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NoteShowPrivate"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    },
+                    "404": {
+                        "description": "Bookmark not found or has no note"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/users/me/bookmarks/search/index": {
             "get": {
                 "tags": [
@@ -1630,6 +1676,235 @@
                     },
                     "404": {
                         "description": "Account not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/users/me/notes": {
+            "post": {
+                "tags": [
+                    "Notes"
+                ],
+                "summary": "Create a new note",
+                "description": "Creates a new note associated with a bookmark. The bookmark must be owned by the authenticated user.",
+                "operationId": "createNote",
+                "requestBody": {
+                    "description": "Note data",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/NoteCreate"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Note created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NoteShowPrivate"
+                                },
+                                "examples": {
+                                    "created_note": {
+                                        "summary": "Successfully created note",
+                                        "value": {
+                                            "id": "01234567-89ab-cdef-0123-456789abcdef",
+                                            "createdAt": "2024-01-01T12:00:00+00:00",
+                                            "content": "My note content",
+                                            "@iri": "https://hivecache.test/users/me/notes/01234567-89ab-cdef-0123-456789abcdef"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    },
+                    "422": {
+                        "description": "Validation error - invalid data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "invalid_bookmark": {
+                                        "summary": "Invalid bookmark reference",
+                                        "value": {
+                                            "error": {
+                                                "code": 422,
+                                                "message": "Invalid bookmark IRI"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/users/me/notes/{id}": {
+            "get": {
+                "tags": [
+                    "Notes"
+                ],
+                "summary": "Get own note by ID",
+                "description": "Returns a specific note owned by the authenticated user.",
+                "operationId": "getOwnNote",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Note ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Note details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NoteShowPrivate"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    },
+                    "404": {
+                        "description": "Note not found or not owned by user"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Notes"
+                ],
+                "summary": "Delete a note",
+                "description": "Permanently deletes a note owned by the authenticated user.",
+                "operationId": "deleteNote",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Note ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Note deleted successfully"
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    },
+                    "404": {
+                        "description": "Note not found or not owned by user"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Notes"
+                ],
+                "summary": "Update a note",
+                "description": "Updates an existing note. Only content can be modified.",
+                "operationId": "updateNote",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Note ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Note update data",
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/NoteUpdate"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Note updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NoteShowPrivate"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - authentication required"
+                    },
+                    "404": {
+                        "description": "Note not found"
+                    },
+                    "422": {
+                        "description": "Validation error - invalid data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "invalid_data": {
+                                        "summary": "Validation error",
+                                        "value": {
+                                            "error": {
+                                                "code": 422,
+                                                "message": "Unprocessable Content"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -2603,6 +2878,35 @@
                 },
                 "type": "object"
             },
+            "NoteCreate": {
+                "description": "Note creation data",
+                "required": [
+                    "content",
+                    "bookmark"
+                ],
+                "properties": {
+                    "content": {
+                        "description": "Note content",
+                        "type": "string"
+                    },
+                    "bookmark": {
+                        "description": "IRI of the bookmark this note is associated with",
+                        "type": "string",
+                        "format": "iri"
+                    }
+                },
+                "type": "object"
+            },
+            "NoteUpdate": {
+                "description": "Note update data",
+                "properties": {
+                    "content": {
+                        "description": "Note content",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "TagCreate": {
                 "description": "Tag creation data",
                 "required": [
@@ -2930,6 +3234,31 @@
                 },
                 "type": "object"
             },
+            "NoteShowPrivate": {
+                "description": "Note object owner-only",
+                "properties": {
+                    "id": {
+                        "description": "Note ID",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "createdAt": {
+                        "description": "Creation timestamp",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "content": {
+                        "description": "Note content",
+                        "type": "string"
+                    },
+                    "@iri": {
+                        "description": "IRI of the note resource",
+                        "type": "string",
+                        "format": "iri"
+                    }
+                },
+                "type": "object"
+            },
             "UserShowPrivate": {
                 "description": "User object with owner-level details",
                 "properties": {
@@ -3061,6 +3390,10 @@
         {
             "name": "Bookmarks",
             "description": "Bookmarks"
+        },
+        {
+            "name": "Notes",
+            "description": "Notes"
         },
         {
             "name": "Search",

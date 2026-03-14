@@ -13,6 +13,52 @@ The HiveCache API is built with Symfony and follows RESTful principles with Acti
 - Serialization: Symfony Serializer with custom normalizers/denormalizers
 - API Documentation: Manual OpenAPI specification
 
+## Serialization groups
+
+Serialization groups control which properties are included when serializing or deserializing entities. They follow a consistent naming convention across the API.
+
+### Naming convention
+
+```
+{entity}:{action}:{visibility}
+```
+
+- **entity** — Lowercase snake_case matching the resource (e.g. `bookmark`, `user`, `account`, `tag`, `file_object`, `following`, `follower`, `bookmark_index`)
+- **action** — `show` (output), `create` (input), `update` (input), or `read` (output, used for read-only resources)
+- **visibility** — `public` or `private` (when the resource has different views for owner vs others)
+
+### Output groups (serialization)
+
+| Group                         | Entity               | Usage                                          |
+| ----------------------------- | -------------------- | ---------------------------------------------- |
+| `bookmark:show:private`       | Bookmark             | Owner view — includes `isPublic`               |
+| `bookmark:show:public`        | Bookmark             | Public view — excludes owner-only fields       |
+| `user:show:private`           | User                 | Owner profile view                             |
+| `account:show:public`         | Account              | ActivityPub account (always public when shown) |
+| `tag:show:public`             | UserTag, InstanceTag | Public tag — name, slug                        |
+| `tag:show:private`            | UserTag              | Owner view — includes `meta`, `isPublic`       |
+| `file_object:read`            | FileObject           | Standalone file object or embedded in bookmark |
+| `following:show:public`       | Following            | ActivityPub following                          |
+| `follower:show:public`        | Follower             | ActivityPub follower                           |
+| `bookmark_index:show:private` | BookmarkIndexAction  | Index action (owner only)                      |
+| `note:show:private`           | Note                 | Owner view — notes are never public            |
+
+### Input groups (deserialization)
+
+| Group             | Entity         | Usage           |
+| ----------------- | -------------- | --------------- |
+| `bookmark:create` | BookmarkApiDto | Create bookmark |
+| `bookmark:update` | BookmarkApiDto | Update bookmark |
+| `user:create`     | User           | Registration    |
+| `user:update`     | User           | Profile update  |
+| `tag:create`      | UserTagApiDto  | Create tag      |
+| `tag:update`      | UserTagApiDto  | Update tag      |
+
+### Cross-entity usage
+
+Entities can include properties from related entities by listing multiple groups. For example, `Account` uses `bookmark:show:public`, `bookmark:show:private`, `user:show:private`, and `account:show:public` so it serializes correctly when embedded in bookmarks or user responses.
+
+
 ## IRI Normalizer/Denormalizer
 
 HiveCache uses a custom IRI (Internationalized Resource Identifier) normalization system for API serialization.

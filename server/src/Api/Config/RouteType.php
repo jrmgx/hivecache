@@ -16,6 +16,7 @@ enum RouteType: string
     case MeFileObjects = 'api_users_me_files_';
     case MeFollowing = 'api_users_following_';
     case MeFollowers = 'api_users_followers_';
+    case MeNotes = 'api_users_me_notes_';
 
     // Profile
     case ProfileBookmarks = 'api_users_profile_bookmarks_';
@@ -35,7 +36,8 @@ enum RouteType: string
             RouteType::MeBookmarks,
             RouteType::MeBookmarksIndex,
             RouteType::MeTags,
-            RouteType::MeFileObjects => true,
+            RouteType::MeFileObjects,
+            RouteType::MeNotes => true,
             default => false,
         };
     }
