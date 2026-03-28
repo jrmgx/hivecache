@@ -22,6 +22,13 @@ class UrlHelperTest extends TestCase
         $this->assertEquals('example.com', $result);
     }
 
+    #[DataProvider('sanitizeStoredUrlProvider')]
+    public function testSanitizeStoredUrl(string $input, string $expected): void
+    {
+        $result = UrlHelper::sanitizeStoredUrl($input);
+        $this->assertEquals($expected, $result);
+    }
+
     /**
      * @return array<string, array{0: string, 1: string}>
      */
@@ -99,6 +106,43 @@ class UrlHelperTest extends TestCase
             'url with complex query params' => [
                 'https://example.com/page?param1=value1&param2=value%20with%20spaces&param3=value+with+plus',
                 'example.com/page?param1=value1&param2=value+with+spaces&param3=value+with+plus',
+            ],
+            'url with gclid and utm' => [
+                'https://example.com/page?foo=bar&gclid=abc&utm_source=x',
+                'example.com/page?foo=bar',
+            ],
+        ];
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: string}>
+     */
+    public static function sanitizeStoredUrlProvider(): array
+    {
+        return [
+            'strips ads and analytics params' => [
+                'https://www.limova.ai/?utm_campaign=test&hsa_acc=1&gclid=xyz&foo=keep',
+                'https://www.limova.ai/?foo=keep',
+            ],
+            'root with only trackers and explicit slash' => [
+                'https://www.limova.ai/?utm_source=google&gclid=abc',
+                'https://www.limova.ai/',
+            ],
+            'root with only trackers without path before query' => [
+                'https://www.limova.ai?utm_source=google&gclid=abc',
+                'https://www.limova.ai',
+            ],
+            'preserves fragment' => [
+                'https://example.com/a?gclid=1#section',
+                'https://example.com/a#section',
+            ],
+            'preserves non-tracking query' => [
+                'https://example.com/path?product=1&utm_medium=email',
+                'https://example.com/path?product=1',
+            ],
+            'invalid url unchanged' => [
+                'not-a-url',
+                'not-a-url',
             ],
         ];
     }

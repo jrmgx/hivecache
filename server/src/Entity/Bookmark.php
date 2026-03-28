@@ -96,9 +96,10 @@ class Bookmark
     #[ORM\Column(type: Types::TEXT)]
     public string $url {
         set {
-            $this->url = $value;
-            $this->normalizedUrl = UrlHelper::normalize($value);
-            $this->domain = UrlHelper::calculateDomain($value);
+            $sanitized = UrlHelper::sanitizeStoredUrl($value);
+            $this->url = $sanitized;
+            $this->normalizedUrl = UrlHelper::normalize($sanitized);
+            $this->domain = UrlHelper::calculateDomain($sanitized);
         }
     }
 
