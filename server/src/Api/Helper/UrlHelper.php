@@ -4,11 +4,47 @@ namespace App\Api\Helper;
 
 final readonly class UrlHelper
 {
+    /** @var list<string> */
+    private const array TRACKING_QUERY_PREFIXES = [
+        'utm_',
+        'hsa_',
+        'gad_',
+        'mtm_',
+        'pk_',
+    ];
+
+    /** @var array<string, true> */
+    private const array TRACKING_QUERY_EXACT = [
+        'gclid' => true,
+        'gbraid' => true,
+        'wbraid' => true,
+        'fbclid' => true,
+        'yclid' => true,
+        'msclkid' => true,
+        'twclid' => true,
+        'igshid' => true,
+        'mc_cid' => true,
+        'si' => true,
+        'gc_id' => true,
+        'h_ad_id' => true,
+        '_ga' => true,
+        '_gl' => true,
+        'mkt_tok' => true,
+        'vero_id' => true,
+        'li_fat_id' => true,
+        's_kwcid' => true,
+        'dclid' => true,
+        'srsltid' => true,
+        'oly_anon_id' => true,
+        'oly_enc_id' => true,
+        'spm' => true,
+    ];
+
     /**
      * Aggressively normalize url:
      * - remove scheme
      * - remove user/password/port
-     * - remove utm_ params
+     * - remove known tracking query params
      * - sort params
      * - remove fragment
      */
@@ -19,11 +55,7 @@ final readonly class UrlHelper
         $queryParams = [];
         if (isset($parts['query'])) {
             parse_str($parts['query'], $queryParams);
-            $queryParams = array_filter(
-                $queryParams,
-                fn ($v, $k) => !str_starts_with((string) $k, 'utm_'),
-                \ARRAY_FILTER_USE_BOTH
-            );
+            $queryParams = self::removeTrackingQueryParams($queryParams);
             ksort($queryParams);
         }
 
@@ -42,6 +74,72 @@ final readonly class UrlHelper
     }
 
     /**
+     * Returns the URL with tracking query parameters removed, preserving scheme, host, path, non-tracking query, and fragment.
+     * Unparseable URLs are returned unchanged.
+     */
+    public static function sanitizeStoredUrl(string $url): string
+    {
+        $parts = parse_url($url);
+        if (false === $parts || !isset($parts['scheme'], $parts['host'])) {
+            return $url;
+        }
+
+        $queryParams = [];
+        if (isset($parts['query'])) {
+            parse_str($parts['query'], $queryParams);
+            $queryParams = self::removeTrackingQueryParams($queryParams);
+            ksort($queryParams);
+        }
+
+        $newQuery = http_build_query($queryParams);
+
+        $scheme = mb_strtolower($parts['scheme']);
+        $result = $scheme . '://';
+
+        if (isset($parts['user'])) {
+            $result .= $parts['user'];
+            if (isset($parts['pass'])) {
+                $result .= ':' . $parts['pass'];
+            }
+            $result .= '@';
+        }
+
+        $result .= $parts['host'];
+
+        if (isset($parts['port'])) {
+            $result .= ':' . $parts['port'];
+        }
+
+        if (isset($parts['path']) && '' !== $parts['path']) {
+            $result .= $parts['path'];
+        }
+
+        if ('' !== $newQuery) {
+            $result .= '?' . $newQuery;
+        }
+
+        if (isset($parts['fragment'])) {
+            $result .= '#' . $parts['fragment'];
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param array<int|string, mixed> $queryParams
+     *
+     * @return array<int|string, mixed>
+     */
+    public static function removeTrackingQueryParams(array $queryParams): array
+    {
+        return array_filter(
+            $queryParams,
+            static fn (mixed $_, int|string $k): bool => !self::isTrackingQueryKey((string) $k),
+            \ARRAY_FILTER_USE_BOTH
+        );
+    }
+
+    /**
      * Opinionated: remove `www` and `m` (for mobile most of the time) from domain to normalize a bit more.
      */
     public static function calculateDomain(string $url): string
@@ -53,5 +151,21 @@ final readonly class UrlHelper
         }
 
         return (string) preg_replace('`^(www|m)\.`', '', $host);
+    }
+
+    private static function isTrackingQueryKey(string $key): bool
+    {
+        $lower = mb_strtolower($key);
+        if (isset(self::TRACKING_QUERY_EXACT[$lower])) {
+            return true;
+        }
+
+        foreach (self::TRACKING_QUERY_PREFIXES as $prefix) {
+            if (str_starts_with($lower, $prefix)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
