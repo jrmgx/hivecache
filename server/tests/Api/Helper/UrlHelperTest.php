@@ -22,13 +22,6 @@ class UrlHelperTest extends TestCase
         $this->assertEquals('example.com', $result);
     }
 
-    #[DataProvider('sanitizeStoredUrlProvider')]
-    public function testSanitizeStoredUrl(string $input, string $expected): void
-    {
-        $result = UrlHelper::sanitizeStoredUrl($input);
-        $this->assertEquals($expected, $result);
-    }
-
     /**
      * @return array<string, array{0: string, 1: string}>
      */
@@ -112,6 +105,13 @@ class UrlHelperTest extends TestCase
                 'example.com/page?foo=bar',
             ],
         ];
+    }
+
+    #[DataProvider('sanitizeStoredUrlProvider')]
+    public function testSanitizeStoredUrl(string $input, string $expected): void
+    {
+        $result = UrlHelper::sanitizeStoredUrl($input);
+        $this->assertEquals($expected, $result);
     }
 
     /**

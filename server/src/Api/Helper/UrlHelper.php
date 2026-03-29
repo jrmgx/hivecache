@@ -80,7 +80,7 @@ final readonly class UrlHelper
     public static function sanitizeStoredUrl(string $url): string
     {
         $parts = parse_url($url);
-        if ($parts === false || !isset($parts['scheme'], $parts['host'])) {
+        if (false === $parts || !isset($parts['scheme'], $parts['host'])) {
             return $url;
         }
 
@@ -93,7 +93,7 @@ final readonly class UrlHelper
 
         $newQuery = http_build_query($queryParams);
 
-        $scheme = strtolower($parts['scheme']);
+        $scheme = mb_strtolower($parts['scheme']);
         $result = $scheme . '://';
 
         if (isset($parts['user'])) {
@@ -126,33 +126,17 @@ final readonly class UrlHelper
     }
 
     /**
-     * @param array<string, mixed> $queryParams
+     * @param array<int|string, mixed> $queryParams
      *
-     * @return array<string, mixed>
+     * @return array<int|string, mixed>
      */
     public static function removeTrackingQueryParams(array $queryParams): array
     {
         return array_filter(
             $queryParams,
-            static fn ($_, string $k): bool => !self::isTrackingQueryKey($k),
+            static fn (mixed $_, int|string $k): bool => !self::isTrackingQueryKey((string) $k),
             \ARRAY_FILTER_USE_BOTH
         );
-    }
-
-    private static function isTrackingQueryKey(string $key): bool
-    {
-        $lower = strtolower($key);
-        if (isset(self::TRACKING_QUERY_EXACT[$lower])) {
-            return true;
-        }
-
-        foreach (self::TRACKING_QUERY_PREFIXES as $prefix) {
-            if (str_starts_with($lower, $prefix)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**
@@ -167,5 +151,21 @@ final readonly class UrlHelper
         }
 
         return (string) preg_replace('`^(www|m)\.`', '', $host);
+    }
+
+    private static function isTrackingQueryKey(string $key): bool
+    {
+        $lower = mb_strtolower($key);
+        if (isset(self::TRACKING_QUERY_EXACT[$lower])) {
+            return true;
+        }
+
+        foreach (self::TRACKING_QUERY_PREFIXES as $prefix) {
+            if (str_starts_with($lower, $prefix)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
