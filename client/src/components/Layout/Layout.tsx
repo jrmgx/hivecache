@@ -255,9 +255,9 @@ export const Layout = () => {
           <button
             className="text-white navbar-brand border-0 bg-transparent p-0"
             style={{ cursor: 'pointer' }}
-            onClick={(e) => {
-              e.preventDefault();
-              window.dispatchEvent(new Event('refreshCurrentPage'));
+            type="button"
+            onClick={() => {
+              navigate('/me');
             }}
           >
             HiveCache
@@ -289,7 +289,7 @@ export const Layout = () => {
                 id="offcanvasResponsiveLabel"
                 style={{ cursor: 'pointer' }}
                 onClick={() => {
-                  navigate('/');
+                  navigate('/me');
                 }}
               >
                 HiveCache

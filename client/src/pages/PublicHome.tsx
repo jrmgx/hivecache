@@ -80,18 +80,6 @@ export const PublicHome = () => {
     loadData();
   }, [loadData]);
 
-  // Listen for refresh current page event (triggered by logo click)
-  useEffect(() => {
-    const handleRefreshCurrentPage = () => {
-      loadData();
-    };
-
-    window.addEventListener('refreshCurrentPage', handleRefreshCurrentPage);
-    return () => {
-      window.removeEventListener('refreshCurrentPage', handleRefreshCurrentPage);
-    };
-  }, [loadData]);
-
   const loadMoreBookmarks = useCallback(async () => {
     if (!nextPage || isLoadingMore || !profileContext.baseUrl || !profileContext.username) return;
 

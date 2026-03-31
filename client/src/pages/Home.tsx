@@ -228,16 +228,9 @@ export const Home = () => {
       }, 1000); // Wait 1 second for server to process
     };
 
-    // Listen for refresh current page event (triggered by logo click)
-    const handleRefreshCurrentPage = () => {
-      loadData();
-    };
-
     window.addEventListener('bookmarksUpdated', handleBookmarksUpdated);
-    window.addEventListener('refreshCurrentPage', handleRefreshCurrentPage);
     return () => {
       window.removeEventListener('bookmarksUpdated', handleBookmarksUpdated);
-      window.removeEventListener('refreshCurrentPage', handleRefreshCurrentPage);
     };
   }, [loadData]);
 
