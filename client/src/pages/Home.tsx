@@ -34,8 +34,8 @@ export const Home = () => {
   const [nextPage, setNextPage] = useState<string | null>(null);
   const observerTarget = useRef<HTMLDivElement>(null);
 
-  // Search and indexing state
-  const [indexedBookmarks, setIndexedBookmarks] = useState<BookmarkType[]>([]);
+  // Search and indexing: corpus stays in a ref only (not React state) to avoid huge arrays in the render tree
+  const [indexRevision, setIndexRevision] = useState(0);
   const [isIndexing, setIsIndexing] = useState(false);
   const [indexingProgress, setIndexingProgress] = useState(0);
   // Initialize search query from URL params
@@ -141,7 +141,7 @@ export const Home = () => {
       const stored = await getIndexedBookmarks();
       if (stored && stored.length > 0) {
         indexedBookmarksRef.current = stored;
-        setIndexedBookmarks(stored);
+        setIndexRevision((r) => r + 1);
       }
     };
 
@@ -159,8 +159,7 @@ export const Home = () => {
     const existingIndex = await getIndexedBookmarks();
     if (existingIndex && existingIndex.length > 0) {
       indexedBookmarksRef.current = existingIndex;
-      setIndexedBookmarks(existingIndex);
-      // Try to sync in the background
+      setIndexRevision((r) => r + 1);
       syncBookmarkIndex().catch((err) => {
         console.error('Failed to sync bookmark index:', err);
       });
@@ -175,7 +174,7 @@ export const Home = () => {
         setIndexingProgress(progress);
       });
       indexedBookmarksRef.current = indexed;
-      setIndexedBookmarks(indexed);
+      setIndexRevision((r) => r + 1);
     } catch (err: unknown) {
       console.error('Failed to index bookmarks:', err);
       // Don't show error to user, indexing is background operation
@@ -192,17 +191,14 @@ export const Home = () => {
       const updatedBookmark = customEvent.detail?.updatedBookmark;
 
       if (updatedBookmark) {
-        // Update only the specific bookmark to avoid UI jumps
         setBookmarks((prevBookmarks) =>
           prevBookmarks.map((b) => (b.id === updatedBookmark.id ? updatedBookmark : b))
         );
-        // Also update indexed bookmarks if they exist
-        if (indexedBookmarks.length > 0) {
-          setIndexedBookmarks((prevIndexed) => {
-            const updated = prevIndexed.map((b) => (b.id === updatedBookmark.id ? updatedBookmark : b));
-            indexedBookmarksRef.current = updated;
-            return updated;
-          });
+        if (indexedBookmarksRef.current.length > 0) {
+          indexedBookmarksRef.current = indexedBookmarksRef.current.map((b) =>
+            b.id === updatedBookmark.id ? updatedBookmark : b
+          );
+          setIndexRevision((r) => r + 1);
         }
       } else {
         // Fallback: if no bookmark data provided, reload all (for other update scenarios)
@@ -219,7 +215,7 @@ export const Home = () => {
           const updatedIndex = await getIndexedBookmarks();
           if (updatedIndex) {
             indexedBookmarksRef.current = updatedIndex;
-            setIndexedBookmarks(updatedIndex);
+            setIndexRevision((r) => r + 1);
           }
           }
         } catch (err) {
@@ -278,12 +274,6 @@ export const Home = () => {
     };
   }, [searchQuery]);
 
-  // Update ref whenever indexedBookmarks changes
-  useEffect(() => {
-    indexedBookmarksRef.current = indexedBookmarks;
-  }, [indexedBookmarks]);
-
-  // Handle search query changes (using debounced query)
   useEffect(() => {
     if (!searchAvailable) {
       setSearchResults(null);
@@ -295,7 +285,6 @@ export const Home = () => {
       return;
     }
 
-    // Use ref to avoid dependency on indexedBookmarks array
     const currentIndexed = indexedBookmarksRef.current;
     if (currentIndexed.length === 0) {
       setSearchResults([]);
@@ -304,25 +293,7 @@ export const Home = () => {
 
     const results = searchBookmarks(debouncedSearchQuery, currentIndexed, selectedTagSlugs);
     setSearchResults(results);
-     
-  }, [debouncedSearchQuery, searchAvailable, selectedTagSlugs]); // indexedBookmarks intentionally omitted to avoid infinite loop
-
-  // Re-run search when indexedBookmarks becomes available (using length to avoid infinite loop)
-  useEffect(() => {
-    if (!searchAvailable || !debouncedSearchQuery.trim() || indexedBookmarks.length === 0) {
-      return;
-    }
-
-    // Use ref to get latest indexed bookmarks
-    const currentIndexed = indexedBookmarksRef.current;
-    if (currentIndexed.length === 0) {
-      return;
-    }
-
-    const results = searchBookmarks(debouncedSearchQuery, currentIndexed, selectedTagSlugs);
-    setSearchResults(results);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [indexedBookmarks.length, debouncedSearchQuery, selectedTagSlugs]); // Re-run when indexed bookmarks become available or search query changes
+  }, [debouncedSearchQuery, searchAvailable, selectedTagSlugs, indexRevision]);
 
   const handleSearchChange = (query: string) => {
     isUpdatingFromUserInputRef.current = true;
@@ -340,6 +311,7 @@ export const Home = () => {
   const handleSearchClear = () => {
     isUpdatingFromUserInputRef.current = true;
     setSearchQuery('');
+    setDebouncedSearchQuery('');
     setSearchResults(null);
     // Remove search from URL params
     const newParams = new URLSearchParams(searchParams);
