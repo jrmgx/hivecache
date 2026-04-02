@@ -166,6 +166,16 @@ export const Layout = () => {
     }
   };
 
+  const handleHiveCacheClick = () => {
+    const isBareMe = location.pathname === '/me' && location.search === '';
+    if (isBareMe) {
+      window.dispatchEvent(new Event('tagsUpdated'));
+      window.dispatchEvent(new Event('bookmarksUpdated'));
+    } else {
+      navigate('/me');
+    }
+  };
+
   const handleDeleteBookmark = async () => {
     if (!bookmarkId || isProfileMode) return; // Don't allow deletion in profile mode
 
@@ -256,9 +266,7 @@ export const Layout = () => {
             className="text-white navbar-brand border-0 bg-transparent p-0"
             style={{ cursor: 'pointer' }}
             type="button"
-            onClick={() => {
-              navigate('/me');
-            }}
+            onClick={handleHiveCacheClick}
           >
             HiveCache
           </button>
@@ -288,9 +296,7 @@ export const Layout = () => {
                 className="offcanvas-title"
                 id="offcanvasResponsiveLabel"
                 style={{ cursor: 'pointer' }}
-                onClick={() => {
-                  navigate('/me');
-                }}
+                onClick={handleHiveCacheClick}
               >
                 HiveCache
               </h5>
