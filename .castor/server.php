@@ -131,20 +131,22 @@ function tunnel(string $domain, string $host = 'hivecache.test'): void
  * @param array<mixed> $params
  */
 #[AsTask(description: 'Opens a shell (bash) into a builder container', aliases: ['builder'])]
-function builder(#[AsRawTokens] array $params = ['bash']): void
+function builder(#[AsRawTokens] array $params = []): int
 {
     if (0 === \count($params)) {
         $params = ['bash'];
     }
 
-    $c = context();
-    if ('--no-it' === $params[0]) {
-        array_shift($params);
-    } else {
+    $isAgent = $_SERVER['CURSOR_AGENT'] ?? false;
+
+    $c = context()->withEnvironment($_ENV + $_SERVER);
+    if (!$isAgent) {
         $c = $c->toInteractive();
     }
 
-    docker_compose_run(implode(' ', $params), c: $c->withEnvironment($_ENV + $_SERVER));
+    return docker_compose_run(implode(' ', $params), c: $c)
+        ->getExitCode() ?? 0
+    ;
 }
 
 /**

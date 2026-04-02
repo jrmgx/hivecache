@@ -34,10 +34,10 @@ See [docs/src/Development/API.md](docs/src/Development/API.md) for API developme
 
 ## Environment
 
-Commands run via Docker through Castor. Prefix host commands with `castor --no-it`.
+Commands run via Docker through Castor. Prefix host commands with `castor builder --`.
 See [docs/src/Development/Setup.md](docs/src/Development/Setup.md) for setup.
 
-Example: `bin/console clear:cache` → `castor --no-it bin/console clear:cache`
+Example: `bin/console clear:cache` → `castor builder -- bin/console clear:cache`
 
 
 ## Server (PHP/Symfony)
