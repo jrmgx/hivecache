@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tagsSelectElement = document.getElementById('tags') as HTMLSelectElement | null;
     const imageUrlInput = document.getElementById('imageUrl') as HTMLInputElement | null;
     const isPublicCheckbox = document.getElementById('isPublic') as HTMLInputElement | null;
+    const skipArchiveCheckbox = document.getElementById('skipArchive') as HTMLInputElement | null;
     const imageUrlLabel = document.getElementById('imageUrlLabel') as HTMLLabelElement | null;
     const imagePreviewContainer = document.getElementById('imagePreviewContainer') as HTMLElement | null;
     const imagePreview = document.getElementById('imagePreview') as HTMLImageElement | null;
@@ -288,6 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const url = currentUrl.trim();
             let imageUrl = imageUrlInput.value.trim();
             const isPublic = isPublicCheckbox ? isPublicCheckbox.checked : false;
+            const skipArchive = skipArchiveCheckbox ? skipArchiveCheckbox.checked : false;
 
             if (imageUrl) {
                 imageUrl = makeAbsoluteUrl(imageUrl, url);
@@ -369,24 +371,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
-                submitButton.textContent = 'Archiving page...';
-                const stopArchivingAnimation = startClockAnimation(submitButton, 'Archiving page...');
-
-                // Archive the page and get the archived file object Id
                 let archiveId: string | null = null;
-                try {
-                    archiveId = await archivePage();
-                    if (archiveId) {
-                        console.log('Page archived successfully:', archiveId);
-                    } else {
-                        console.warn('Failed to archive page, continuing without archive');
-                    }
-                } catch (error) {
-                    console.error('Error archiving page:', error);
-                    // Continue without archive if archiving fails
-                }
+                if (!skipArchive) {
+                    submitButton.textContent = 'Archiving page...';
+                    const stopArchivingAnimation = startClockAnimation(submitButton, 'Archiving page...');
 
-                stopArchivingAnimation();
+                    // Archive the page and get the archived file object Id
+                    try {
+                        archiveId = await archivePage();
+                        if (archiveId) {
+                            console.log('Page archived successfully:', archiveId);
+                        } else {
+                            console.warn('Failed to archive page, continuing without archive');
+                        }
+                    } catch (error) {
+                        console.error('Error archiving page:', error);
+                        // Continue without archive if archiving fails
+                    }
+
+                    stopArchivingAnimation();
+                }
                 submitButton.textContent = 'Saving bookmark...';
 
                 let stopSavingAnimation: (() => void) | null = null;
