@@ -555,6 +555,33 @@ class BookmarkTest extends BaseApiTestCase
         $this->assertCount(0, $json['tags'], 'All tags should be removed');
     }
 
+    public function testEditOwnBookmarkCanToggleVisibilityToPublic(): void
+    {
+        [, $token, $account] = $this->createAuthenticatedUserAccount('testuser', 'test');
+
+        $bookmark = BookmarkFactory::createOne([
+            'account' => $account,
+            'title' => 'Private Bookmark',
+            'url' => 'https://example.com/private',
+            'isPublic' => false,
+        ]);
+
+        $this->request('PATCH', "/users/me/bookmarks/{$bookmark->id}", [
+            'headers' => ['Content-Type' => 'application/json'],
+            'auth_bearer' => $token,
+            'json' => [
+                'isPublic' => true,
+            ],
+        ]);
+        $this->assertResponseIsSuccessful();
+
+        $json = $this->dump($this->getResponseArray());
+        $this->assertTrue($json['isPublic'], 'Bookmark should become public after PATCH update.');
+
+        $this->request('GET', "/profile/testuser/bookmarks/{$bookmark->id}");
+        $this->assertResponseIsSuccessful();
+    }
+
     public function testDeleteOwnBookmark(): void
     {
         [, $token, $account] = $this->createAuthenticatedUserAccount('testuser', 'test');
