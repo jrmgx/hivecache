@@ -12,6 +12,7 @@ interface EditBookmarkProps {
 export const EditBookmark = ({ bookmark, onSave, onClose }: EditBookmarkProps) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const [title, setTitle] = useState('');
+  const [isPublic, setIsPublic] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveErrorStatus, setSaveErrorStatus] = useState<number | null>(null);
@@ -37,6 +38,7 @@ export const EditBookmark = ({ bookmark, onSave, onClose }: EditBookmarkProps) =
     setSaveErrorStatus(null);
     if (bookmark) {
       setTitle(bookmark.title);
+      setIsPublic(bookmark.isPublic);
     }
     onClose();
   }, [bookmark, onClose]);
@@ -45,8 +47,9 @@ export const EditBookmark = ({ bookmark, onSave, onClose }: EditBookmarkProps) =
   useEffect(() => {
     if (bookmark) {
       setTitle(bookmark.title);
+      setIsPublic(bookmark.isPublic);
     }
-  }, [bookmark?.title]);
+  }, [bookmark?.title, bookmark?.isPublic]);
 
   // Show modal when bookmark changes
   useEffect(() => {
@@ -82,7 +85,7 @@ export const EditBookmark = ({ bookmark, onSave, onClose }: EditBookmarkProps) =
 
     try {
       // Update bookmark title via API
-      const updatedBookmark = await updateBookmark(bookmark.id, { title: title.trim() });
+      const updatedBookmark = await updateBookmark(bookmark.id, { title: title.trim(), isPublic });
 
       // Dispatch custom events to notify other components
       // Pass the updated bookmark in the event detail to avoid full page reload
@@ -139,6 +142,19 @@ export const EditBookmark = ({ bookmark, onSave, onClose }: EditBookmarkProps) =
                   autoFocus
                 />
               </div>
+              <div className="form-check">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  id="bookmark-is-public-input"
+                  checked={isPublic}
+                  onChange={(e) => setIsPublic(e.target.checked)}
+                  disabled={isSaving}
+                />
+                <label className="form-check-label" htmlFor="bookmark-is-public-input">
+                  Public
+                </label>
+              </div>
             </div>
             <div className="modal-footer">
               <button
@@ -152,7 +168,7 @@ export const EditBookmark = ({ bookmark, onSave, onClose }: EditBookmarkProps) =
               <button
                 type="submit"
                 className="btn btn-primary"
-                disabled={isSaving || !title.trim() || (bookmark ? title.trim() === bookmark.title : false)}
+                disabled={isSaving || !title.trim() || (bookmark ? (title.trim() === bookmark.title && isPublic === bookmark.isPublic) : false)}
               >
                 {isSaving ? (
                   <>

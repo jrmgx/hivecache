@@ -436,6 +436,8 @@ final class MeBookmarkController extends BookmarkController
         )]
         BookmarkApiDto $bookmarkPayload,
     ): JsonResponse {
+        $wasPublic = $bookmark->isPublic;
+
         // Manual merge
         if (isset($bookmarkPayload->title)) {
             $bookmark->title = $bookmarkPayload->title;
@@ -461,6 +463,10 @@ final class MeBookmarkController extends BookmarkController
             $this->entityManager->persist($indexAction);
 
             $this->entityManager->flush();
+
+            if (!$wasPublic && $bookmark->isPublic) {
+                $this->messageBus->dispatch(new SendCreateNoteMessage($bookmark->id));
+            }
         } catch (ORMInvalidArgumentException|ORMException $e) {
             throw new UnprocessableEntityHttpException(previous: $e);
         }
