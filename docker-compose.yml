@@ -101,9 +101,10 @@ services:
             - "traefik.http.routers.${PROJECT_NAME}-swagger-assets.service=${PROJECT_NAME}-swagger"
 
     maildev:
-        platform: linux/amd64
-        image: djfarrelly/maildev
+        image: maildev/maildev
         command: [ "bin/maildev", "--web", "8025", "--smtp", "2525", "--hide-extensions", "STARTTLS" ]
+        healthcheck:
+            disable: true
         labels:
             - "traefik.enable=true"
             - "project-name=${PROJECT_NAME}"

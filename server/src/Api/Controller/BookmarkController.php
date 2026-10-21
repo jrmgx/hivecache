@@ -83,9 +83,9 @@ abstract class BookmarkController extends AbstractController
             return [];
         }
         $tagSlugs = explode(',', $tagQueryString);
-        $tagSlugs = array_map(fn (string $t) => mb_trim($t), $tagSlugs);
+        $tagSlugs = array_map(static fn (string $t) => mb_trim($t), $tagSlugs);
 
-        return array_values(array_filter($tagSlugs, fn (string $t) => '' !== $t));
+        return array_values(array_filter($tagSlugs, static fn (string $t) => '' !== $t));
     }
 
     /**

@@ -43,6 +43,7 @@ function build(
         ...$command,
         'build',
         '--build-arg', 'PHP_VERSION=' . variable('php_version'),
+        '--build-arg', 'PHP_SURY_REFRESH=' . variable('php_sury_refresh'),
         '--build-arg', 'PROJECT_NAME=' . variable('project_name'),
     ];
 
@@ -324,6 +325,12 @@ function docker_compose(array $subCommand, ?Context $c = null, array $profiles =
         'REGISTRY' => $c['registry'] ?? '',
     ]);
 
+    if ($c['APP_ENV'] ?? false) {
+        $c = $c->withEnvironment([
+            'APP_ENV' => $c['APP_ENV'] ?? '',
+        ]);
+    }
+
     $command = [
         'docker',
         'compose',
@@ -465,7 +472,7 @@ function push(bool $dryRun = false): void
             targets = [%s]
         }
 
-        EOHCL, implode(', ', array_map(fn ($target) => \sprintf('"%s"', $target['target']), $targets)));
+        EOHCL, implode(', ', array_map(static fn ($target) => \sprintf('"%s"', $target['target']), $targets)));
 
     foreach ($targets as $target) {
         $content .= \sprintf(<<<'EOHCL'
@@ -477,10 +484,11 @@ function push(bool $dryRun = false): void
                 target     = "%s"
                 args = {
                     PHP_VERSION = "%s"
+                    PHP_SURY_REFRESH = "%s"
                 }
             }
 
-            EOHCL, $target['target'], $target['context'], $target['dockerfile'], $target['reference'], $target['type'], $target['reference'], $target['target'], variable('php_version'));
+            EOHCL, $target['target'], $target['context'], $target['dockerfile'], $target['reference'], $target['type'], $target['reference'], $target['target'], variable('php_version'), variable('php_sury_refresh'));
     }
 
     if ($dryRun) {

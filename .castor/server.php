@@ -18,7 +18,7 @@ use function docker\docker_compose_run;
 use function docker\up;
 
 /**
- * @return array{project_name: string, root_domain: string, extra_domains: string[], php_version: string}
+ * @return array{project_name: string, root_domain: string, extra_domains: string[], php_version: string, php_sury_refresh: string}
  */
 function create_default_variables(): array
 {
@@ -29,7 +29,8 @@ function create_default_variables(): array
         'project_name' => $projectName,
         'root_domain' => "{$projectName}.{$tld}",
         'extra_domains' => [],
-        'php_version' => '8.4',
+        'php_version' => '8.5',
+        'php_sury_refresh' => '20261021',
         'registry' => $_SERVER['DS_REGISTRY'] ?? null,
         'fixture_story' => 'main',
     ];

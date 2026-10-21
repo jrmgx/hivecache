@@ -13,7 +13,7 @@ if ($_SERVER['APP_DEBUG']) {
     umask(0o000);
 }
 
-$stopServer = function () {
+$stopServer = static function () {
     exec('APP_ENV=test_ap_server symfony local:server:stop');
     echo "Server Stopped!\n";
 };
@@ -22,11 +22,11 @@ register_shutdown_function($stopServer);
 
 if (function_exists('pcntl_signal')) {
     pcntl_async_signals(true);
-    pcntl_signal(\SIGINT, function () use ($stopServer) {
+    pcntl_signal(\SIGINT, static function () use ($stopServer) {
         $stopServer();
         exit(130);
     });
-    pcntl_signal(\SIGTERM, function () use ($stopServer) {
+    pcntl_signal(\SIGTERM, static function () use ($stopServer) {
         $stopServer();
         exit(143);
     });

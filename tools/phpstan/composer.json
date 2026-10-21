@@ -1,11 +1,11 @@
 {
     "type": "project",
     "require": {
-        "ekino/phpstan-banned-code": "^3.0",
+        "ekino/phpstan-banned-code": "^3.2",
         "phpstan/extension-installer": "^1.4.3",
-        "phpstan/phpstan": "^2.1.32",
-        "phpstan/phpstan-deprecation-rules": "^2.0.3",
-        "phpstan/phpstan-symfony": "^2.0.8"
+        "phpstan/phpstan": "^2.3.1",
+        "phpstan/phpstan-deprecation-rules": "^2.0.5",
+        "phpstan/phpstan-symfony": "^2.1.0"
     },
     "config": {
         "allow-plugins": {
@@ -13,7 +13,7 @@
         },
         "bump-after-update": true,
         "platform": {
-            "php": "8.4"
+            "php": "8.5.12"
         },
         "sort-packages": true
     }

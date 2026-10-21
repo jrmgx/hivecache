@@ -206,7 +206,7 @@ class BookmarkTest extends BaseApiTestCase
         $this->assertCount(4, $json['tags'], 'Second bookmark should have all 4 tags merged');
 
         // Verify all tags are present
-        $tagSlugs = array_map(fn ($tag) => $tag['slug'], $json['tags']);
+        $tagSlugs = array_map(static fn ($tag) => $tag['slug'], $json['tags']);
         $this->assertContains($userTag1->slug, $tagSlugs, 'Tag 1 should be present');
         $this->assertContains($userTag2->slug, $tagSlugs, 'Tag 2 should be present');
         $this->assertContains($userTag3->slug, $tagSlugs, 'Tag 3 should be present');
@@ -464,7 +464,7 @@ class BookmarkTest extends BaseApiTestCase
         $this->assertResponseIsSuccessful();
         $initialJson = $this->getResponseArray();
         $this->assertCount(3, $initialJson['tags']);
-        $initialTagSlugs = array_map(fn ($tag) => $tag['slug'], $initialJson['tags']);
+        $initialTagSlugs = array_map(static fn ($tag) => $tag['slug'], $initialJson['tags']);
 
         // Edit only the title, without including tags in the request
         $this->request('PATCH', "/users/me/bookmarks/{$bookmark->id}", [
@@ -485,7 +485,7 @@ class BookmarkTest extends BaseApiTestCase
         // Verify tags remain unchanged
         $this->assertIsArray($json['tags']);
         $this->assertCount(3, $json['tags'], 'Tags should remain unchanged when only title is edited');
-        $updatedTagSlugs = array_map(fn ($tag) => $tag['slug'], $json['tags']);
+        $updatedTagSlugs = array_map(static fn ($tag) => $tag['slug'], $json['tags']);
         $this->assertEqualsCanonicalizing($initialTagSlugs, $updatedTagSlugs, 'Tag slugs should remain the same');
         $this->assertBookmarkOwnerResponse($json);
     }
@@ -532,7 +532,7 @@ class BookmarkTest extends BaseApiTestCase
         // Verify tags were updated
         $this->assertIsArray($json['tags']);
         $this->assertCount(2, $json['tags'], 'Tags should be updated');
-        $updatedTagSlugs = array_map(fn ($tag) => $tag['slug'], $json['tags']);
+        $updatedTagSlugs = array_map(static fn ($tag) => $tag['slug'], $json['tags']);
         $this->assertContains($userTag2->slug, $updatedTagSlugs, 'Tag 2 should be present');
         $this->assertContains($userTag3->slug, $updatedTagSlugs, 'Tag 3 should be present');
         $this->assertNotContains($userTag1->slug, $updatedTagSlugs, 'Tag 1 should be removed');

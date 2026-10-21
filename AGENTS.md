@@ -50,7 +50,7 @@ Example: `bin/console clear:cache` → `castor builder -- bin/console clear:cach
 
 All share the same entities and must follow these rules:
 
-- PHP 8.4 syntax
+- PHP 8.5 syntax; server runtime in Docker is PHP 8.5.x (Sury) on linux/amd64
 - Never use `empty` except when it is the only option
 - Use positional and named arguments instead of default values
 - Use latest Symfony version

@@ -19,7 +19,7 @@ The Docker infrastructure provides a web stack with:
 
 - NGINX
 - PostgreSQL
-- PHP
+- PHP 8.5.x from [packages.sury.org](https://packages.sury.org/php/) (Debian bookworm), built as **linux/amd64** images to match production Ubuntu servers; on Apple Silicon Macs, Docker runs these images via amd64 emulation
 - Traefik
 - A container with some tooling:
     - Composer
@@ -38,11 +38,19 @@ echo '127.0.0.1 hivecache.test server2.hivecache.test app.hivecache.test docs.hi
 
 ## Starting the Stack
 
-Launch the stack by running this command:
+First time, launch the stack by running those commands:
 
 ```bash
-castor start
+castor build # Build the docker images
+castor start # Start and install the stack
 ```
+
+Later you can use: 
+
+```bash
+castor up # Take the last containers and up them
+```
+
 
 > [!NOTE]
 > The first start of the stack should take a few minutes.

@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\ActivityPub;
 
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
