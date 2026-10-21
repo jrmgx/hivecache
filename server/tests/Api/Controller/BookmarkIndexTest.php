@@ -216,7 +216,7 @@ class BookmarkIndexTest extends BaseApiTestCase
         $this->assertArrayHasKey('collection', $json);
         $this->assertIsArray($json['collection']);
 
-        $updatedActions = array_filter($json['collection'], fn ($action) => 'updated' === $action['type']);
+        $updatedActions = array_filter($json['collection'], static fn ($action) => 'updated' === $action['type']);
         $this->assertCount(2, $updatedActions);
 
         $lastActionId = $json['collection'][\count($json['collection']) - 1]['id'];

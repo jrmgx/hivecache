@@ -154,9 +154,9 @@ class NoteObjectBundlerTest extends KernelTestCase
         $this->assertStringContainsString('public-tag', $noteObject->content);
 
         $this->assertCount(2, $noteObject->attachment);
-        $imageAttachment = array_filter($noteObject->attachment, fn ($att) => str_starts_with($att->mediaType, 'image/'));
+        $imageAttachment = array_filter($noteObject->attachment, static fn ($att) => str_starts_with($att->mediaType, 'image/'));
         $this->assertCount(1, $imageAttachment);
-        $archiveAttachment = array_filter($noteObject->attachment, fn ($att) => \in_array($att->mediaType, ['application/gzip', 'text/html']));
+        $archiveAttachment = array_filter($noteObject->attachment, static fn ($att) => \in_array($att->mediaType, ['application/gzip', 'text/html']));
         $this->assertCount(1, $archiveAttachment);
     }
 }

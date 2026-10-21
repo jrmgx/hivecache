@@ -102,8 +102,8 @@ function file(
      */
     $bookmarks = $parser->parseFile($file);
     // Sort by dateCreated (oldest first)
-    usort($bookmarks, fn ($a, $b) => ($a['dateCreated'] ?? 0) <=> ($b['dateCreated'] ?? 0));
-    $bookmarks = array_combine(array_map(fn ($b) => sha1($b['url']), $bookmarks), $bookmarks);
+    usort($bookmarks, static fn ($a, $b) => ($a['dateCreated'] ?? 0) <=> ($b['dateCreated'] ?? 0));
+    $bookmarks = array_combine(array_map(static fn ($b) => sha1($b['url']), $bookmarks), $bookmarks);
 
     $current = 0;
     $total = \count($bookmarks);
@@ -626,7 +626,7 @@ function uploadFileObject(string $filePath): array
 
     try {
         $boundary = uniqid('----WebKitFormBoundary', true);
-        $bodyGenerator = function () use ($boundary, $filename, $mimeType, $fileHandle): \Generator {
+        $bodyGenerator = static function () use ($boundary, $filename, $mimeType, $fileHandle): \Generator {
             yield "--{$boundary}\r\n";
             yield "Content-Disposition: form-data; name=\"file\"; filename=\"{$filename}\"\r\n";
             yield "Content-Type: {$mimeType}\r\n\r\n";
@@ -670,7 +670,7 @@ function firstAuth(): void
         io()->note('No configuration file found. Please provide your credentials.');
 
         // Ask for credentials
-        $instance = io()->ask('Instance URL', 'https://hivecache.test', function ($value) {
+        $instance = io()->ask('Instance URL', 'https://hivecache.test', static function ($value) {
             if (empty($value)) {
                 throw new \RuntimeException('Instance URL cannot be empty.');
             }
@@ -681,7 +681,7 @@ function firstAuth(): void
             return mb_rtrim($value, '/');
         });
 
-        $username = io()->ask('Username', validator: function ($value) {
+        $username = io()->ask('Username', validator: static function ($value) {
             if (empty($value)) {
                 throw new \RuntimeException('Username cannot be empty.');
             }

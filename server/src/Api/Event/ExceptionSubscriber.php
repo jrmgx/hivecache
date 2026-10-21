@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Api\Event;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;

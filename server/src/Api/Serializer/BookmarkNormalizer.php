@@ -26,7 +26,7 @@ readonly class BookmarkNormalizer implements NormalizerInterface
         if (!$this->routeContext->getType()->isMe()) {
             // Remove non-public tags
             /* @phpstan-ignore-next-line */
-            $data->userTags = new ArrayCollection(array_values($data->userTags->filter(fn (UserTag $tag) => $tag->isPublic)->toArray()));
+            $data->userTags = new ArrayCollection(array_values($data->userTags->filter(static fn (UserTag $tag) => $tag->isPublic)->toArray()));
         }
 
         return $this->normalizer->normalize($data, $format, $context);

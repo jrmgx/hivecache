@@ -17,7 +17,7 @@ final class NoteFactory extends PersistentObjectFactory
 
     protected function defaults(): array|callable
     {
-        return function () {
+        return static function () {
             $owner = UserFactory::createOne();
             $account = AccountFactory::createOneWithUsernameAndInstance(
                 $owner->username,

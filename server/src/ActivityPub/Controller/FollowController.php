@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\ActivityPub\Controller;
 
 use App\ActivityPub\Dto\OrderedCollection;
@@ -77,7 +75,7 @@ class FollowController extends AbstractController
         $qb = PaginationHelper::applyPagination($qb, $after, 100);
         $followings = $qb->getQuery()->getResult();
 
-        $accountUris = array_map(fn ($following) => $following->account->uri, $followings);
+        $accountUris = array_map(static fn ($following) => $following->account->uri, $followings);
 
         $nextPageUrl = null;
         if (100 === \count($followings)) {

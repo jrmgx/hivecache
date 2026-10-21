@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Api\Security\Voter;
 
 use App\Entity\FileObject;

@@ -125,6 +125,6 @@ final readonly class SignatureHelper
      */
     private static function stringToSign(array $headers): string
     {
-        return implode("\n", array_map(fn ($k, $v) => mb_strtolower($k) . ': ' . $v, array_keys($headers), $headers));
+        return implode("\n", array_map(static fn ($k, $v) => mb_strtolower($k) . ': ' . $v, array_keys($headers), $headers));
     }
 }
